@@ -1,5 +1,14 @@
 This is an Expo/React Native mobile application (Expo SDK 57, React Native 0.86, React 19, TypeScript strict) targeting iOS, Android, and web. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
+## The running app is still the Expo starter — the attendance product is only planned
+
+`PRD_Attendance_App.md`, `design.md`, and `build_plan.md` describe an intended offline attendance-register app. **None of it is implemented.** The app on disk is the stock Expo starter: `src/app/index.tsx` ("Welcome to Expo") and `src/app/explore.tsx`.
+
+Before implementing any product feature, know these docs are not a description of the current system:
+- `build_plan.md` is stale. It claims the repo has "no `package.json`, no `app.json`, no scaffold" — false now. It also plans a **different stack** than what exists (React Navigation + JavaScript/JSDoc + `src/theme|db|navigation|screens|utils`). The real repo uses **Expo Router + TypeScript strict** with `src/constants/theme.ts` for tokens. Do **not** execute `build_plan.md` literally (e.g. don't scaffold from scratch, don't install React Navigation, don't add a parallel `src/theme`).
+- `design.md`'s color tokens are the product visual contract, but its file paths (`theme/colors.js`) are aspirational. Map the tokens into the real structure rather than creating a second theme system.
+- When the docs and the code/config disagree, trust the code and config. Reconcile with the actual structure before writing code.
+
 ## Expo has changed — do not trust your training data
 
 Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
@@ -51,6 +60,6 @@ Follow the `.web.tsx` file split when adding platform behavior. Note the native 
 ## Generated & native files
 
 - `ios/`, `android/`, `.expo/`, `dist/`, and `expo-env.d.ts` are generated and gitignored. Never create or edit `ios/`/`android/` by hand — configure native behavior in `app.json` and config plugins (Continuous Native Generation).
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
+- Expo Go only includes its bundled native modules. After adding a library with native code (e.g. `expo-sqlite` for the planned product), the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Use EAS to build, sign, submit, and ship OTA updates from the cloud (`eas build`, `eas submit`, `eas update`); run the CLI as `npx eas-cli@latest <command>`. Docs: https://docs.expo.dev/eas/index.md
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
