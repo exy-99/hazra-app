@@ -17,6 +17,7 @@
 **Goal:** the data contract and design tokens are in place and the app boots with SQLite initializing without error.
 **Depends on:** none
 **Requirements:** DS-01, DS-02, DS-03, DS-04, NF-01, NF-02, NF-03, NF-05
+**Status:** Complete — 2026-10-03 (8/8 plans; 32/32 must-haves verified; on-device proofs deferred to Phase 9; review CR-01/CR-02 fixes applied)
 
 **Success criteria:**
 1. `npx tsc --noEmit` exits 0.

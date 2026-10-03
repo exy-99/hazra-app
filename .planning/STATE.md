@@ -1,8 +1,8 @@
 # State — Hazra Attendance
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
-**Current phase:** 1 — Foundation & Data Layer
-**Status:** In progress — Phase 1 executing (Wave 2: plans 01-03, 01-04, 01-07 done; Wave 3: plans 01-05, 01-06, 01-08 done; 01-08 on-device persistence proof deferred to Phase 9 by user approval)
+**Current phase:** 2 — Worksites & Workers
+**Status:** Complete — Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9)
 **Last updated:** 2026-10-03
 
 ## Position
@@ -11,6 +11,7 @@
 - Phase 1 planned: `.planning/phases/01-foundation/01-01-PLAN.md` … `01-08-PLAN.md`.
 - Plans are a conventions-conforming 8-plan split (≤3 tasks/plan, ≤3 files/task); all Phase 1 req IDs (DS-01..04, NF-01..03, NF-05) covered.
 - Real codebase is still the Expo starter; no product feature implemented.
+- Phase 1 COMPLETE (2026-10-03): all 8 plans executed across 3 waves; code review 01-REVIEW.md (2 critical/9 warnings/4 info, all assessed); verification 01-VERIFICATION.md (32/32 must-haves, status human_needed); post-verification fixes applied — `src/app/_layout.tsx` gained a `dbReady` gate (tabs render only after init resolves) + accent "Try again" retry, `src/components/app-tabs.tsx` null-guarded to `Colors[scheme === 'dark' ? 'dark' : 'light']` (commit 24cef39); UAT 01-HUMAN-UAT.md tracks 2 passed + 3 Phase-9-deferred items.
 - Plan 01-01 COMPLETE (2026-10-03): v1 deps installed (expo-sqlite/crypto/file-system/sharing/print/dev-client, dayjs, lucide-react-native, react-native-svg, @expo-google-fonts/inter); `src/constants/status.ts` frozen (STATUS/CYCLE/AttendanceStatus); SUMMARY at `.planning/phases/01-foundation/01-01-SUMMARY.md`; commits 35fd5c3, 830f4b1, 020feae. DS-01 done.
 - Plan 01-02 COMPLETE (2026-10-03): product theme tokens in `src/constants/theme.ts` (14 product color keys both modes, Type 48→13, Radius sm/md/lg/pill); starter keys + `ThemeColor` intact; standing self-checks `scripts/verify-theme-tokens.mjs`, `scripts/verify-theme-scale.mjs`; SUMMARY at `.planning/phases/01-foundation/01-02-SUMMARY.md`; commits 16766f4, 8fff62d, d30dbdc, dc712ac. DS-03, DS-04 done.
 - Plan 01-03 COMPLETE (2026-10-03): local date-key helpers in `src/utils/dates.ts` (todayKey/toDateKey/addDays/formatDisplay/lastNDays on dayjs, no `toISOString`) + `newId()` in `src/utils/ids.ts` (expo-crypto randomUUID); midnight/TZ check verified under Asia/Kolkata; standing self-checks `scripts/verify-date-utils.mjs`, `scripts/verify-ids.mjs`; SUMMARY at `.planning/phases/01-foundation/01-03-SUMMARY.md`; commits 3713579, 304defe, e4378e9, 6ad4656. NF-05 prerequisite done.
@@ -46,7 +47,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 1` — all 8 Phase 1 plans' automated work is done (01-08 complete on automated gates; on-device proof deferred to Phase 9), then Phase 1 verification.
+`/gsd-discuss-phase 2` — start here: discuss Phase 2 (Worksites & Workers) before planning.
 
 ## Notes
 

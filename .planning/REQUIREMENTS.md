@@ -53,19 +53,19 @@
 
 ### Platform / Non-Functional (NF)
 
-- [ ] **NF-01**: The app works fully offline — no internet connection required at any point.
-- [ ] **NF-02**: All data is stored locally on-device (SQLite).
-- [ ] **NF-03**: Single manager, single device — no authentication/login.
+- [x] **NF-01**: The app works fully offline — no internet connection required at any point.
+- [x] **NF-02**: All data is stored locally on-device (SQLite).
+- [x] **NF-03**: Single manager, single device — no authentication/login.
 - [ ] **NF-04**: Clean, minimal, fast UI usable with zero training.
-- [ ] **NF-05**: Zero data loss across app updates (soft-delete + stable schema with a `user_version` migration hook).
+- [x] **NF-05**: Zero data loss across app updates (soft-delete + stable schema with a `user_version` migration hook).
 - [ ] **NF-06**: Exports (CSV/PDF) and backups open/parse correctly outside the app.
 
 ### Design System Contract (DS)
 
 - [x] **DS-01**: Four attendance statuses with four fixed colors, used nowhere else; `off_day` is the only neutral status. (done 2026-10-03 in 01-01: `src/constants/status.ts`)
-- [ ] **DS-02**: Flat design — no shadows, gradients, glassmorphism; separate with 1px borders and surface/background contrast.
-- [ ] **DS-03**: No hardcoded hex in components — always import a token; teal = structure, orange = actions, status colors = status only.
-- [ ] **DS-04**: Inter typography with the defined scale (display/h1/h2/body/label/caption); nothing below 13px; `tabular-nums` on numerals.
+- [x] **DS-02**: Flat design — no shadows, gradients, glassmorphism; separate with 1px borders and surface/background contrast.
+- [x] **DS-03**: No hardcoded hex in components — always import a token; teal = structure, orange = actions, status colors = status only.
+- [x] **DS-04**: Inter typography with the defined scale (display/h1/h2/body/label/caption); nothing below 13px; `tabular-nums` on numerals.
 - [ ] **DS-05**: All tap targets ≥ 44×44px with ≥ 8px gaps and 16px screen gutters.
 - [ ] **DS-06**: Every list has an empty state; every data-loading screen has a skeleton (no blank flash).
 - [ ] **DS-07**: Accessibility — every status pill labeled (never color alone), contrast ≥ 4.5:1 in both modes, reduced-motion respected.
