@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 1 — Foundation & Data Layer
-**Status:** Planned — 8 plans ready to execute
+**Status:** In progress — Phase 1 executing (Wave 1: plans 01-01, 01-02)
 **Last updated:** 2026-10-03
 
 ## Position
@@ -11,6 +11,7 @@
 - Phase 1 planned: `.planning/phases/01-foundation/01-01-PLAN.md` … `01-08-PLAN.md`.
 - Plans are a conventions-conforming 8-plan split (≤3 tasks/plan, ≤3 files/task); all Phase 1 req IDs (DS-01..04, NF-01..03, NF-05) covered.
 - Real codebase is still the Expo starter; no product feature implemented.
+- Plan 01-01 COMPLETE (2026-10-03): v1 deps installed (expo-sqlite/crypto/file-system/sharing/print/dev-client, dayjs, lucide-react-native, react-native-svg, @expo-google-fonts/inter); `src/constants/status.ts` frozen (STATUS/CYCLE/AttendanceStatus); SUMMARY at `.planning/phases/01-foundation/01-01-SUMMARY.md`; commits 35fd5c3, 830f4b1, 020feae. DS-01 done.
 
 ## Decisions (carry into planning)
 
@@ -20,6 +21,8 @@
 - `off_day` excluded from attendance-% denominator; `half_day` counts 0.5.
 - Soft-delete worksites/workers via `is_active`; history preserved.
 - Manual backup/restore only in v1.
+- Dev loop now needs a development build (expo-dev-client installed; Expo Go can't load sqlite/file-system/sharing/print).
+- Plan grep gates run as node -e equivalents on Windows PowerShell (no grep binary); assertions identical.
 
 ## Blockers
 
@@ -27,7 +30,7 @@
 
 ## Next
 
-`/gsd-execute-phase 1` — execute the 8 Phase 1 plans (start with `01-01`).
+`/gsd-execute-phase 1` — continue with `01-02` (Wave 1) and remaining Phase 1 plans.
 
 ## Notes
 

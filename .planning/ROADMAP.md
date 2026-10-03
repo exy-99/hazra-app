@@ -27,6 +27,16 @@
 
 **UI hint:** yes
 
+**Plan progress:**
+- [x] 01-01 deps + status contract (DS-01) — done 2026-10-03
+- [ ] 01-02 theme tokens
+- [ ] 01-03 date/ID utils
+- [ ] 01-04 db types + schema
+- [ ] 01-05 worksite + worker DAO
+- [ ] 01-06 attendance DAO
+- [ ] 01-07 4-tab shell + routes
+- [ ] 01-08 db init + EmptyState
+
 ---
 
 ## Phase 2: Worksites & Workers

@@ -62,7 +62,7 @@
 
 ### Design System Contract (DS)
 
-- [ ] **DS-01**: Four attendance statuses with four fixed colors, used nowhere else; `off_day` is the only neutral status.
+- [x] **DS-01**: Four attendance statuses with four fixed colors, used nowhere else; `off_day` is the only neutral status. (done 2026-10-03 in 01-01: `src/constants/status.ts`)
 - [ ] **DS-02**: Flat design — no shadows, gradients, glassmorphism; separate with 1px borders and surface/background contrast.
 - [ ] **DS-03**: No hardcoded hex in components — always import a token; teal = structure, orange = actions, status colors = status only.
 - [ ] **DS-04**: Inter typography with the defined scale (display/h1/h2/body/label/caption); nothing below 13px; `tabular-nums` on numerals.
