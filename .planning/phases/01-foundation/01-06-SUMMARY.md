@@ -66,7 +66,7 @@ Each task was committed atomically:
 1. **Task 1: Single-statement attendance upsert** - `ab78606` (feat)
 2. **Task 2: Attendance read queries for date, worker history, and daily counts** - `c64cfa9` (feat)
 
-**Plan metadata:** `1738b73` (docs: complete plan)
+**Plan metadata:** `86eb313` (docs: complete plan)
 
 ## Files Created/Modified
 
