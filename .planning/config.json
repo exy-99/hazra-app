@@ -1,0 +1,22 @@
+{
+  "mode": "interactive",
+  "granularity": "standard",
+  "parallelization": false,
+  "commit_docs": true,
+  "model_profile": "inherit",
+  "response_language": "English",
+  "workflow": {
+    "research": false,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": false,
+    "ai_integration_phase": false,
+    "ui_phase": true,
+    "ui_safety_gate": true,
+    "security_enforcement": true,
+    "security_asvs_level": 1,
+    "security_block_on": "high",
+    "discuss_mode": "discuss",
+    "use_worktrees": false
+  }
+}
