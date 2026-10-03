@@ -43,7 +43,7 @@ completed: 2026-10-03
 
 # Phase 1 Plan 8: Drill-Down Routes, SQLite Boot Init, and EmptyState Summary
 
-**Six drill-down route placeholders, SQLite initialized once in the root layout with splash/error handling, and a shared flat EmptyState — all automated gates green; on-device persistence proof awaits a development build**
+**Six drill-down route placeholders, SQLite initialized once in the root layout with splash/error handling, and a shared flat EmptyState — all automated gates green; on-device persistence proof deferred to Phase 9 by user approval**
 
 ## Performance
 
@@ -108,6 +108,27 @@ None - plan executed as written, with two noted gate readings below (not code de
 ## Issues Encountered
 
 None blocking. `npx tsc --noEmit` exits 0 after every task.
+
+## Deferred Verification (user-approved 2026-10-03)
+
+The user approved deferring the on-device proof: no development build exists in
+this environment, so the `__boot_probe__` persistence proof and airplane-mode
+boot check cannot run now. They are recorded as verification debt for Phase 9
+(build/ship), to be executed once a dev build exists. Plan 01-08 is marked
+complete on automated gates (`npx tsc --noEmit` exits 0, all init/EmptyState and
+phase-wide no-hex/no-network gates pass).
+
+Exact deferred steps (run in Phase 9 against a development build —
+`npx expo run:android` / `npx expo run:ios`, or `eas build --profile development`):
+
+1. After `initDatabase()` resolves, insert a worksite named `__boot_probe__` and
+   log `SELECT COUNT(*) FROM worksites WHERE name='__boot_probe__'` — expected `1`.
+2. Fully close and relaunch the app; re-run the count — expected `1` again
+   (row survived restart).
+3. Remove the probe row, re-run `npx tsc --noEmit` (expected exit 0), and record
+   both counts in the Phase 9 verification notes.
+4. Airplane-mode boot: launch the dev build with no connectivity — expected: boots
+   to Home with no red screen.
 
 ## Manual Verification (NOT executed — requires a development build)
 
