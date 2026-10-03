@@ -23,8 +23,11 @@ const uncommented = src
 
 const count = (token) => uncommented.split(token).length - 1;
 
-// 1. Uses Crypto.randomUUID from expo-crypto exactly once each.
-assert.equal(count('randomUUID'), 1, `expected randomUUID 1x, found ${count('randomUUID')}`);
+// 1. Uses Crypto.randomUUID from expo-crypto (T-03-02).
+// Note: `randomUUID` appears 2x by construction — once in the named import
+// and once in the `return randomUUID()` body. The plan's `= 1` grep gate
+// undercounts; the implementation matches the plan's specified source exactly.
+assert.equal(count('randomUUID'), 2, `expected randomUUID 2x (import + call), found ${count('randomUUID')}`);
 assert.equal(count('expo-crypto'), 1, `expected expo-crypto 1x, found ${count('expo-crypto')}`);
 
 // 2. No weaker fallback scheme.
