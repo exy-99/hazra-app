@@ -29,7 +29,7 @@
 
 **Plan progress:**
 - [x] 01-01 deps + status contract (DS-01) — done 2026-10-03
-- [ ] 01-02 theme tokens
+- [x] 01-02 theme tokens (DS-03, DS-04) — done 2026-10-03
 - [ ] 01-03 date/ID utils
 - [ ] 01-04 db types + schema
 - [ ] 01-05 worksite + worker DAO

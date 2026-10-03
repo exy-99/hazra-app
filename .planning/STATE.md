@@ -12,6 +12,7 @@
 - Plans are a conventions-conforming 8-plan split (≤3 tasks/plan, ≤3 files/task); all Phase 1 req IDs (DS-01..04, NF-01..03, NF-05) covered.
 - Real codebase is still the Expo starter; no product feature implemented.
 - Plan 01-01 COMPLETE (2026-10-03): v1 deps installed (expo-sqlite/crypto/file-system/sharing/print/dev-client, dayjs, lucide-react-native, react-native-svg, @expo-google-fonts/inter); `src/constants/status.ts` frozen (STATUS/CYCLE/AttendanceStatus); SUMMARY at `.planning/phases/01-foundation/01-01-SUMMARY.md`; commits 35fd5c3, 830f4b1, 020feae. DS-01 done.
+- Plan 01-02 COMPLETE (2026-10-03): product theme tokens in `src/constants/theme.ts` (14 product color keys both modes, Type 48→13, Radius sm/md/lg/pill); starter keys + `ThemeColor` intact; standing self-checks `scripts/verify-theme-tokens.mjs`, `scripts/verify-theme-scale.mjs`; SUMMARY at `.planning/phases/01-foundation/01-02-SUMMARY.md`; commits 16766f4, 8fff62d, d30dbdc, dc712ac. DS-03, DS-04 done.
 
 ## Decisions (carry into planning)
 
@@ -30,7 +31,7 @@
 
 ## Next
 
-`/gsd-execute-phase 1` — continue with `01-02` (Wave 1) and remaining Phase 1 plans.
+`/gsd-execute-phase 1` — continue with `01-03` (date/ID utils) and remaining Phase 1 plans.
 
 ## Notes
 
