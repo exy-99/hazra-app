@@ -25,6 +25,12 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 - CSV/PDF export and manual JSON backup/restore
 - Design-contract UI per `design.md`
 
+### Validated in Phase 1: Foundation & Data Layer (2026-10-03)
+
+- DS-01 (status colors), DS-03 (token-only colors), DS-04 (type scale) — frozen contracts in `src/constants/`
+- NF-02 (local SQLite schema + DAOs), NF-05 (soft-delete, stable IDs, local date keys, `user_version` hook)
+- NF-01/NF-03 (offline, no-auth shell) at code level; on-device boot proof deferred to Phase 9
+
 ### Out of Scope
 
 - Employee-facing app / self check-in — single manager only
@@ -49,4 +55,4 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-10-02 after project initialization*
+*Last updated: 2026-10-03 after Phase 1 completion (data contract + tokens frozen; drills-down stubbed; device proofs deferred to Phase 9)*
