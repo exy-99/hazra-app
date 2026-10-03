@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 1 — Foundation & Data Layer
-**Status:** In progress — Phase 1 executing (Wave 2: plan 01-03 done; 01-04..01-08 pending)
+**Status:** In progress — Phase 1 executing (Wave 2: plans 01-03, 01-04 done; 01-05..01-08 pending)
 **Last updated:** 2026-10-03
 
 ## Position
@@ -14,6 +14,7 @@
 - Plan 01-01 COMPLETE (2026-10-03): v1 deps installed (expo-sqlite/crypto/file-system/sharing/print/dev-client, dayjs, lucide-react-native, react-native-svg, @expo-google-fonts/inter); `src/constants/status.ts` frozen (STATUS/CYCLE/AttendanceStatus); SUMMARY at `.planning/phases/01-foundation/01-01-SUMMARY.md`; commits 35fd5c3, 830f4b1, 020feae. DS-01 done.
 - Plan 01-02 COMPLETE (2026-10-03): product theme tokens in `src/constants/theme.ts` (14 product color keys both modes, Type 48→13, Radius sm/md/lg/pill); starter keys + `ThemeColor` intact; standing self-checks `scripts/verify-theme-tokens.mjs`, `scripts/verify-theme-scale.mjs`; SUMMARY at `.planning/phases/01-foundation/01-02-SUMMARY.md`; commits 16766f4, 8fff62d, d30dbdc, dc712ac. DS-03, DS-04 done.
 - Plan 01-03 COMPLETE (2026-10-03): local date-key helpers in `src/utils/dates.ts` (todayKey/toDateKey/addDays/formatDisplay/lastNDays on dayjs, no `toISOString`) + `newId()` in `src/utils/ids.ts` (expo-crypto randomUUID); midnight/TZ check verified under Asia/Kolkata; standing self-checks `scripts/verify-date-utils.mjs`, `scripts/verify-ids.mjs`; SUMMARY at `.planning/phases/01-foundation/01-03-SUMMARY.md`; commits 3713579, 304defe, e4378e9, 6ad4656. NF-05 prerequisite done.
+- Plan 01-04 COMPLETE (2026-10-03): frozen SQLite contract in `src/db/types.ts` (Worksite/Worker/AttendanceEntry row types, AttendanceStatus re-exported from canonical status.ts) + `src/db/index.ts` (cached openDatabaseAsync singleton, idempotent CREATE TABLE x3 matching PRD §8, foreign_keys=ON, CHECK status whitelist, UNIQUE(worker_id,date), user_version hook); SDK-57 async names confirmed against versioned docs; SUMMARY at `.planning/phases/01-foundation/01-04-SUMMARY.md`; commits 1827a4c, 7381f1f. NF-02, NF-05 done.
 
 ## Decisions (carry into planning)
 
@@ -32,7 +33,7 @@
 
 ## Next
 
-`/gsd-execute-phase 1` — continue with `01-04` (db types + schema) and remaining Phase 1 plans.
+`/gsd-execute-phase 1` — continue with `01-05` (worksite + worker DAO) and remaining Phase 1 plans.
 
 ## Notes
 
