@@ -89,3 +89,14 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+export const Type = {
+  display: { fontSize: 48, lineHeight: 52, fontWeight: '700' },
+  h1: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
+  h2: { fontSize: 20, lineHeight: 26, fontWeight: '600' },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
+  label: { fontSize: 14, lineHeight: 20, fontWeight: '600' },
+  caption: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
+} as const;
+
+export const Radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
