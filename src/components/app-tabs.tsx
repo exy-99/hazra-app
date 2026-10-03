@@ -11,7 +11,11 @@ export default function AppTabs() {
     <NativeTabs
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}>
+      iconColor={{ default: colors.mutedForeground, selected: colors.primary }}
+      labelStyle={{
+        default: { color: colors.mutedForeground },
+        selected: { color: colors.primary },
+      }}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
@@ -20,8 +24,30 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
+      {/* NOTE: explore.png is a temporary placeholder icon.
+          Phase 8 (DS-05..09) replaces the full tab icon set. */}
+      <NativeTabs.Trigger name="attendance">
+        <NativeTabs.Trigger.Label>Attendance</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
+      {/* NOTE: explore.png is a temporary placeholder icon.
+          Phase 8 (DS-05..09) replaces the full tab icon set. */}
+      <NativeTabs.Trigger name="workers">
+        <NativeTabs.Trigger.Label>Workers</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
+      {/* NOTE: explore.png is a temporary placeholder icon.
+          Phase 8 (DS-05..09) replaces the full tab icon set. */}
+      <NativeTabs.Trigger name="reports">
+        <NativeTabs.Trigger.Label>Reports</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"
