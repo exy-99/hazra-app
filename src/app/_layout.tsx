@@ -1,7 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
@@ -16,7 +16,9 @@ let initialized = false;
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const theme = useTheme();
+  const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (initialized) return;
@@ -24,13 +26,20 @@ export default function TabLayout() {
     (async () => {
       try {
         await initDatabase();
+        setDbReady(true);
       } catch (error) {
         setDbError(error instanceof Error ? error.message : String(error));
       } finally {
         await SplashScreen.hideAsync().catch(() => {});
       }
     })();
-  }, []);
+  }, [attempt]);
+
+  function retryInit() {
+    initialized = false;
+    setDbError(null);
+    setAttempt((a) => a + 1);
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -41,10 +50,20 @@ export default function TabLayout() {
             Couldn&apos;t start
           </Text>
           <Text style={[styles.errorBody, { color: theme.mutedForeground }]}>{dbError}</Text>
+          <Pressable
+            accessibilityRole="button"
+            android_ripple={{ color: theme.onAccent }}
+            onPress={retryInit}
+            style={({ pressed }) => [
+              styles.retryButton,
+              { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <Text style={[styles.retryLabel, { color: theme.onAccent }]}>Try again</Text>
+          </Pressable>
         </View>
-      ) : (
+      ) : dbReady ? (
         <AppTabs />
-      )}
+      ) : null}
     </ThemeProvider>
   );
 }
@@ -63,6 +82,18 @@ const styles = StyleSheet.create({
   },
   errorBody: {
     ...Type.body,
+    textAlign: 'center',
+  },
+  retryButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    borderRadius: 12,
+    marginTop: Spacing.two,
+  },
+  retryLabel: {
+    ...Type.label,
     textAlign: 'center',
   },
 });

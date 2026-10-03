@@ -26,19 +26,21 @@ result: [pending]
 
 ### 4. Add a `ready` gate in src/app/_layout.tsx before Phase 2 screens query the DB (review CR-01)
 expected: Tabs render only after initDatabase() resolves; retry affordance on dbError
-result: [pending]
+result: passed — `<AppTabs />` renders only when `dbReady`; error screen gained an accent "Try again" retry (resets guard + re-attempts init); `tsc` exit 0
 
 ### 5. Harden nullable color-scheme indexing in src/components/app-tabs.tsx (review CR-02)
 expected: Colors[scheme === 'dark' ? 'dark' : 'light'] or useTheme(); no Colors[null] path
-result: [pending]
+result: passed — `Colors[scheme === 'dark' ? 'dark' : 'light']`; `tsc` exit 0
 
 ## Summary
 
 total: 5
-passed: 0
+passed: 2
 issues: 0
-pending: 5
+pending: 3
 skipped: 0
 blocked: 0
 
 ## Gaps
+
+- Items 1–3 (on-device boot, restart proof, airplane-mode boot) deferred to Phase 9 — no development build exists in this environment.
