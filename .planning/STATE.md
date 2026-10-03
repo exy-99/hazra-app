@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 1 — Foundation & Data Layer
-**Status:** In progress — Phase 1 executing (Wave 2: plans 01-03, 01-04, 01-07 done; 01-05, 01-06, 01-08 pending)
+**Status:** In progress — Phase 1 executing (Wave 2: plans 01-03, 01-04, 01-07 done; Wave 3: plan 01-05 done; 01-06, 01-08 pending)
 **Last updated:** 2026-10-03
 
 ## Position
@@ -16,6 +16,7 @@
 - Plan 01-03 COMPLETE (2026-10-03): local date-key helpers in `src/utils/dates.ts` (todayKey/toDateKey/addDays/formatDisplay/lastNDays on dayjs, no `toISOString`) + `newId()` in `src/utils/ids.ts` (expo-crypto randomUUID); midnight/TZ check verified under Asia/Kolkata; standing self-checks `scripts/verify-date-utils.mjs`, `scripts/verify-ids.mjs`; SUMMARY at `.planning/phases/01-foundation/01-03-SUMMARY.md`; commits 3713579, 304defe, e4378e9, 6ad4656. NF-05 prerequisite done.
 - Plan 01-04 COMPLETE (2026-10-03): frozen SQLite contract in `src/db/types.ts` (Worksite/Worker/AttendanceEntry row types, AttendanceStatus re-exported from canonical status.ts) + `src/db/index.ts` (cached openDatabaseAsync singleton, idempotent CREATE TABLE x3 matching PRD §8, foreign_keys=ON, CHECK status whitelist, UNIQUE(worker_id,date), user_version hook); SDK-57 async names confirmed against versioned docs; SUMMARY at `.planning/phases/01-foundation/01-04-SUMMARY.md`; commits 1827a4c, 7381f1f. NF-02, NF-05 done.
 - Plan 01-07 COMPLETE (2026-10-03): four-tab shell (native `src/components/app-tabs.tsx` + web `src/components/app-tabs.web.tsx`, Home/Attendance/Workers/Reports, selected=primary/unselected=mutedForeground via documented `{default,selected}` labelStyle/iconColor) + token-driven Home placeholder (`src/app/index.tsx`) + three new tab screens (`src/app/attendance.tsx|workers.tsx|reports.tsx`); `src/app/explore.tsx` deleted; standing self-check `scripts/verify-tab-shell.mjs` 20/20; SUMMARY at `.planning/phases/01-foundation/01-07-SUMMARY.md`; commits b5241e3, 15a8d2d. NF-01, NF-03 done.
+- Plan 01-05 COMPLETE (2026-10-03): worksite + worker DAOs in `src/db/worksites.ts` (list/get/create/update/deactivate, soft delete, parameterized) + `src/db/workers.ts` (same plus worksiteId filter and worksite_id reassignment); `tsc` exit 0, no DELETE in either file; SUMMARY at `.planning/phases/01-foundation/01-05-SUMMARY.md`; commits 0f966d5, 8603c5d. NF-05 done.
 
 ## Decisions (carry into planning)
 
@@ -35,7 +36,7 @@
 
 ## Next
 
-`/gsd-execute-phase 1` — continue with `01-05` (worksite + worker DAO) and remaining Phase 1 plans.
+`/gsd-execute-phase 1` — continue with `01-06` (attendance DAO) and remaining Phase 1 plans.
 
 ## Notes
 

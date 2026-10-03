@@ -32,7 +32,7 @@
 - [x] 01-02 theme tokens (DS-03, DS-04) — done 2026-10-03
 - [x] 01-03 date/ID utils — done 2026-10-03
 - [x] 01-04 db types + schema (NF-02, NF-05) — done 2026-10-03
-- [ ] 01-05 worksite + worker DAO
+- [x] 01-05 worksite + worker DAO — done 2026-10-03
 - [ ] 01-06 attendance DAO
 - [x] 01-07 4-tab shell + routes (NF-01, NF-03) — done 2026-10-03
 - [ ] 01-08 db init + EmptyState
