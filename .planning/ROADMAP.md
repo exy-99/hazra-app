@@ -35,7 +35,7 @@
 - [x] 01-05 worksite + worker DAO — done 2026-10-03
 - [x] 01-06 attendance DAO — done 2026-10-03
 - [x] 01-07 4-tab shell + routes (NF-01, NF-03) — done 2026-10-03
-- [ ] 01-08 db init + EmptyState
+- [x] 01-08 db init + EmptyState — automated work done 2026-10-03 (tsc + phase-wide gates pass; on-device restart proof pending dev build)
 
 ---
 

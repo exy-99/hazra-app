@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 1 — Foundation & Data Layer
-**Status:** In progress — Phase 1 executing (Wave 2: plans 01-03, 01-04, 01-07 done; Wave 3: plans 01-05, 01-06 done; 01-08 pending)
+**Status:** In progress — Phase 1 executing (Wave 2: plans 01-03, 01-04, 01-07 done; Wave 3: plans 01-05, 01-06, 01-08 automated work done; 01-08 on-device persistence proof pending a development build)
 **Last updated:** 2026-10-03
 
 ## Position
@@ -18,6 +18,7 @@
 - Plan 01-07 COMPLETE (2026-10-03): four-tab shell (native `src/components/app-tabs.tsx` + web `src/components/app-tabs.web.tsx`, Home/Attendance/Workers/Reports, selected=primary/unselected=mutedForeground via documented `{default,selected}` labelStyle/iconColor) + token-driven Home placeholder (`src/app/index.tsx`) + three new tab screens (`src/app/attendance.tsx|workers.tsx|reports.tsx`); `src/app/explore.tsx` deleted; standing self-check `scripts/verify-tab-shell.mjs` 20/20; SUMMARY at `.planning/phases/01-foundation/01-07-SUMMARY.md`; commits b5241e3, 15a8d2d. NF-01, NF-03 done.
 - Plan 01-05 COMPLETE (2026-10-03): worksite + worker DAOs in `src/db/worksites.ts` (list/get/create/update/deactivate, soft delete, parameterized) + `src/db/workers.ts` (same plus worksiteId filter and worksite_id reassignment); `tsc` exit 0, no DELETE in either file; SUMMARY at `.planning/phases/01-foundation/01-05-SUMMARY.md`; commits 0f966d5, 8603c5d. NF-05 done.
 - Plan 01-06 COMPLETE (2026-10-03): attendance DAO in `src/db/attendance.ts` (single-statement upsertAttendance via ON CONFLICT(worker_id,date), getAttendanceForDate LEFT JOIN with null-status unmarked, getAttendanceForWorker from/to history, getDailyCounts with derived unmarked and off_day separate); `tsc` exit 0; SUMMARY at `.planning/phases/01-foundation/01-06-SUMMARY.md`; commits ab78606, c64cfa9. NF-05 done.
+- Plan 01-08 AUTOMATED WORK COMPLETE (2026-10-03): six drill-down placeholders (`src/app/worksites.tsx`, `src/app/worker/[id].tsx` echoing id, `src/app/worksite-form.tsx`, `src/app/worker-form.tsx`, `src/app/export.tsx`, `src/app/backup.tsx`), SQLite once-only init in `src/app/_layout.tsx` (module `initialized` guard, splash hide in `finally` with double-hide catch, `dbError` screen), shared flat `EmptyState` in `src/components/empty-state.tsx`; `tsc` exit 0, phase-wide no-hex/no-network gates pass; SUMMARY at `.planning/phases/01-foundation/01-08-SUMMARY.md`; commits 6194ffc, d2d2364, ebd0c15. DS-02, NF-01, NF-02, NF-05 automated acceptance done; on-device `__boot_probe__` restart proof + airplane-mode boot PENDING (needs a development build).
 
 ## Decisions (carry into planning)
 
@@ -30,14 +31,17 @@
 - Dev loop now needs a development build (expo-dev-client installed; Expo Go can't load sqlite/file-system/sharing/print).
 - Plan grep gates run as node -e equivalents on Windows PowerShell (no grep binary); assertions identical.
 - `expo-router/unstable-native-tabs` SDK-57 color API confirmed from versioned docs + installed types: `labelStyle` and `iconColor` both accept `{ default, selected }` (plan 01-07); use those keys for active/inactive tab colors, never invented ones.
+- `SplashScreen.hideAsync()` in `_layout.tsx` carries `.catch(() => {})` because `AnimatedSplashOverlay` also hides the splash — a double-hide rejection must not surface (plan 01-08).
+- `EmptyState` action button renders only when both `actionLabel` and `onAction` are provided — no dead affordances (plan 01-08).
+- `worker/[id]` param stays a display string at the route boundary; later DAOs must bind it as a `?` parameter, never interpolate (plan 01-08, T-08-01).
 
 ## Blockers
 
-- None.
+- Development build required for plan 01-08's final acceptance (`__boot_probe__` row-survives-restart proof + airplane-mode boot): `npx expo run:android` / `npx expo run:ios` or `eas build --profile development`. Expo Go cannot run `expo-sqlite`. All automated gates for Phase 1 pass.
 
 ## Next
 
-`/gsd-execute-phase 1` — continue with `01-08` (db init + EmptyState) and remaining Phase 1 plans.
+`/gsd-execute-phase 1` — all 8 Phase 1 plans' automated work is done; remaining acceptance is the 01-08 on-device persistence proof (needs a development build), then Phase 1 verification.
 
 ## Notes
 
