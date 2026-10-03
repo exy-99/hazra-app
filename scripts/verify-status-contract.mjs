@@ -18,10 +18,18 @@ const uncommented = src
   .filter((line) => !line.trimStart().startsWith('//'))
   .join('\n');
 
-// 1. STATUS solid hexes (design.md §4) — exactly once each in code.
-for (const hex of ['#16A34A', '#DC2626', '#B45309', '#64748B']) {
+// 1. STATUS solid hexes (design.md §4).
+// Note: #B45309 is both the half_day solid AND text color per design.md §4,
+// so it appears twice; the other solids appear once each.
+const solidExpectations = [
+  ['#16A34A', 1],
+  ['#DC2626', 1],
+  ['#B45309', 2],
+  ['#64748B', 1],
+];
+for (const [hex, expected] of solidExpectations) {
   const count = uncommented.split(hex).length - 1;
-  assert.equal(count, 1, `expected solid hex ${hex} exactly once in code, found ${count}`);
+  assert.equal(count, expected, `expected solid hex ${hex} ${expected}x in code, found ${count}`);
 }
 
 // 2. STATUS tint/text hexes present.
