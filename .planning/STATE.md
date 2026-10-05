@@ -23,6 +23,7 @@
 - Plan 02-01 COMPLETE (2026-10-06): nav foundation — four tab routes moved with `git mv` into `src/app/(tabs)/` + `(tabs)/_layout.tsx` rendering `AppTabs`; root `src/app/_layout.tsx` renders theme-driven `<Stack>` (`(tabs)` headerless + 6 titled drill-down screens); db gate/splash/retry untouched; `tsc` exit 0; SUMMARY at `.planning/phases/02-worksites-workers/02-01-SUMMARY.md`; commits 927aed3, aafd150. WS-04/WK-04 reachability done; on-device push/back-header proof DEFERRED to Phase 9 (no dev build).
 - Plan 02-03 COMPLETE (2026-10-06): shared `src/components/form-field.tsx` (frozen prop contract: label/value/onChangeText/placeholder/error/keyboardType/autoCapitalize, destructive border + polite live-region error) + rewritten `src/app/worksite-form.tsx` (add/edit via `?id=`, `getWorksite` prefill on focus, "Worksite not found" EmptyState, 5-chip `WORKSITE_TYPES` picker defaulting to Office, exact `'Name is required'` gating, blank address → `null`, orange Save → `router.back()`); `WORKSITE_TYPES` tuple added to `src/db/worksites.ts` per plan interface contract (Rule 3, committed with task 2); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-03-SUMMARY.md`; commits 894196a, f8baccf. WS-01, WS-02 done.
 - Plan 02-04 COMPLETE (2026-10-06): rewritten `src/app/(tabs)/workers.tsx` — header (Workers title + text-only primary Worksites entry → `/worksites`), All/per-site filter chips refetching via `listWorkers({ worksiteId })` on focus, memo rows (`name` + `role · site` via include-inactive name Map, `'—'` fallback) → `/worker-form?id=…`, exact §7.5 empty copy with Add worker action, single orange `+ Add worker` CTA in non-empty branch only; `tsc` exit 0, all grep gates pass (pre-existing watcher-corruption failure verified on clean HEAD before committing); SUMMARY at `.planning/phases/02-worksites-workers/02-04-SUMMARY.md`; commits 889526c, 0ae3fa0. WK-04 done.
+- Plan 02-05 COMPLETE (2026-10-06): rewritten `src/app/worker-form.tsx` — add/edit via `?id=`, `getWorker` prefill on focus, "Worker not found" EmptyState (Users icon, no action), name/role/phone FormFields (frozen contract, phone-pad), active-only worksite radio rows (default first active in add / current id in edit), zero-sites guidance → `/worksite-form` with Save disabled, exact `'Name is required'` / `'Choose a worksite'` gating, blanks → `null`, reassignment via same `updateWorker` call, single-accent orange Save → `router.back()`; legacy inactive `worksite_id` leaves selector unselected so save requires an active pick (T-02-15); `Worksite` type imported from `@/db/types` (Rule 1 fix); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-05-SUMMARY.md`; commits 65c7cbf, a7fb1c1. WK-01, WK-02 done.
 
 ## Decisions (carry into planning)
 
@@ -48,6 +49,8 @@
 - Form validation gates on `(triedSubmit || fieldTouched)` with the exact plan-specified error string passed as `FormField` error; touch tracking lives in the screen's `onChangeText` because the frozen `FormField` contract has no `onBlur` (plan 02-03).
 - Tampered `?id=` resolves via `getWorksite` and renders a no-action "not found" EmptyState — the raw param never reaches SQL or UI text (plan 02-03, T-02-07).
 - Worker-list CTA follows the 02-02 one-orange rule (footer CTA only in the non-empty branch; empty state carries its own accent action), and site names resolve via a display-only `listWorksites(true)` Map while chips/rows stay active-only (plan 02-04, T-02-10).
+- Worker-form loading gate covers both modes (`useState(true)` initial) because add mode also awaits `listWorksites()` — the zero-sites branch must never flash before sites resolve (plan 02-05).
+- Edit-mode prefill uses the worker's `worksite_id` only when it matches a DAO-loaded active site; a legacy inactive id leaves the selector unselected so the save gate enforces picking an active site while DB history stays intact (plan 02-05, T-02-15).
 
 ## Deferred Verification Debt
 
@@ -60,7 +63,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav + 02-02 worksite list + 02-03 worksite form + 02-04 worker list done 2026-10-05/06; remaining: wave 2 (02-05, 02-06) and wave 3 (02-07).
+`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav + 02-02 worksite list + 02-03 worksite form + 02-04 worker list + 02-05 worker form done 2026-10-05/06; remaining: wave 2 (02-06) and wave 3 (02-07).
 
 ## Notes
 
