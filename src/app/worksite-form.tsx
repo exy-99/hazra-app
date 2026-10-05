@@ -13,14 +13,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/empty-state';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormField } from '@/components/form-field';
 import { Radius, Spacing, Type } from '@/constants/theme';
 import {
   createWorksite,
+  deactivateWorksite,
   getWorksite,
   updateWorksite,
   WORKSITE_TYPES,
 } from '@/db/worksites';
+import { listWorkers } from '@/db/workers';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function WorksiteFormScreen(): JSX.Element {
@@ -35,6 +38,8 @@ export default function WorksiteFormScreen(): JSX.Element {
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [loading, setLoading] = useState(editId !== null);
   const [notFound, setNotFound] = useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [workerCount, setWorkerCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -86,6 +91,29 @@ export default function WorksiteFormScreen(): JSX.Element {
   }
 
   const saveLabel = editId !== null ? 'Save changes' : 'Add worksite';
+
+  async function handleRemovePress(): Promise<void> {
+    if (editId === null) {
+      return;
+    }
+    const count = (await listWorkers({ worksiteId: editId })).length;
+    setWorkerCount(count);
+    setConfirmVisible(true);
+  }
+
+  async function handleConfirmRemove(): Promise<void> {
+    if (editId === null) {
+      return;
+    }
+    await deactivateWorksite(editId);
+    setConfirmVisible(false);
+    router.back();
+  }
+
+  const removeMessage =
+    workerCount > 0
+      ? `This worksite has ${workerCount} active worker${workerCount === 1 ? '' : 's'}. Removing hides the worksite from lists; workers and their history are kept.`
+      : 'Removing hides this worksite from lists. Its history is kept.';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -182,6 +210,29 @@ export default function WorksiteFormScreen(): JSX.Element {
                 {saveLabel}
               </Text>
             </Pressable>
+            {editId !== null ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Remove worksite"
+                android_ripple={{ color: theme.muted }}
+                onPress={handleRemovePress}
+                style={({ pressed }) => [
+                  styles.remove,
+                  { opacity: pressed ? 0.85 : 1 },
+                ]}>
+                <Text style={[styles.removeLabel, { color: theme.destructive }]}>
+                  Remove worksite
+                </Text>
+              </Pressable>
+            ) : null}
+            <ConfirmDialog
+              visible={confirmVisible}
+              title={`Remove ${name.trim()}`}
+              message={removeMessage}
+              confirmLabel="Remove"
+              onConfirm={handleConfirmRemove}
+              onCancel={() => setConfirmVisible(false)}
+            />
           </ScrollView>
         )}
       </SafeAreaView>
@@ -242,6 +293,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   saveLabel: {
+    ...Type.label,
+    textAlign: 'center',
+  },
+  remove: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    marginTop: Spacing.three,
+  },
+  removeLabel: {
     ...Type.label,
     textAlign: 'center',
   },
