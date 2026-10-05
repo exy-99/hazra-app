@@ -22,6 +22,7 @@
 - Plan 01-08 COMPLETE (2026-10-03): six drill-down placeholders (`src/app/worksites.tsx`, `src/app/worker/[id].tsx` echoing id, `src/app/worksite-form.tsx`, `src/app/worker-form.tsx`, `src/app/export.tsx`, `src/app/backup.tsx`), SQLite once-only init in `src/app/_layout.tsx` (module `initialized` guard, splash hide in `finally` with double-hide catch, `dbError` screen), shared flat `EmptyState` in `src/components/empty-state.tsx`; `tsc` exit 0, phase-wide no-hex/no-network gates pass; SUMMARY at `.planning/phases/01-foundation/01-08-SUMMARY.md`; commits 6194ffc, d2d2364, ebd0c15. DS-02, NF-01, NF-02, NF-05 automated acceptance done; on-device `__boot_probe__` restart proof + airplane-mode boot DEFERRED to Phase 9 by user approval (no dev build in this environment).
 - Plan 02-01 COMPLETE (2026-10-06): nav foundation — four tab routes moved with `git mv` into `src/app/(tabs)/` + `(tabs)/_layout.tsx` rendering `AppTabs`; root `src/app/_layout.tsx` renders theme-driven `<Stack>` (`(tabs)` headerless + 6 titled drill-down screens); db gate/splash/retry untouched; `tsc` exit 0; SUMMARY at `.planning/phases/02-worksites-workers/02-01-SUMMARY.md`; commits 927aed3, aafd150. WS-04/WK-04 reachability done; on-device push/back-header proof DEFERRED to Phase 9 (no dev build).
 - Plan 02-03 COMPLETE (2026-10-06): shared `src/components/form-field.tsx` (frozen prop contract: label/value/onChangeText/placeholder/error/keyboardType/autoCapitalize, destructive border + polite live-region error) + rewritten `src/app/worksite-form.tsx` (add/edit via `?id=`, `getWorksite` prefill on focus, "Worksite not found" EmptyState, 5-chip `WORKSITE_TYPES` picker defaulting to Office, exact `'Name is required'` gating, blank address → `null`, orange Save → `router.back()`); `WORKSITE_TYPES` tuple added to `src/db/worksites.ts` per plan interface contract (Rule 3, committed with task 2); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-03-SUMMARY.md`; commits 894196a, f8baccf. WS-01, WS-02 done.
+- Plan 02-04 COMPLETE (2026-10-06): rewritten `src/app/(tabs)/workers.tsx` — header (Workers title + text-only primary Worksites entry → `/worksites`), All/per-site filter chips refetching via `listWorkers({ worksiteId })` on focus, memo rows (`name` + `role · site` via include-inactive name Map, `'—'` fallback) → `/worker-form?id=…`, exact §7.5 empty copy with Add worker action, single orange `+ Add worker` CTA in non-empty branch only; `tsc` exit 0, all grep gates pass (pre-existing watcher-corruption failure verified on clean HEAD before committing); SUMMARY at `.planning/phases/02-worksites-workers/02-04-SUMMARY.md`; commits 889526c, 0ae3fa0. WK-04 done.
 
 ## Decisions (carry into planning)
 
@@ -46,6 +47,7 @@
 - `WORKSITE_TYPES` lives in `src/db/worksites.ts` as a frozen `as const` tuple (plan 02-03 interface contract); screens import it, never re-declare the 5-type literal.
 - Form validation gates on `(triedSubmit || fieldTouched)` with the exact plan-specified error string passed as `FormField` error; touch tracking lives in the screen's `onChangeText` because the frozen `FormField` contract has no `onBlur` (plan 02-03).
 - Tampered `?id=` resolves via `getWorksite` and renders a no-action "not found" EmptyState — the raw param never reaches SQL or UI text (plan 02-03, T-02-07).
+- Worker-list CTA follows the 02-02 one-orange rule (footer CTA only in the non-empty branch; empty state carries its own accent action), and site names resolve via a display-only `listWorksites(true)` Map while chips/rows stay active-only (plan 02-04, T-02-10).
 
 ## Deferred Verification Debt
 
@@ -58,7 +60,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav + 02-02 worksite list + 02-03 worksite form done 2026-10-05/06; remaining: wave 2 (02-04, 02-05, 02-06) and wave 3 (02-07).
+`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav + 02-02 worksite list + 02-03 worksite form + 02-04 worker list done 2026-10-05/06; remaining: wave 2 (02-05, 02-06) and wave 3 (02-07).
 
 ## Notes
 
