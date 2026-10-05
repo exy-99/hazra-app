@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/empty-state';
 import { FormField } from '@/components/form-field';
 import { Radius, Spacing, Type } from '@/constants/theme';
-import { getWorker } from '@/db/workers';
+import { createWorker, getWorker, updateWorker } from '@/db/workers';
 import type { Worksite } from '@/db/types';
 import { listWorksites } from '@/db/worksites';
 import { useTheme } from '@/hooks/use-theme';
@@ -31,6 +31,7 @@ export default function WorkerFormScreen(): JSX.Element {
   const [role, setRole] = useState('');
   const [phone, setPhone] = useState('');
   const [sites, setSites] = useState<Worksite[]>([]);
+  const [triedSubmit, setTriedSubmit] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -76,8 +77,41 @@ export default function WorkerFormScreen(): JSX.Element {
   );
 
   const nameError =
-    nameTouched && name.trim() === '' ? 'Name is required' : '';
+    (triedSubmit || nameTouched) && name.trim() === ''
+      ? 'Name is required'
+      : '';
+  const siteError =
+    triedSubmit && !worksiteId ? 'Choose a worksite' : '';
   const showZeroState = editId === null && sites.length === 0;
+  const saveDisabled = sites.length === 0;
+
+  async function handleSave(): Promise<void> {
+    setTriedSubmit(true);
+    const trimmedName = name.trim();
+    if (trimmedName === '' || worksiteId === '') {
+      return;
+    }
+    const roleValue = role.trim() === '' ? null : role.trim();
+    const phoneValue = phone.trim() === '' ? null : phone.trim();
+    if (editId !== null) {
+      await updateWorker(editId, {
+        name: trimmedName,
+        worksite_id: worksiteId,
+        role: roleValue,
+        phone: phoneValue,
+      });
+    } else {
+      await createWorker({
+        name: trimmedName,
+        worksite_id: worksiteId,
+        role: roleValue,
+        phone: phoneValue,
+      });
+    }
+    router.back();
+  }
+
+  const saveLabel = editId !== null ? 'Save changes' : 'Add worker';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -185,6 +219,13 @@ export default function WorkerFormScreen(): JSX.Element {
                   })}
                 </View>
               )}
+              {siteError !== '' ? (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={[styles.siteError, { color: theme.destructive }]}>
+                  {siteError}
+                </Text>
+              ) : null}
             </View>
             <FormField
               label="Role (optional)"
@@ -200,6 +241,31 @@ export default function WorkerFormScreen(): JSX.Element {
               keyboardType="phone-pad"
               autoCapitalize="none"
             />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={saveLabel}
+              disabled={saveDisabled}
+              android_ripple={{ color: theme.onAccent }}
+              onPress={handleSave}
+              style={({ pressed }) => [
+                styles.save,
+                saveDisabled
+                  ? { backgroundColor: theme.muted }
+                  : { backgroundColor: theme.accent },
+                { opacity: pressed && !saveDisabled ? 0.85 : 1 },
+              ]}>
+              <Text
+                style={[
+                  styles.saveLabel,
+                  {
+                    color: saveDisabled
+                      ? theme.mutedForeground
+                      : theme.onAccent,
+                  },
+                ]}>
+                {saveLabel}
+              </Text>
+            </Pressable>
           </ScrollView>
         )}
       </SafeAreaView>
@@ -255,6 +321,10 @@ const styles = StyleSheet.create({
   selectedTag: {
     ...Type.caption,
   },
+  siteError: {
+    ...Type.caption,
+    marginTop: Spacing.two,
+  },
   zeroState: {
     gap: Spacing.two,
   },
@@ -269,5 +339,17 @@ const styles = StyleSheet.create({
   },
   zeroLinkLabel: {
     ...Type.label,
+  },
+  save: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    minHeight: 44,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
+  },
+  saveLabel: {
+    ...Type.label,
+    textAlign: 'center',
   },
 });
