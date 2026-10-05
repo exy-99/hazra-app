@@ -6,17 +6,17 @@
 
 ### Worksites (WS)
 
-- [ ] **WS-01**: Manager can add a worksite with name (required), type (Office/Construction/School/Farm/Other), and optional address.
-- [ ] **WS-02**: Manager can edit an existing worksite's details.
-- [ ] **WS-03**: Manager can remove a worksite via soft-delete — it disappears from active lists but historical attendance is preserved.
-- [ ] **WS-04**: Manager can view the list of all active worksites.
+- [x] **WS-01**: Manager can add a worksite with name (required), type (Office/Construction/School/Farm/Other), and optional address.
+- [x] **WS-02**: Manager can edit an existing worksite's details.
+- [x] **WS-03**: Manager can remove a worksite via soft-delete — it disappears from active lists but historical attendance is preserved.
+- [x] **WS-04**: Manager can view the list of all active worksites.
 
 ### Workers (WK)
 
-- [ ] **WK-01**: Manager can add a worker with name (required), assigned worksite (required), optional role and phone.
-- [ ] **WK-02**: Manager can edit an existing worker's details, including reassignment to another worksite.
-- [ ] **WK-03**: Manager can remove a worker via soft-delete — hidden from active lists, history preserved.
-- [ ] **WK-04**: Manager can view and filter the worker list by worksite.
+- [x] **WK-01**: Manager can add a worker with name (required), assigned worksite (required), optional role and phone.
+- [x] **WK-02**: Manager can edit an existing worker's details, including reassignment to another worksite.
+- [x] **WK-03**: Manager can remove a worker via soft-delete — hidden from active lists, history preserved.
+- [x] **WK-04**: Manager can view and filter the worker list by worksite.
 
 ### Attendance (AT)
 

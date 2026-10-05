@@ -31,6 +31,12 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 - NF-02 (local SQLite schema + DAOs), NF-05 (soft-delete, stable IDs, local date keys, `user_version` hook)
 - NF-01/NF-03 (offline, no-auth shell) at code level; on-device boot proof deferred to Phase 9
 
+### Validated in Phase 2: Worksites & Workers (2026-10-06)
+
+- WS-01..WS-04, WK-01..WK-04 — full roster workflow: root Stack + `(tabs)` group nav, worksite list with live counts, worksite/worker add-edit forms (frozen `FormField` contract), worker list with worksite filter, count-aware worksite remove + history-kept worker remove (frozen `ConfirmDialog` contract, soft-delete only)
+- Post-verification hardening: list-load error retry + form save re-entry guards (patterns to copy into Phase 3)
+- On-device roster/restart/remove proofs deferred to Phase 9
+
 ### Out of Scope
 
 - Employee-facing app / self check-in — single manager only
@@ -55,4 +61,4 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-10-03 after Phase 1 completion (data contract + tokens frozen; drills-down stubbed; device proofs deferred to Phase 9)*
+*Last updated: 2026-10-06 after Phase 2 completion (roster workflow built; FormField/ConfirmDialog contracts frozen; device proofs deferred to Phase 9)*

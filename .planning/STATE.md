@@ -26,6 +26,8 @@
 - Plan 02-05 COMPLETE (2026-10-06): rewritten `src/app/worker-form.tsx` — add/edit via `?id=`, `getWorker` prefill on focus, "Worker not found" EmptyState (Users icon, no action), name/role/phone FormFields (frozen contract, phone-pad), active-only worksite radio rows (default first active in add / current id in edit), zero-sites guidance → `/worksite-form` with Save disabled, exact `'Name is required'` / `'Choose a worksite'` gating, blanks → `null`, reassignment via same `updateWorker` call, single-accent orange Save → `router.back()`; legacy inactive `worksite_id` leaves selector unselected so save requires an active pick (T-02-15); `Worksite` type imported from `@/db/types` (Rule 1 fix); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-05-SUMMARY.md`; commits 65c7cbf, a7fb1c1. WK-01, WK-02 done.
 - Plan 02-06 COMPLETE (2026-10-06): shared `src/components/confirm-dialog.tsx` (frozen contract: visible/title/message/confirmLabel/onConfirm/onCancel; fade Modal, `onRequestClose` + backdrop-press cancel, `Radius.lg` card, text-only destructive confirm) + edit-mode Remove in `src/app/worksite-form.tsx` (live `listWorkers({ worksiteId })` count at press time, exact count-aware copy, confirm → `deactivateWorksite` → `router.back()`, zero DELETE SQL); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-06-SUMMARY.md`; commits 40fe351, d38b8a1. WS-03 done.
 - Plan 02-07 COMPLETE (2026-10-06): edit-mode Remove in `src/app/worker-form.tsx` (text-only `theme.destructive` below Save, frozen `ConfirmDialog` import, exact `"will disappear from lists, but their attendance history is kept."` copy, confirm → `deactivateWorker` → `router.back()`, zero DELETE SQL) + all six phase-wide gates pass (COVERAGE_OK strict-frontmatter 8/8 IDs, HEX 0, NET 0, DELETE 0, TOUCH 0, `tsc` exit 0; task 2 verification-only, no diff); SUMMARY at `.planning/phases/02-worksites-workers/02-07-SUMMARY.md`; commit 9a57e71. WK-03 done. Phase 2 COMPLETE (7/7 plans).
+- Plan 02-02 COMPLETE (2026-10-05): rewritten `src/app/worksites.tsx` — active-only `listWorksites()` + per-site `listWorkers({ worksiteId })` counts, memo FlatList rows (name/type/address/count), exact §7.5 "No worksites yet" empty state, row → `/worksite-form?id=…`, single orange `+ Add worksite` CTA; `tsc` exit 0; SUMMARY at `.planning/phases/02-worksites-workers/02-02-SUMMARY.md`; commits c603dd3, 941efdd. WS-04 done.
+- Phase 2 VERIFIED (2026-10-06): 02-VERIFICATION.md (15/15 must-haves, status human_needed, all 8 WS/WK IDs traced, zero orphans); 02-REVIEW.md (standard depth, 12 files, 2 critical/8 warnings/6 info); 02-HUMAN-UAT.md persists 4 on-device proofs (all deferred to Phase 9, no dev build). Post-verification, user chose fix-first: CR-01 fixed (both list screens gained `loadError` state — catch → "Couldn't load …" EmptyState with "Try again" retry, `void load()` floating-call discipline) + CR-02 fixed (both forms gained `saving` re-entry guard + try/catch with polite "Couldn't save — try again" error and "Saving…" label); WR-01 needed no fix (chip key already `__all__`-guarded). `tsc` exit 0, all plan gates re-pass (node equivalents), phase-wide HEX/NET/DELETE/TOUCH all 0; commit 4088df4. Regression fix: `scripts/verify-tab-shell.mjs` repointed at `(tabs)/` group paths after the 02-01 move (all 20 checks pass again); commit 9a3c8eb.
 
 ## Decisions (carry into planning)
 
@@ -57,11 +59,16 @@
 - `ConfirmDialog` backdrop Pressable wraps the card; nested action Pressables take precedence, and Remove-press ripple uses neutral `theme.muted` to avoid implying a filled destructive surface (plan 02-06).
 - Worker remove needs no live-count guard (unlike worksite remove): fixed history-kept copy shown directly on press, dialog renders only in edit mode (plan 02-07).
 - Phase-gate sweeps run as node one-liners on Windows PowerShell (no grep binary); assertions identical to plan grep gates (plan 02-07).
+- List-load failures render a "Couldn't load …" EmptyState with a "Try again" retry (error state, not empty state) and `load()` never rejects (catch-all inside; callers use `void load()`) — post-verification CR-01 fix, commit 4088df4. Copy this pattern into Phase 3 attendance screens.
+- Form saves carry a `saving` re-entry guard (double-tap safe) + try/catch surfacing a polite `theme.destructive` "Couldn't save — try again" error with a "Saving…" label — post-verification CR-02 fix, commit 4088df4. Copy into Phase 3.
+- The 02-03 `router.back() = 1` gate is stale after 02-06 (confirm-remove adds a second `router.back()`); correct expectation is now 2 in `worksite-form.tsx`.
+- Standing self-check scripts must track route moves: `scripts/verify-tab-shell.mjs` was repointed at `src/app/(tabs)/` after the 02-01 move (commit 9a3c8eb).
 
 ## Deferred Verification Debt
 
 - Plan 01-08 on-device proof deferred to Phase 9 (user-approved 2026-10-03): `__boot_probe__` row-survives-restart counts + airplane-mode boot check. No development build exists in this environment; execute the exact steps recorded in `.planning/phases/01-foundation/01-08-SUMMARY.md` ("Deferred Verification") once a dev build exists.
 - Plan 02-01 on-device proof deferred to Phase 9: drill-down push + always-visible back header check. Execute once a dev build exists (see `.planning/phases/02-worksites-workers/02-01-SUMMARY.md` "Next Phase Readiness").
+- Phase 2 roster proofs deferred to Phase 9 (verified statically 2026-10-06, no dev build; tracked in `.planning/phases/02-worksites-workers/02-HUMAN-UAT.md`): 2 worksites + 5 workers → restart restores with correct assignments/counts; worker remove hides from lists while history stays viewable; worksite remove states the live worker count with no cascade.
 
 ## Blockers
 
@@ -69,7 +76,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 2` — Phase 2 COMPLETE 2026-10-06 (7/7 plans: 02-01 nav + 02-02 worksite list + 02-03 worksite form + 02-04 worker list + 02-05 worker form + 02-06 worksite delete + 02-07 worker delete/phase gates). Next: Phase 3 (Attendance Marking) planning.
+`/gsd-discuss-phase 3` — Phase 2 COMPLETE 2026-10-06 (7/7 plans, 15/15 must-haves verified, CR-01/CR-02 fixed, 4 on-device proofs deferred to Phase 9). Next: Phase 3 (Attendance Marking) — discuss first (recommended), then plan, then execute.
 
 ## Notes
 
