@@ -47,7 +47,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-discuss-phase 2` — start here: discuss Phase 2 (Worksites & Workers) before planning.
+`/gsd-execute-phase 2` — execute Phase 2 (Worksites & Workers): 7 plans in 3 waves (wave 1: 02-01 nav, 02-02 worksite list, 02-03 worksite form; wave 2: 02-04 worker list, 02-05 worker form, 02-06 worksite delete; wave 3: 02-07 worker delete + gates). Planned 2026-10-05 without CONTEXT.md (no `/gsd-discuss-phase 2` run) — plans use requirements + codebase patterns only; design preferences default to design.md §7.4/§7.5. Key planner decision: 02-01 restructures tabs into a `(tabs)` group + root Stack (Expo docs pattern) so drill-downs can push; tab URLs unchanged.
 
 ## Notes
 

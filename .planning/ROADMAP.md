@@ -56,6 +56,17 @@
 
 **UI hint:** yes
 
+**Plans:** 7 plans
+
+**Plan progress:**
+- [ ] 02-01 nav foundation — (tabs) group + root Stack (reachability for WS-04, WK-04)
+- [ ] 02-02 worksite list + counts (WS-04)
+- [ ] 02-03 worksite form + FormField (WS-01, WS-02)
+- [ ] 02-04 worker list + worksite filter (WK-04)
+- [ ] 02-05 worker form + reassign (WK-01, WK-02)
+- [ ] 02-06 worksite delete + ConfirmDialog (WS-03)
+- [ ] 02-07 worker delete + phase gates (WK-03)
+
 ---
 
 ## Phase 3: Attendance Marking
