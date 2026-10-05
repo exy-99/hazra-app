@@ -70,8 +70,10 @@ export default function WorksitesScreen() {
   const [sites, setSites] = useState<Worksite[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   async function load() {
+    setLoadError(false);
     try {
       const rows = await listWorksites();
       const entries = await Promise.all(
@@ -82,6 +84,8 @@ export default function WorksitesScreen() {
       );
       setSites(rows);
       setCounts(Object.fromEntries(entries));
+    } catch {
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -89,9 +93,14 @@ export default function WorksitesScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      void load();
     }, []),
   );
+
+  function retry() {
+    setLoading(true);
+    void load();
+  }
 
   function goToAdd() {
     router.push('/worksite-form');
@@ -111,6 +120,15 @@ export default function WorksitesScreen() {
             color={theme.primary}
             style={styles.loader}
           />
+        ) : loadError ? (
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              icon={Building2}
+              title="Couldn't load worksites"
+              actionLabel="Try again"
+              onAction={retry}
+            />
+          </View>
         ) : sites.length === 0 ? (
           <View style={styles.emptyWrap}>
             <EmptyState

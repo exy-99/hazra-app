@@ -79,8 +79,10 @@ export default function WorkersScreen() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   async function load() {
+    setLoadError(false);
     try {
       const [active, all] = await Promise.all([
         listWorksites(),
@@ -92,6 +94,8 @@ export default function WorkersScreen() {
       setSites(active);
       setSiteNames(new Map(all.map((site) => [site.id, site.name] as const)));
       setWorkers(rows);
+    } catch {
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -99,9 +103,14 @@ export default function WorkersScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      void load();
     }, [selectedSite]),
   );
+
+  function retry() {
+    setLoading(true);
+    void load();
+  }
 
   function goToAdd() {
     router.push('/worker-form');
@@ -189,6 +198,15 @@ export default function WorkersScreen() {
             color={theme.primary}
             style={styles.loader}
           />
+        ) : loadError ? (
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              icon={Users}
+              title="Couldn't load workers"
+              actionLabel="Try again"
+              onAction={retry}
+            />
+          </View>
         ) : workers.length === 0 ? (
           <View style={styles.emptyWrap}>
             <EmptyState

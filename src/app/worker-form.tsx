@@ -41,6 +41,8 @@ export default function WorkerFormScreen(): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -93,29 +95,40 @@ export default function WorkerFormScreen(): JSX.Element {
   const saveDisabled = sites.length === 0;
 
   async function handleSave(): Promise<void> {
+    if (saving) {
+      return;
+    }
     setTriedSubmit(true);
     const trimmedName = name.trim();
     if (trimmedName === '' || worksiteId === '') {
       return;
     }
-    const roleValue = role.trim() === '' ? null : role.trim();
-    const phoneValue = phone.trim() === '' ? null : phone.trim();
-    if (editId !== null) {
-      await updateWorker(editId, {
-        name: trimmedName,
-        worksite_id: worksiteId,
-        role: roleValue,
-        phone: phoneValue,
-      });
-    } else {
-      await createWorker({
-        name: trimmedName,
-        worksite_id: worksiteId,
-        role: roleValue,
-        phone: phoneValue,
-      });
+    setSaving(true);
+    setSaveError('');
+    try {
+      const roleValue = role.trim() === '' ? null : role.trim();
+      const phoneValue = phone.trim() === '' ? null : phone.trim();
+      if (editId !== null) {
+        await updateWorker(editId, {
+          name: trimmedName,
+          worksite_id: worksiteId,
+          role: roleValue,
+          phone: phoneValue,
+        });
+      } else {
+        await createWorker({
+          name: trimmedName,
+          worksite_id: worksiteId,
+          role: roleValue,
+          phone: phoneValue,
+        });
+      }
+      router.back();
+    } catch {
+      setSaveError("Couldn't save — try again");
+    } finally {
+      setSaving(false);
     }
-    router.back();
   }
 
   const saveLabel = editId !== null ? 'Save changes' : 'Add worker';
@@ -257,10 +270,17 @@ export default function WorkerFormScreen(): JSX.Element {
               keyboardType="phone-pad"
               autoCapitalize="none"
             />
+            {saveError !== '' ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={[styles.saveError, { color: theme.destructive }]}>
+                {saveError}
+              </Text>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={saveLabel}
-              disabled={saveDisabled}
+              disabled={saveDisabled || saving}
               android_ripple={{ color: theme.onAccent }}
               onPress={handleSave}
               style={({ pressed }) => [
@@ -268,7 +288,7 @@ export default function WorkerFormScreen(): JSX.Element {
                 saveDisabled
                   ? { backgroundColor: theme.muted }
                   : { backgroundColor: theme.accent },
-                { opacity: pressed && !saveDisabled ? 0.85 : 1 },
+                { opacity: pressed && !saveDisabled && !saving ? 0.85 : 1 },
               ]}>
               <Text
                 style={[
@@ -279,7 +299,7 @@ export default function WorkerFormScreen(): JSX.Element {
                       : theme.onAccent,
                   },
                 ]}>
-                {saveLabel}
+                {saving ? 'Saving…' : saveLabel}
               </Text>
             </Pressable>
             {editId !== null ? (
@@ -392,6 +412,9 @@ const styles = StyleSheet.create({
   saveLabel: {
     ...Type.label,
     textAlign: 'center',
+  },
+  saveError: {
+    ...Type.caption,
   },
   remove: {
     alignItems: 'center',

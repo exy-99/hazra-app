@@ -40,6 +40,8 @@ export default function WorksiteFormScreen(): JSX.Element {
   const [notFound, setNotFound] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [workerCount, setWorkerCount] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -71,23 +73,34 @@ export default function WorksiteFormScreen(): JSX.Element {
     (triedSubmit || nameTouched) && name.trim() === '' ? 'Name is required' : '';
 
   async function handleSave(): Promise<void> {
+    if (saving) {
+      return;
+    }
     setTriedSubmit(true);
     const trimmedName = name.trim();
     if (trimmedName === '') {
       return;
     }
-    const trimmedAddress = address.trim();
-    const addressValue = trimmedAddress === '' ? null : trimmedAddress;
-    if (editId !== null) {
-      await updateWorksite(editId, {
-        name: trimmedName,
-        type,
-        address: addressValue,
-      });
-    } else {
-      await createWorksite({ name: trimmedName, type, address: addressValue });
+    setSaving(true);
+    setSaveError('');
+    try {
+      const trimmedAddress = address.trim();
+      const addressValue = trimmedAddress === '' ? null : trimmedAddress;
+      if (editId !== null) {
+        await updateWorksite(editId, {
+          name: trimmedName,
+          type,
+          address: addressValue,
+        });
+      } else {
+        await createWorksite({ name: trimmedName, type, address: addressValue });
+      }
+      router.back();
+    } catch {
+      setSaveError("Couldn't save — try again");
+    } finally {
+      setSaving(false);
     }
-    router.back();
   }
 
   const saveLabel = editId !== null ? 'Save changes' : 'Add worksite';
@@ -194,20 +207,28 @@ export default function WorksiteFormScreen(): JSX.Element {
               onChangeText={setAddress}
               keyboardType="default"
             />
+            {saveError !== '' ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={[styles.saveError, { color: theme.destructive }]}>
+                {saveError}
+              </Text>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={saveLabel}
+              disabled={saving}
               android_ripple={{ color: theme.onAccent }}
               onPress={handleSave}
               style={({ pressed }) => [
                 styles.save,
                 {
                   backgroundColor: theme.accent,
-                  opacity: pressed ? 0.85 : 1,
+                  opacity: pressed && !saving ? 0.85 : 1,
                 },
               ]}>
               <Text style={[styles.saveLabel, { color: theme.onAccent }]}>
-                {saveLabel}
+                {saving ? 'Saving…' : saveLabel}
               </Text>
             </Pressable>
             {editId !== null ? (
@@ -295,6 +316,9 @@ const styles = StyleSheet.create({
   saveLabel: {
     ...Type.label,
     textAlign: 'center',
+  },
+  saveError: {
+    ...Type.caption,
   },
   remove: {
     alignItems: 'center',
