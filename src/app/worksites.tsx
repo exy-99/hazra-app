@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { Building2 } from 'lucide-react-native';
+import { Building2, Plus } from 'lucide-react-native';
 import { memo, useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,9 +14,11 @@ import { useTheme } from '@/hooks/use-theme';
 const WorksiteRow = memo(function WorksiteRow({
   site,
   count,
+  onPress,
 }: {
   site: Worksite;
   count: number;
+  onPress: () => void;
 }): React.JSX.Element {
   const theme = useTheme();
 
@@ -24,6 +26,7 @@ const WorksiteRow = memo(function WorksiteRow({
     <Pressable
       accessibilityLabel={`Edit ${site.name}`}
       android_ripple={{ color: theme.muted }}
+      onPress={onPress}
       style={({ pressed }) => [
         styles.card,
         {
@@ -42,6 +45,25 @@ const WorksiteRow = memo(function WorksiteRow({
     </Pressable>
   );
 });
+
+function AddWorksiteButton({ onPress }: { onPress: () => void }): React.JSX.Element {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Add worksite"
+      android_ripple={{ color: theme.onAccent }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.cta,
+        { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
+      ]}>
+      <Plus size={20} color={theme.onAccent} />
+      <Text style={[styles.ctaLabel, { color: theme.onAccent }]}>+ Add worksite</Text>
+    </Pressable>
+  );
+}
 
 export default function WorksitesScreen() {
   const theme = useTheme();
@@ -75,6 +97,10 @@ export default function WorksitesScreen() {
     router.push('/worksite-form');
   }
 
+  function goToEdit(id: string) {
+    router.push({ pathname: '/worksite-form', params: { id } });
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
@@ -86,21 +112,32 @@ export default function WorksitesScreen() {
             style={styles.loader}
           />
         ) : sites.length === 0 ? (
-          <EmptyState
-            icon={Building2}
-            title="No worksites yet"
-            actionLabel="Add worksite"
-            onAction={goToAdd}
-          />
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              icon={Building2}
+              title="No worksites yet"
+              actionLabel="Add worksite"
+              onAction={goToAdd}
+            />
+          </View>
         ) : (
-          <FlatList
-            data={sites}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => (
-              <WorksiteRow site={item} count={counts[item.id] ?? 0} />
-            )}
-          />
+          <View style={styles.listWrap}>
+            <FlatList
+              data={sites}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.listContent}
+              renderItem={({ item }) => (
+                <WorksiteRow
+                  site={item}
+                  count={counts[item.id] ?? 0}
+                  onPress={() => goToEdit(item.id)}
+                />
+              )}
+            />
+            <View style={styles.footer}>
+              <AddWorksiteButton onPress={goToAdd} />
+            </View>
+          </View>
         )}
       </SafeAreaView>
     </View>
@@ -115,20 +152,44 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: Spacing.three,
     maxWidth: 800,
   },
   title: {
     ...Type.h1,
+    paddingHorizontal: Spacing.three,
   },
   loader: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  emptyWrap: {
+    flex: 1,
+    paddingHorizontal: Spacing.three,
+  },
+  listWrap: {
+    flex: 1,
+  },
   listContent: {
     gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
     paddingBottom: Spacing.three,
+  },
+  footer: {
+    padding: Spacing.three,
+  },
+  cta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    minHeight: 44,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
+  },
+  ctaLabel: {
+    ...Type.label,
+    textAlign: 'center',
   },
   card: {
     minHeight: 44,
