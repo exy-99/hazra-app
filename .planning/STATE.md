@@ -20,6 +20,7 @@
 - Plan 01-05 COMPLETE (2026-10-03): worksite + worker DAOs in `src/db/worksites.ts` (list/get/create/update/deactivate, soft delete, parameterized) + `src/db/workers.ts` (same plus worksiteId filter and worksite_id reassignment); `tsc` exit 0, no DELETE in either file; SUMMARY at `.planning/phases/01-foundation/01-05-SUMMARY.md`; commits 0f966d5, 8603c5d. NF-05 done.
 - Plan 01-06 COMPLETE (2026-10-03): attendance DAO in `src/db/attendance.ts` (single-statement upsertAttendance via ON CONFLICT(worker_id,date), getAttendanceForDate LEFT JOIN with null-status unmarked, getAttendanceForWorker from/to history, getDailyCounts with derived unmarked and off_day separate); `tsc` exit 0; SUMMARY at `.planning/phases/01-foundation/01-06-SUMMARY.md`; commits ab78606, c64cfa9. NF-05 done.
 - Plan 01-08 COMPLETE (2026-10-03): six drill-down placeholders (`src/app/worksites.tsx`, `src/app/worker/[id].tsx` echoing id, `src/app/worksite-form.tsx`, `src/app/worker-form.tsx`, `src/app/export.tsx`, `src/app/backup.tsx`), SQLite once-only init in `src/app/_layout.tsx` (module `initialized` guard, splash hide in `finally` with double-hide catch, `dbError` screen), shared flat `EmptyState` in `src/components/empty-state.tsx`; `tsc` exit 0, phase-wide no-hex/no-network gates pass; SUMMARY at `.planning/phases/01-foundation/01-08-SUMMARY.md`; commits 6194ffc, d2d2364, ebd0c15. DS-02, NF-01, NF-02, NF-05 automated acceptance done; on-device `__boot_probe__` restart proof + airplane-mode boot DEFERRED to Phase 9 by user approval (no dev build in this environment).
+- Plan 02-01 COMPLETE (2026-10-06): nav foundation — four tab routes moved with `git mv` into `src/app/(tabs)/` + `(tabs)/_layout.tsx` rendering `AppTabs`; root `src/app/_layout.tsx` renders theme-driven `<Stack>` (`(tabs)` headerless + 6 titled drill-down screens); db gate/splash/retry untouched; `tsc` exit 0; SUMMARY at `.planning/phases/02-worksites-workers/02-01-SUMMARY.md`; commits 927aed3, aafd150. WS-04/WK-04 reachability done; on-device push/back-header proof DEFERRED to Phase 9 (no dev build).
 
 ## Decisions (carry into planning)
 
@@ -36,10 +37,13 @@
 - `EmptyState` action button renders only when both `actionLabel` and `onAction` are provided — no dead affordances (plan 01-08).
 - `worker/[id]` param stays a display string at the route boundary; later DAOs must bind it as a `?` parameter, never interpolate (plan 01-08, T-08-01).
 - Plan 01-08 marked complete on automated gates by user approval (2026-10-03): the on-device `__boot_probe__` persistence proof + airplane-mode boot check are deferred verification debt for Phase 9, when a development build exists.
+- Root navigation is a `<Stack>` hosting a URL-transparent `(tabs)` group (plan 02-01): drill-downs push with theme-driven headers; tab screens stay headerless. `(tabs)/index.tsx` keeps URL `/` per versioned Expo docs.
+- On Windows, the background `expo start` file-watcher regen of `.expo/types/router.d.ts` emits backslash-mixed context keys, dropping `/` for `/index` and breaking `tsc` on hrefs after any route add/delete (plan 02-01). Workaround: re-run `regenerateDeclarations()` from `@expo/router-server/build/typed-routes` in node (forward-slash context, same as server-start generation). Modify-only edits do not trigger watcher regen.
 
 ## Deferred Verification Debt
 
 - Plan 01-08 on-device proof deferred to Phase 9 (user-approved 2026-10-03): `__boot_probe__` row-survives-restart counts + airplane-mode boot check. No development build exists in this environment; execute the exact steps recorded in `.planning/phases/01-foundation/01-08-SUMMARY.md` ("Deferred Verification") once a dev build exists.
+- Plan 02-01 on-device proof deferred to Phase 9: drill-down push + always-visible back header check. Execute once a dev build exists (see `.planning/phases/02-worksites-workers/02-01-SUMMARY.md` "Next Phase Readiness").
 
 ## Blockers
 
@@ -47,7 +51,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 2` — execute Phase 2 (Worksites & Workers): 7 plans in 3 waves (wave 1: 02-01 nav, 02-02 worksite list, 02-03 worksite form; wave 2: 02-04 worker list, 02-05 worker form, 02-06 worksite delete; wave 3: 02-07 worker delete + gates). Planned 2026-10-05 without CONTEXT.md (no `/gsd-discuss-phase 2` run) — plans use requirements + codebase patterns only; design preferences default to design.md §7.4/§7.5. Key planner decision: 02-01 restructures tabs into a `(tabs)` group + root Stack (Expo docs pattern) so drill-downs can push; tab URLs unchanged.
+`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav done 2026-10-06; remaining wave 1: 02-02 worksite list, 02-03 worksite form; then wave 2 (02-04, 02-05, 02-06) and wave 3 (02-07).
 
 ## Notes
 

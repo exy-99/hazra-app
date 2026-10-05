@@ -59,7 +59,7 @@
 **Plans:** 7 plans
 
 **Plan progress:**
-- [ ] 02-01 nav foundation — (tabs) group + root Stack (reachability for WS-04, WK-04)
+- [x] 02-01 nav foundation — (tabs) group + root Stack (reachability for WS-04, WK-04) — done 2026-10-06
 - [ ] 02-02 worksite list + counts (WS-04)
 - [ ] 02-03 worksite form + FormField (WS-01, WS-02)
 - [ ] 02-04 worker list + worksite filter (WK-04)
