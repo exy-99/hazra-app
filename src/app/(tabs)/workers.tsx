@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { Building2, Users } from 'lucide-react-native';
+import { Building2, Plus, Users } from 'lucide-react-native';
 import { memo, useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -52,6 +52,25 @@ const WorkerRow = memo(function WorkerRow({
     </Pressable>
   );
 });
+
+function AddWorkerButton({ onPress }: { onPress: () => void }): React.JSX.Element {
+  const theme = useTheme();
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Add worker"
+      android_ripple={{ color: theme.onAccent }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.cta,
+        { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
+      ]}>
+      <Plus size={20} color={theme.onAccent} />
+      <Text style={[styles.ctaLabel, { color: theme.onAccent }]}>+ Add worker</Text>
+    </Pressable>
+  );
+}
 
 export default function WorkersScreen() {
   const theme = useTheme();
@@ -193,6 +212,9 @@ export default function WorkersScreen() {
                 />
               )}
             />
+            <View style={styles.footer}>
+              <AddWorkerButton onPress={goToAdd} />
+            </View>
           </View>
         )}
       </SafeAreaView>
@@ -255,6 +277,22 @@ const styles = StyleSheet.create({
   },
   listWrap: {
     flex: 1,
+  },
+  footer: {
+    padding: Spacing.three,
+  },
+  cta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    minHeight: 44,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
+  },
+  ctaLabel: {
+    ...Type.label,
+    textAlign: 'center',
   },
   listContent: {
     gap: Spacing.two,
