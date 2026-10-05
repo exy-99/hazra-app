@@ -2,6 +2,8 @@ import { getDb } from '@/db/index';
 import type { Worksite } from '@/db/types';
 import { newId } from '@/utils/ids';
 
+export const WORKSITE_TYPES = ['Office', 'Construction', 'School', 'Farm', 'Other'] as const;
+
 export async function listWorksites(includeInactive = false): Promise<Worksite[]> {
   const db = getDb();
   if (includeInactive) {
