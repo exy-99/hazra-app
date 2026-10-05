@@ -65,7 +65,7 @@
 - [x] 02-04 worker list + worksite filter (WK-04) — done 2026-10-06
 - [x] 02-05 worker form + reassign (WK-01, WK-02) — done 2026-10-06
 - [x] 02-06 worksite delete + ConfirmDialog (WS-03) — done 2026-10-06
-- [ ] 02-07 worker delete + phase gates (WK-03)
+- [x] 02-07 worker delete + phase gates (WK-03) — done 2026-10-06
 
 ---
 

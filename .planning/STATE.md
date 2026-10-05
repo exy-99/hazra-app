@@ -2,8 +2,8 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 2 — Worksites & Workers
-**Status:** Complete — Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9)
-**Last updated:** 2026-10-03
+**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9)
+**Last updated:** 2026-10-06
 
 ## Position
 
@@ -25,6 +25,7 @@
 - Plan 02-04 COMPLETE (2026-10-06): rewritten `src/app/(tabs)/workers.tsx` — header (Workers title + text-only primary Worksites entry → `/worksites`), All/per-site filter chips refetching via `listWorkers({ worksiteId })` on focus, memo rows (`name` + `role · site` via include-inactive name Map, `'—'` fallback) → `/worker-form?id=…`, exact §7.5 empty copy with Add worker action, single orange `+ Add worker` CTA in non-empty branch only; `tsc` exit 0, all grep gates pass (pre-existing watcher-corruption failure verified on clean HEAD before committing); SUMMARY at `.planning/phases/02-worksites-workers/02-04-SUMMARY.md`; commits 889526c, 0ae3fa0. WK-04 done.
 - Plan 02-05 COMPLETE (2026-10-06): rewritten `src/app/worker-form.tsx` — add/edit via `?id=`, `getWorker` prefill on focus, "Worker not found" EmptyState (Users icon, no action), name/role/phone FormFields (frozen contract, phone-pad), active-only worksite radio rows (default first active in add / current id in edit), zero-sites guidance → `/worksite-form` with Save disabled, exact `'Name is required'` / `'Choose a worksite'` gating, blanks → `null`, reassignment via same `updateWorker` call, single-accent orange Save → `router.back()`; legacy inactive `worksite_id` leaves selector unselected so save requires an active pick (T-02-15); `Worksite` type imported from `@/db/types` (Rule 1 fix); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-05-SUMMARY.md`; commits 65c7cbf, a7fb1c1. WK-01, WK-02 done.
 - Plan 02-06 COMPLETE (2026-10-06): shared `src/components/confirm-dialog.tsx` (frozen contract: visible/title/message/confirmLabel/onConfirm/onCancel; fade Modal, `onRequestClose` + backdrop-press cancel, `Radius.lg` card, text-only destructive confirm) + edit-mode Remove in `src/app/worksite-form.tsx` (live `listWorkers({ worksiteId })` count at press time, exact count-aware copy, confirm → `deactivateWorksite` → `router.back()`, zero DELETE SQL); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-06-SUMMARY.md`; commits 40fe351, d38b8a1. WS-03 done.
+- Plan 02-07 COMPLETE (2026-10-06): edit-mode Remove in `src/app/worker-form.tsx` (text-only `theme.destructive` below Save, frozen `ConfirmDialog` import, exact `"will disappear from lists, but their attendance history is kept."` copy, confirm → `deactivateWorker` → `router.back()`, zero DELETE SQL) + all six phase-wide gates pass (COVERAGE_OK strict-frontmatter 8/8 IDs, HEX 0, NET 0, DELETE 0, TOUCH 0, `tsc` exit 0; task 2 verification-only, no diff); SUMMARY at `.planning/phases/02-worksites-workers/02-07-SUMMARY.md`; commit 9a57e71. WK-03 done. Phase 2 COMPLETE (7/7 plans).
 
 ## Decisions (carry into planning)
 
@@ -54,6 +55,8 @@
 - Edit-mode prefill uses the worker's `worksite_id` only when it matches a DAO-loaded active site; a legacy inactive id leaves the selector unselected so the save gate enforces picking an active site while DB history stays intact (plan 02-05, T-02-15).
 - Destructive confirms are text-only (`theme.destructive` text, never a filled background) with Cancel/back/backdrop all aborting; guard counts are queried live at press time, never passed as stale props (plan 02-06, T-02-16).
 - `ConfirmDialog` backdrop Pressable wraps the card; nested action Pressables take precedence, and Remove-press ripple uses neutral `theme.muted` to avoid implying a filled destructive surface (plan 02-06).
+- Worker remove needs no live-count guard (unlike worksite remove): fixed history-kept copy shown directly on press, dialog renders only in edit mode (plan 02-07).
+- Phase-gate sweeps run as node one-liners on Windows PowerShell (no grep binary); assertions identical to plan grep gates (plan 02-07).
 
 ## Deferred Verification Debt
 
@@ -66,7 +69,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav + 02-02 worksite list + 02-03 worksite form + 02-04 worker list + 02-05 worker form + 02-06 worksite delete done 2026-10-05/06; remaining: wave 3 (02-07).
+`/gsd-execute-phase 2` — Phase 2 COMPLETE 2026-10-06 (7/7 plans: 02-01 nav + 02-02 worksite list + 02-03 worksite form + 02-04 worker list + 02-05 worker form + 02-06 worksite delete + 02-07 worker delete/phase gates). Next: Phase 3 (Attendance Marking) planning.
 
 ## Notes
 
