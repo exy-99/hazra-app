@@ -17,26 +17,26 @@ eq(count('src/components/app-tabs.web.tsx', 'href="/workers"'), 1, 'web workers'
 eq(count('src/components/app-tabs.web.tsx', 'href="/reports"'), 1, 'web reports');
 eq(count('src/components/app-tabs.web.tsx', 'Expo Starter'), 0, 'web no brand');
 eq(count('src/components/app-tabs.web.tsx', 'docs.expo.dev'), 0, 'web no docs');
-eq(count('src/app/index.tsx', 'Welcome to'), 0, 'home no starter');
+eq(count('src/app/(tabs)/index.tsx', 'Welcome to'), 0, 'home no starter');
 for (const f of ['attendance', 'workers', 'reports']) {
-  const ok = existsSync('src/app/' + f + '.tsx');
+  const ok = existsSync('src/app/(tabs)/' + f + '.tsx');
   console.log((ok ? 'PASS' : 'FAIL') + ' exists ' + f);
   if (!ok) fail = true;
 }
 console.log(!existsSync('src/app/explore.tsx') ? 'PASS explore deleted' : 'FAIL explore exists');
 if (existsSync('src/app/explore.tsx')) fail = true;
-for (const f of ['src/app/attendance.tsx', 'src/app/workers.tsx', 'src/app/reports.tsx']) {
+for (const f of ['src/app/(tabs)/attendance.tsx', 'src/app/(tabs)/workers.tsx', 'src/app/(tabs)/reports.tsx']) {
   const n = count(f, 'useTheme');
   console.log((n >= 1 ? 'PASS' : 'FAIL') + ' useTheme in ' + f + ' = ' + n);
   if (n < 1) fail = true;
 }
 let fetchCount = 0;
-for (const f of ['src/app/attendance.tsx', 'src/app/workers.tsx', 'src/app/reports.tsx', 'src/app/index.tsx']) {
+for (const f of ['src/app/(tabs)/attendance.tsx', 'src/app/(tabs)/workers.tsx', 'src/app/(tabs)/reports.tsx', 'src/app/(tabs)/index.tsx']) {
   fetchCount += count(f, 'fetch\\(');
 }
 eq(fetchCount, 0, 'no fetch(');
 let hex = 0;
-for (const f of ['src/components/app-tabs.tsx', 'src/components/app-tabs.web.tsx', 'src/app/index.tsx', 'src/app/attendance.tsx', 'src/app/workers.tsx', 'src/app/reports.tsx']) {
+for (const f of ['src/components/app-tabs.tsx', 'src/components/app-tabs.web.tsx', 'src/app/(tabs)/index.tsx', 'src/app/(tabs)/attendance.tsx', 'src/app/(tabs)/workers.tsx', 'src/app/(tabs)/reports.tsx']) {
   hex += count(f, '#[0-9a-fA-F]{3,8}');
 }
 eq(hex, 0, 'no hardcoded hex');
