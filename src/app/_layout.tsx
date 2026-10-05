@@ -1,10 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
 import { Spacing, Type } from '@/constants/theme';
 import { initDatabase } from '@/db/index';
 import { useTheme } from '@/hooks/use-theme';
@@ -62,7 +61,21 @@ export default function TabLayout() {
           </Pressable>
         </View>
       ) : dbReady ? (
-        <AppTabs />
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: theme.surface },
+            headerTintColor: theme.primary,
+            headerTitleStyle: { ...Type.h2, color: theme.foreground },
+            contentStyle: { backgroundColor: theme.background },
+          }}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="worksites" options={{ title: 'Worksites' }} />
+          <Stack.Screen name="worksite-form" options={{ title: 'Worksite' }} />
+          <Stack.Screen name="worker-form" options={{ title: 'Worker' }} />
+          <Stack.Screen name="worker/[id]" options={{ title: 'Worker' }} />
+          <Stack.Screen name="export" options={{ title: 'Export' }} />
+          <Stack.Screen name="backup" options={{ title: 'Backup' }} />
+        </Stack>
       ) : null}
     </ThemeProvider>
   );
