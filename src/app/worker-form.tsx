@@ -13,9 +13,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/empty-state';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormField } from '@/components/form-field';
 import { Radius, Spacing, Type } from '@/constants/theme';
-import { createWorker, getWorker, updateWorker } from '@/db/workers';
+import {
+  createWorker,
+  deactivateWorker,
+  getWorker,
+  updateWorker,
+} from '@/db/workers';
 import type { Worksite } from '@/db/types';
 import { listWorksites } from '@/db/worksites';
 import { useTheme } from '@/hooks/use-theme';
@@ -34,6 +40,7 @@ export default function WorkerFormScreen(): JSX.Element {
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -112,6 +119,15 @@ export default function WorkerFormScreen(): JSX.Element {
   }
 
   const saveLabel = editId !== null ? 'Save changes' : 'Add worker';
+
+  async function handleConfirmRemove(): Promise<void> {
+    if (editId === null) {
+      return;
+    }
+    await deactivateWorker(editId);
+    setConfirmVisible(false);
+    router.back();
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -266,6 +282,31 @@ export default function WorkerFormScreen(): JSX.Element {
                 {saveLabel}
               </Text>
             </Pressable>
+            {editId !== null ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Remove worker"
+                android_ripple={{ color: theme.muted }}
+                onPress={() => setConfirmVisible(true)}
+                style={({ pressed }) => [
+                  styles.remove,
+                  { opacity: pressed ? 0.85 : 1 },
+                ]}>
+                <Text style={[styles.removeLabel, { color: theme.destructive }]}>
+                  Remove worker
+                </Text>
+              </Pressable>
+            ) : null}
+            {editId !== null ? (
+              <ConfirmDialog
+                visible={confirmVisible}
+                title={`Remove ${name.trim()}`}
+                message={`${name.trim()} will disappear from lists, but their attendance history is kept.`}
+                confirmLabel="Remove"
+                onConfirm={handleConfirmRemove}
+                onCancel={() => setConfirmVisible(false)}
+              />
+            ) : null}
           </ScrollView>
         )}
       </SafeAreaView>
@@ -349,6 +390,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   saveLabel: {
+    ...Type.label,
+    textAlign: 'center',
+  },
+  remove: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    marginTop: Spacing.three,
+  },
+  removeLabel: {
     ...Type.label,
     textAlign: 'center',
   },
