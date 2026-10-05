@@ -21,6 +21,7 @@
 - Plan 01-06 COMPLETE (2026-10-03): attendance DAO in `src/db/attendance.ts` (single-statement upsertAttendance via ON CONFLICT(worker_id,date), getAttendanceForDate LEFT JOIN with null-status unmarked, getAttendanceForWorker from/to history, getDailyCounts with derived unmarked and off_day separate); `tsc` exit 0; SUMMARY at `.planning/phases/01-foundation/01-06-SUMMARY.md`; commits ab78606, c64cfa9. NF-05 done.
 - Plan 01-08 COMPLETE (2026-10-03): six drill-down placeholders (`src/app/worksites.tsx`, `src/app/worker/[id].tsx` echoing id, `src/app/worksite-form.tsx`, `src/app/worker-form.tsx`, `src/app/export.tsx`, `src/app/backup.tsx`), SQLite once-only init in `src/app/_layout.tsx` (module `initialized` guard, splash hide in `finally` with double-hide catch, `dbError` screen), shared flat `EmptyState` in `src/components/empty-state.tsx`; `tsc` exit 0, phase-wide no-hex/no-network gates pass; SUMMARY at `.planning/phases/01-foundation/01-08-SUMMARY.md`; commits 6194ffc, d2d2364, ebd0c15. DS-02, NF-01, NF-02, NF-05 automated acceptance done; on-device `__boot_probe__` restart proof + airplane-mode boot DEFERRED to Phase 9 by user approval (no dev build in this environment).
 - Plan 02-01 COMPLETE (2026-10-06): nav foundation — four tab routes moved with `git mv` into `src/app/(tabs)/` + `(tabs)/_layout.tsx` rendering `AppTabs`; root `src/app/_layout.tsx` renders theme-driven `<Stack>` (`(tabs)` headerless + 6 titled drill-down screens); db gate/splash/retry untouched; `tsc` exit 0; SUMMARY at `.planning/phases/02-worksites-workers/02-01-SUMMARY.md`; commits 927aed3, aafd150. WS-04/WK-04 reachability done; on-device push/back-header proof DEFERRED to Phase 9 (no dev build).
+- Plan 02-02 COMPLETE (2026-10-05): worksite list screen — rewritten `src/app/worksites.tsx` (active-only `listWorksites()` + live per-site counts via `listWorkers({ worksiteId })`, `useFocusEffect` refetch, memo `FlatList` cards, §7.5 "No worksites yet" empty state, row→`/worksite-form?id=…`, single orange "+ Add worksite" CTA in non-empty branch only); `tsc` exit 0, all grep gates pass; SUMMARY at `.planning/phases/02-worksites-workers/02-02-SUMMARY.md`; commits c603dd3, 941efdd. WS-04 done.
 
 ## Decisions (carry into planning)
 
@@ -38,7 +39,10 @@
 - `worker/[id]` param stays a display string at the route boundary; later DAOs must bind it as a `?` parameter, never interpolate (plan 01-08, T-08-01).
 - Plan 01-08 marked complete on automated gates by user approval (2026-10-03): the on-device `__boot_probe__` persistence proof + airplane-mode boot check are deferred verification debt for Phase 9, when a development build exists.
 - Root navigation is a `<Stack>` hosting a URL-transparent `(tabs)` group (plan 02-01): drill-downs push with theme-driven headers; tab screens stay headerless. `(tabs)/index.tsx` keeps URL `/` per versioned Expo docs.
-- On Windows, the background `expo start` file-watcher regen of `.expo/types/router.d.ts` emits backslash-mixed context keys, dropping `/` for `/index` and breaking `tsc` on hrefs after any route add/delete (plan 02-01). Workaround: re-run `regenerateDeclarations()` from `@expo/router-server/build/typed-routes` in node (forward-slash context, same as server-start generation). Modify-only edits do not trigger watcher regen.
+- List screens refetch on every focus via `useFocusEffect(useCallback(...))` so form saves reflect immediately; worker counts stay derived live via `listWorkers({ worksiteId })`, never cached (plan 02-02).
+- One orange action per screen state: the worksite-list CTA renders only in the non-empty branch because the empty state carries its own accent action (plan 02-02).
+- List-screen 16px gutters live on title/list/footer individually, not on `SafeAreaView` padding, to avoid doubled footer insets (plan 02-02).
+- On Windows, the background `expo start` file-watcher regen of `.expo/types/router.d.ts` emits backslash-mixed context keys, dropping `/` for `/index` and breaking `tsc` on hrefs (plans 02-01, 02-02). Workaround: re-run `regenerateDeclarations()` from `@expo/router-server/build/typed-routes` in node (forward-slash context, same as server-start generation). Recurred on modify-only edits in 02-02, so expect it on ANY source edit while the watcher runs — not just route add/delete.
 
 ## Deferred Verification Debt
 
@@ -51,7 +55,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav done 2026-10-06; remaining wave 1: 02-02 worksite list, 02-03 worksite form; then wave 2 (02-04, 02-05, 02-06) and wave 3 (02-07).
+`/gsd-execute-phase 2` — continue Phase 2 (Worksites & Workers): 02-01 nav + 02-02 worksite list done 2026-10-05/06; remaining wave 1: 02-03 worksite form; then wave 2 (02-04, 02-05, 02-06) and wave 3 (02-07).
 
 ## Notes
 
