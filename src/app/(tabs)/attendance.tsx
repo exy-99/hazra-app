@@ -315,7 +315,7 @@ export default function AttendanceScreen() {
             const label = chip.id === null ? 'All' : chip.name;
             return (
               <Pressable
-                key={label === 'All' ? '__all__' : (chip.id as string)}
+                key={chip.id ?? '__all__'}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
                 accessibilityLabel={label}
