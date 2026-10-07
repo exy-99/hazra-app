@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CYCLE, STATUS, type AttendanceStatus } from '@/constants/status';
@@ -22,6 +23,7 @@ export function StatusPill({
   const borderColor = entry ? entry.solid : theme.border;
   const textColor = entry ? entry.text : theme.mutedForeground;
   const label = entry ? entry.label : 'Mark';
+  const longFired = useRef(false);
 
   return (
     <View style={styles.wrap}>
@@ -32,8 +34,17 @@ export function StatusPill({
         }
         android_ripple={{ color: entry ? entry.solid : theme.muted }}
         delayLongPress={400}
-        onPress={onCycle}
-        onLongPress={onOpenPicker}
+        onPress={() => {
+          if (longFired.current) {
+            longFired.current = false;
+            return;
+          }
+          onCycle();
+        }}
+        onLongPress={() => {
+          longFired.current = true;
+          onOpenPicker();
+        }}
         style={({ pressed }) => [
           styles.pill,
           { backgroundColor, borderColor, opacity: pressed ? 0.85 : 1 },
