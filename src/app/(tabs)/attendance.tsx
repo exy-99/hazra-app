@@ -170,6 +170,7 @@ export default function AttendanceScreen() {
   }, []);
 
   async function load() {
+    setLoading(true);
     setLoadError(false);
     try {
       const scope = selectedSite ? { worksiteId: selectedSite } : {};
