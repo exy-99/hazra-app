@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 3 — Attendance Marking
-**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 in progress (03-01, 03-02, 03-03 done 2026-10-07)
+**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 in progress (03-01, 03-02, 03-03, 03-04 done 2026-10-07)
 **Last updated:** 2026-10-06
 
 ## Position
@@ -31,6 +31,7 @@
 - Plan 03-01 COMPLETE (2026-10-07): date-navigation foundation — new `src/components/date-strip.tsx` (7-day strip with ±3 recenter backfilled to 7 cells, text-only primary Today jump disabled at today, `CalendarDays` pick-a-date modal with fixed 30-row `FlatList`; all math via `todayKey`/`addDays`, zero `toISOString`) + rewritten `src/app/(tabs)/attendance.tsx` hosting frozen `selectedDate` state (`todayKey()` init) with `DateStrip`; `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-01-SUMMARY.md`; commits 6288a79, 34ef45a. AT-02 date-selection done (register wiring in 03-03/03-05).
 - Plan 03-02 COMPLETE (2026-10-07): attendance row pill — new `src/components/status-pill.tsx` (frozen `StatusPillProps`: tap cycles via `onCycle`, long-press `delayLongPress={400}` opens inline 4-option wrapping-row picker, no Modal; marked = STATUS tint/solid/text, unmarked = neutral surface/border + "Mark" label) + `src/app/(tabs)/attendance.tsx` stub rows (memo `AttendanceRow`, `FlatList` + `keyExtractor`, LOCAL-ONLY `marks` state on Demo A/B/C stub roster, `CYCLE[(idx+1)%4]` with `null → present`, date switch resets via `handleSelectDate`); `Radius.md` token used for row card (Rule 2 fix pre-commit); `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-02-SUMMARY.md`; commits 2ac4f02, 9c08100. AT-01 visual slice done (persistence in 03-03).
 - Plan 03-03 COMPLETE (2026-10-07): DAO-backed attendance register — rewritten `src/app/(tabs)/attendance.tsx` loads `AttendanceDateRow[]` via `getAttendanceForDate(selectedDate)` with `useFocusEffect` refetch, `onCycle`/`onPick` write through `applyStatus` → `upsertAttendance` preserving the loaded note (`row.note ?? null`), rows map-updated in place after `await` (no full reload on write); per-row `pendingIds` guard drops double-tap seconds (pending pill at 0.6 opacity via wrapper View, `StatusPillProps` untouched), write failure sets a polite `theme.destructive` "Couldn't save — try again" banner with retry-by-retap; load failure = "Couldn't load attendance" + "Try again", empty roster = exact §7.5 "No attendance marked for this date" + "Add worker" → `/worker-form`; stub roster removed; `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-03-SUMMARY.md`; commits c99d797, 6772098. AT-04/AT-05 done.
+- Plan 03-04 COMPLETE (2026-10-07): per-entry notes — new `src/components/note-field.tsx` (collapsed StickyNote icon + truncated preview, expanded multiline TextInput with Save/Clear/Cancel, blank→null, zero accent, Pressable only) + per-row wiring in `src/app/(tabs)/attendance.tsx` (`saveNote` reuses `pendingIds`, unmarked+note defaults to `present`, in-place row update, same `saveError` banner; `applyStatus` preserves `row?.note ?? null`; row card restructured to column with `topRow`); `tsc` exit 0, all grep gates pass (node equivalents), zero SQL in either file; SUMMARY at `.planning/phases/03-attendance-marking/03-04-SUMMARY.md`; commits 0445b10, 1836c4b. AT-03 done.
 
 ## Decisions (carry into planning)
 
@@ -76,6 +77,8 @@
 - Register writes go only through `applyStatus` → `upsertAttendance` preserving the loaded note (`row.note ?? null`); rows map-update in place after `await` resolves, never a full reload on write; the failed tap is never applied so retry is a re-tap (plan 03-03, AT-04/AT-05).
 - Double-tap safety is two-layer: per-row `pendingIds` handler guard (pending pill wrapped at 0.6 opacity, `StatusPillProps` frozen) + DB `UNIQUE(worker_id,date)` single-statement upsert; write failures surface a polite `theme.destructive` banner only, rows stay interactive (plan 03-03).
 - Empty-roster attendance copy is the exact §7.5 line "No attendance marked for this date" with an "Add worker" action → `/worker-form` ("Mark today" would be a dead affordance with zero rows; plan 03-03).
+- NoteField pattern (plan 03-04): collapsed `StickyNote` icon Pressable (`Add note`/`Edit note` labels) + truncated caption preview; expanded multiline `TextInput` (minHeight 88, `Radius.md` border) with text-only Save (`primary`) / Clear (`destructive`, only when note or draft non-blank) / Cancel (muted); internal `savingNote` guard.
+- Note writes reuse the per-row `pendingIds` guard (`saveNote` early-returns when pending); unmarked+note defaults status to `present` explicitly; both `upsertAttendance` call sites always pass the full `(status, note)` pair so neither axis nulls the other (plan 03-04, T-03-12).
 
 ## Deferred Verification Debt
 
@@ -89,7 +92,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 3` — Phase 3 IN PROGRESS (03-01, 03-02, 03-03 done 2026-10-07: DateStrip + selectedDate, AT-02 date-selection; StatusPill + local marks slice, AT-01 visual; DAO-backed register + pending guard, AT-04/AT-05). Next: execute 03-04 (notes).
+`/gsd-execute-phase 3` — Phase 3 IN PROGRESS (03-01, 03-02, 03-03, 03-04 done 2026-10-07: DateStrip + selectedDate, AT-02 date-selection; StatusPill + local marks slice, AT-01 visual; DAO-backed register + pending guard, AT-04/AT-05; per-entry notes, AT-03). Next: execute 03-05 (worksite filter).
 
 ## Notes
 
