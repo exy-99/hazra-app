@@ -10,6 +10,11 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DateStrip } from '@/components/date-strip';
@@ -38,6 +43,7 @@ const AttendanceRow = memo(function AttendanceRow({
   onCycle,
   onPick,
   onSaveNote,
+  onNoteExpandChange,
 }: {
   name: string;
   status: AttendanceStatus | null;
@@ -46,6 +52,7 @@ const AttendanceRow = memo(function AttendanceRow({
   onCycle: () => void;
   onPick: (s: AttendanceStatus) => void;
   onSaveNote: (text: string | null) => Promise<void>;
+  onNoteExpandChange?: (expanded: boolean) => void;
 }): React.JSX.Element {
   const theme = useTheme();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -79,7 +86,7 @@ const AttendanceRow = memo(function AttendanceRow({
           onClose={() => setPickerOpen(false)}
         />
       ) : null}
-      <NoteField note={note} onSave={onSaveNote} />
+      <NoteField note={note} onSave={onSaveNote} onExpandChange={onNoteExpandChange} />
     </View>
   );
 });
@@ -131,6 +138,36 @@ export default function AttendanceScreen() {
   const [loadError, setLoadError] = useState(false);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Collapse the worksite filter chips when the list scrolls or a note
+  // editor is open, so the header stops hogging vertical space. The
+  // status counts row (CountsHeader) always stays visible.
+  const [scrolledPastTop, setScrolledPastTop] = useState(false);
+  const [noteOpenIds, setNoteOpenIds] = useState<Set<string>>(new Set());
+  const chipsCollapsed = scrolledPastTop || noteOpenIds.size > 0;
+
+  function handleListScroll(y: number) {
+    const past = y > 8;
+    setScrolledPastTop((prev) => (prev === past ? prev : past));
+  }
+
+  const handleNoteExpand = useCallback((workerId: string, expanded: boolean) => {
+    setNoteOpenIds((prev) => {
+      if (expanded) {
+        if (prev.has(workerId)) {
+          return prev;
+        }
+        const next = new Set(prev);
+        next.add(workerId);
+        return next;
+      }
+      if (!prev.has(workerId)) {
+        return prev;
+      }
+      const next = new Set(prev);
+      next.delete(workerId);
+      return next;
+    });
+  }, []);
 
   async function load() {
     setLoadError(false);
@@ -260,6 +297,11 @@ export default function AttendanceScreen() {
           Attendance
         </Text>
         <DateStrip selectedDate={selectedDate} onSelectDate={handleSelectDate} />
+        {chipsCollapsed ? null : (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          layout={LinearTransition.duration(200)}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -306,6 +348,8 @@ export default function AttendanceScreen() {
             );
           })}
         </ScrollView>
+        </Animated.View>
+        )}
         {loading ? (
           <ActivityIndicator
             accessibilityLabel="Loading attendance"
@@ -340,7 +384,9 @@ export default function AttendanceScreen() {
             )}
           </View>
         ) : (
-          <View style={styles.listWrap}>
+          <Animated.View
+            style={styles.listWrap}
+            layout={LinearTransition.duration(200)}>
             {counts !== null ? <CountsHeader counts={counts} /> : null}
             {saveError !== null ? (
               <Text
@@ -353,6 +399,8 @@ export default function AttendanceScreen() {
               data={rows}
               keyExtractor={(item) => item.worker_id}
               contentContainerStyle={styles.listContent}
+              onScroll={(e) => handleListScroll(e.nativeEvent.contentOffset.y)}
+              scrollEventThrottle={16}
               renderItem={({ item: row }) => (
                 <AttendanceRow
                   name={row.name}
@@ -362,10 +410,13 @@ export default function AttendanceScreen() {
                   onCycle={() => cycleMark(row.worker_id)}
                   onPick={(next) => pickMark(row.worker_id, next)}
                   onSaveNote={(text) => saveNote(row.worker_id, text)}
+                  onNoteExpandChange={(expanded) =>
+                    handleNoteExpand(row.worker_id, expanded)
+                  }
                 />
               )}
             />
-          </View>
+          </Animated.View>
         )}
       </SafeAreaView>
     </View>

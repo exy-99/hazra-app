@@ -8,9 +8,10 @@ import { useTheme } from '@/hooks/use-theme';
 export interface NoteFieldProps {
   note: string | null;
   onSave: (text: string | null) => Promise<void>;
+  onExpandChange?: (expanded: boolean) => void;
 }
 
-export function NoteField({ note, onSave }: NoteFieldProps): JSX.Element {
+export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX.Element {
   const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
   const [draft, setDraft] = useState(note ?? '');
@@ -19,11 +20,13 @@ export function NoteField({ note, onSave }: NoteFieldProps): JSX.Element {
   function expand() {
     setDraft(note ?? '');
     setExpanded(true);
+    onExpandChange?.(true);
   }
 
   function cancel() {
     setDraft(note ?? '');
     setExpanded(false);
+    onExpandChange?.(false);
   }
 
   async function handleSave() {
@@ -37,6 +40,7 @@ export function NoteField({ note, onSave }: NoteFieldProps): JSX.Element {
       await onSave(value);
       setDraft(value ?? '');
       setExpanded(false);
+      onExpandChange?.(false);
     } finally {
       setSavingNote(false);
     }
@@ -51,6 +55,7 @@ export function NoteField({ note, onSave }: NoteFieldProps): JSX.Element {
       await onSave(null);
       setDraft('');
       setExpanded(false);
+      onExpandChange?.(false);
     } finally {
       setSavingNote(false);
     }

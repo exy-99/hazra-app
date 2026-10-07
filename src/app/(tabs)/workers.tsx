@@ -10,6 +10,11 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/empty-state';
@@ -80,6 +85,15 @@ export default function WorkersScreen() {
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  // Collapse the worksite filter chips when the list scrolls, mirroring
+  // the attendance screen header behavior.
+  const [scrolledPastTop, setScrolledPastTop] = useState(false);
+  const chipsCollapsed = scrolledPastTop;
+
+  function handleListScroll(y: number) {
+    const past = y > 8;
+    setScrolledPastTop((prev) => (prev === past ? prev : past));
+  }
 
   async function load() {
     setLoadError(false);
@@ -146,6 +160,11 @@ export default function WorkersScreen() {
             </Text>
           </Pressable>
         </View>
+        {chipsCollapsed ? null : (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          layout={LinearTransition.duration(200)}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -192,6 +211,8 @@ export default function WorkersScreen() {
             );
           })}
         </ScrollView>
+        </Animated.View>
+        )}
         {loading ? (
           <ActivityIndicator
             accessibilityLabel="Loading workers"
@@ -217,11 +238,15 @@ export default function WorkersScreen() {
             />
           </View>
         ) : (
-          <View style={styles.listWrap}>
+          <Animated.View
+            style={styles.listWrap}
+            layout={LinearTransition.duration(200)}>
             <FlatList
               data={workers}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}
+              onScroll={(e) => handleListScroll(e.nativeEvent.contentOffset.y)}
+              scrollEventThrottle={16}
               renderItem={({ item }) => (
                 <WorkerRow
                   worker={item}
@@ -233,7 +258,7 @@ export default function WorkersScreen() {
             <View style={styles.footer}>
               <AddWorkerButton onPress={goToAdd} />
             </View>
-          </View>
+          </Animated.View>
         )}
       </SafeAreaView>
     </View>
