@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 3 — Attendance Marking
-**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 in progress (03-01, 03-02, 03-03, 03-04 done 2026-10-07)
+**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 plans complete 2026-10-07 (03-01..03-05 done; verification pending)
 **Last updated:** 2026-10-06
 
 ## Position
@@ -32,6 +32,7 @@
 - Plan 03-02 COMPLETE (2026-10-07): attendance row pill — new `src/components/status-pill.tsx` (frozen `StatusPillProps`: tap cycles via `onCycle`, long-press `delayLongPress={400}` opens inline 4-option wrapping-row picker, no Modal; marked = STATUS tint/solid/text, unmarked = neutral surface/border + "Mark" label) + `src/app/(tabs)/attendance.tsx` stub rows (memo `AttendanceRow`, `FlatList` + `keyExtractor`, LOCAL-ONLY `marks` state on Demo A/B/C stub roster, `CYCLE[(idx+1)%4]` with `null → present`, date switch resets via `handleSelectDate`); `Radius.md` token used for row card (Rule 2 fix pre-commit); `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-02-SUMMARY.md`; commits 2ac4f02, 9c08100. AT-01 visual slice done (persistence in 03-03).
 - Plan 03-03 COMPLETE (2026-10-07): DAO-backed attendance register — rewritten `src/app/(tabs)/attendance.tsx` loads `AttendanceDateRow[]` via `getAttendanceForDate(selectedDate)` with `useFocusEffect` refetch, `onCycle`/`onPick` write through `applyStatus` → `upsertAttendance` preserving the loaded note (`row.note ?? null`), rows map-updated in place after `await` (no full reload on write); per-row `pendingIds` guard drops double-tap seconds (pending pill at 0.6 opacity via wrapper View, `StatusPillProps` untouched), write failure sets a polite `theme.destructive` "Couldn't save — try again" banner with retry-by-retap; load failure = "Couldn't load attendance" + "Try again", empty roster = exact §7.5 "No attendance marked for this date" + "Add worker" → `/worker-form`; stub roster removed; `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-03-SUMMARY.md`; commits c99d797, 6772098. AT-04/AT-05 done.
 - Plan 03-04 COMPLETE (2026-10-07): per-entry notes — new `src/components/note-field.tsx` (collapsed StickyNote icon + truncated preview, expanded multiline TextInput with Save/Clear/Cancel, blank→null, zero accent, Pressable only) + per-row wiring in `src/app/(tabs)/attendance.tsx` (`saveNote` reuses `pendingIds`, unmarked+note defaults to `present`, in-place row update, same `saveError` banner; `applyStatus` preserves `row?.note ?? null`; row card restructured to column with `topRow`); `tsc` exit 0, all grep gates pass (node equivalents), zero SQL in either file; SUMMARY at `.planning/phases/03-attendance-marking/03-04-SUMMARY.md`; commits 0445b10, 1836c4b. AT-03 done.
+- Plan 03-05 COMPLETE (2026-10-07): worksite filter + daily counts — `selectedSite` sibling state (null = All) with 02-04-mirror chips row (`__all__` key, `radio` role), single `load()` fetching `listWorksites` + `getAttendanceForDate` + `getDailyCounts` with identical `(date, worksiteId)` scope on `[selectedDate, selectedSite]` focus refetch, 5-stat `CountsHeader` (status dots, tabular-nums, per-stat labels) in the non-empty branch only, zero-sites empty state uses exact §7.5 "No worksites yet" + "Add worksite" → `/worksite-form`; `tsc` exit 0, all grep/phase-wide gates pass (hex 0, network 0, DELETE 0, TouchableOpacity 0, setSelectedDate 2 hits); SUMMARY at `.planning/phases/03-attendance-marking/03-05-SUMMARY.md`; commits 0b45634, 73f6158. AT-01..05 + NF-04 traced across 03-01..03-05, zero orphans. Phase 3 plans COMPLETE (5/5).
 
 ## Decisions (carry into planning)
 
@@ -79,6 +80,8 @@
 - Empty-roster attendance copy is the exact §7.5 line "No attendance marked for this date" with an "Add worker" action → `/worker-form` ("Mark today" would be a dead affordance with zero rows; plan 03-03).
 - NoteField pattern (plan 03-04): collapsed `StickyNote` icon Pressable (`Add note`/`Edit note` labels) + truncated caption preview; expanded multiline `TextInput` (minHeight 88, `Radius.md` border) with text-only Save (`primary`) / Clear (`destructive`, only when note or draft non-blank) / Cancel (muted); internal `savingNote` guard.
 - Note writes reuse the per-row `pendingIds` guard (`saveNote` early-returns when pending); unmarked+note defaults status to `present` explicitly; both `upsertAttendance` call sites always pass the full `(status, note)` pair so neither axis nulls the other (plan 03-04, T-03-12).
+- Attendance filter state is a `selectedSite` sibling of `selectedDate` (null = All); chip press calls only `setSelectedSite`, `handleSelectDate` only `setSelectedDate` — retention is structural, grep-gated at 2 `setSelectedDate` hits (plan 03-05, T-03-14).
+- Daily counts come from `getDailyCounts` in the same `load()` with the identical `(date, worksiteId)` scope as the rows — never client math — and the counts header renders only in the non-empty branch (plan 03-05, T-03-16/T-03-17).
 
 ## Deferred Verification Debt
 
@@ -92,7 +95,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 3` — Phase 3 IN PROGRESS (03-01, 03-02, 03-03, 03-04 done 2026-10-07: DateStrip + selectedDate, AT-02 date-selection; StatusPill + local marks slice, AT-01 visual; DAO-backed register + pending guard, AT-04/AT-05; per-entry notes, AT-03). Next: execute 03-05 (worksite filter).
+`/gsd-execute-phase 3` — Phase 3 plans COMPLETE 2026-10-07 (5/5: DateStrip + selectedDate; StatusPill + local marks slice; DAO-backed register + pending guard; per-entry notes; worksite filter + counts header). Next: verify Phase 3 (must-haves vs. 03-xx-SUMMARYs, AT-01..05 + NF-04 trace, on-device marking proof deferred to Phase 9 if no dev build).
 
 ## Notes
 

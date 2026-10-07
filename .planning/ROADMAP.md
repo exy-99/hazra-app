@@ -90,14 +90,14 @@
 
 **Plans:** 5 plans
 
-**Status:** In progress — 03-01, 03-02, 03-03, 03-04 done 2026-10-07
+**Status:** Complete — 03-01..03-05 done 2026-10-07 (verification pending)
 
 **Plan progress:**
 - [x] 03-01 date strip + selectedDate host (AT-02 date-selection) — done 2026-10-07
 - [x] 03-02 status pill + local marks slice (AT-01 visual) — done 2026-10-07
 - [x] 03-03 DAO-backed register + pending guard (AT-04, AT-05) — done 2026-10-07
 - [x] 03-04 per-entry notes via upsert (AT-03) — done 2026-10-07
-- [ ] 03-05
+- [x] 03-05 worksite filter + counts header (AT-01..05, NF-04 retention/counts) — done 2026-10-07
 
 ---
 
