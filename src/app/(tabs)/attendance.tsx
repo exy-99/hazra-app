@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DateStrip } from '@/components/date-strip';
 import { EmptyState } from '@/components/empty-state';
+import { NoteField } from '@/components/note-field';
 import { StatusPill } from '@/components/status-pill';
 import {
   BottomTabInset,
@@ -26,15 +27,19 @@ import { todayKey } from '@/utils/dates';
 const AttendanceRow = memo(function AttendanceRow({
   name,
   status,
+  note,
   pending,
   onCycle,
   onPick,
+  onSaveNote,
 }: {
   name: string;
   status: AttendanceStatus | null;
+  note: string | null;
   pending: boolean;
   onCycle: () => void;
   onPick: (s: AttendanceStatus) => void;
+  onSaveNote: (text: string | null) => Promise<void>;
 }): React.JSX.Element {
   const theme = useTheme();
 
@@ -44,10 +49,13 @@ const AttendanceRow = memo(function AttendanceRow({
         styles.row,
         { backgroundColor: theme.surface, borderColor: theme.border },
       ]}>
-      <Text style={[styles.name, { color: theme.foreground }]}>{name}</Text>
-      <View style={pending ? styles.pendingWrap : undefined}>
-        <StatusPill status={status} onCycle={onCycle} onPick={onPick} />
+      <View style={styles.topRow}>
+        <Text style={[styles.name, { color: theme.foreground }]}>{name}</Text>
+        <View style={pending ? styles.pendingWrap : undefined}>
+          <StatusPill status={status} onCycle={onCycle} onPick={onPick} />
+        </View>
       </View>
+      <NoteField note={note} onSave={onSaveNote} />
     </View>
   );
 });
@@ -98,12 +106,12 @@ export default function AttendanceScreen() {
     }
     setPendingIds((prev) => new Set(prev).add(workerId));
     try {
-      const current = rows.find((r) => r.worker_id === workerId);
+      const row = rows.find((r) => r.worker_id === workerId);
       await upsertAttendance({
         workerId,
         date: selectedDate,
         status: next,
-        note: current?.note ?? null,
+        note: row?.note ?? null,
       });
       setRows((prev) =>
         prev.map((r) =>
@@ -136,6 +144,39 @@ export default function AttendanceScreen() {
 
   function pickMark(workerId: string, next: AttendanceStatus) {
     void applyStatus(workerId, next);
+  }
+
+  async function saveNote(workerId: string, text: string | null) {
+    const row = rows.find((r) => r.worker_id === workerId);
+    if (!row || pendingIds.has(workerId)) {
+      return;
+    }
+    // A note NEEDS a status row — default an unmarked row to 'present'
+    // (row.note stays untouched; only the new text is written).
+    const status = row.status ?? 'present';
+    setPendingIds((prev) => new Set(prev).add(workerId));
+    try {
+      await upsertAttendance({
+        workerId,
+        date: selectedDate,
+        status,
+        note: text,
+      });
+      setRows((prev) =>
+        prev.map((r) =>
+          r.worker_id === workerId ? { ...r, status, note: text } : r,
+        ),
+      );
+      setSaveError(null);
+    } catch {
+      setSaveError("Couldn't save — try again");
+    } finally {
+      setPendingIds((prev) => {
+        const nextSet = new Set(prev);
+        nextSet.delete(workerId);
+        return nextSet;
+      });
+    }
   }
 
   return (
@@ -182,13 +223,15 @@ export default function AttendanceScreen() {
               data={rows}
               keyExtractor={(item) => item.worker_id}
               contentContainerStyle={styles.listContent}
-              renderItem={({ item }) => (
+              renderItem={({ item: row }) => (
                 <AttendanceRow
-                  name={item.name}
-                  status={item.status}
-                  pending={pendingIds.has(item.worker_id)}
-                  onCycle={() => cycleMark(item.worker_id)}
-                  onPick={(next) => pickMark(item.worker_id, next)}
+                  name={row.name}
+                  status={row.status}
+                  note={row.note}
+                  pending={pendingIds.has(row.worker_id)}
+                  onCycle={() => cycleMark(row.worker_id)}
+                  onPick={(next) => pickMark(row.worker_id, next)}
+                  onSaveNote={(text) => saveNote(row.worker_id, text)}
                 />
               )}
             />
@@ -229,14 +272,17 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     gap: Spacing.two,
     minHeight: 44,
     padding: Spacing.three,
     borderWidth: 1,
     borderRadius: Radius.md,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
   },
   pendingWrap: {
     opacity: 0.6,
