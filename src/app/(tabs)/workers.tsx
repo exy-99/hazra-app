@@ -1,6 +1,6 @@
-import { router, useFocusEffect } from 'expo-router';
-import { Building2, Plus, Users } from 'lucide-react-native';
-import { memo, useCallback, useState } from 'react';
+import { router, useFocusEffect } from "expo-router";
+import { Building2, Plus, Users } from "lucide-react-native";
+import { memo, useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,20 +9,20 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
+} from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
-} from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { EmptyState } from '@/components/empty-state';
-import { MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
-import type { Worker, Worksite } from '@/db/types';
-import { listWorkers } from '@/db/workers';
-import { listWorksites } from '@/db/worksites';
-import { useTheme } from '@/hooks/use-theme';
+import { EmptyState } from "@/components/empty-state";
+import { MaxContentWidth, Radius, Spacing, Type } from "@/constants/theme";
+import type { Worker, Worksite } from "@/db/types";
+import { listWorkers } from "@/db/workers";
+import { listWorksites } from "@/db/worksites";
+import { useTheme } from "@/hooks/use-theme";
 
 const WorkerRow = memo(function WorkerRow({
   worker,
@@ -47,18 +47,23 @@ const WorkerRow = memo(function WorkerRow({
           borderColor: theme.border,
           opacity: pressed ? 0.85 : 1,
         },
-      ]}>
+      ]}
+    >
       <Text style={[styles.name, { color: theme.foreground }]}>
         {worker.name}
       </Text>
       <Text style={[styles.meta, { color: theme.mutedForeground }]}>
-        {`${worker.role ?? 'Worker'} · ${siteName}`}
+        {`${worker.role ?? "Worker"} · ${siteName}`}
       </Text>
     </Pressable>
   );
 });
 
-function AddWorkerButton({ onPress }: { onPress: () => void }): React.JSX.Element {
+function AddWorkerButton({
+  onPress,
+}: {
+  onPress: () => void;
+}): React.JSX.Element {
   const theme = useTheme();
 
   return (
@@ -70,9 +75,12 @@ function AddWorkerButton({ onPress }: { onPress: () => void }): React.JSX.Elemen
       style={({ pressed }) => [
         styles.cta,
         { backgroundColor: theme.accent, opacity: pressed ? 0.85 : 1 },
-      ]}>
+      ]}
+    >
       <Plus size={20} color={theme.onAccent} />
-      <Text style={[styles.ctaLabel, { color: theme.onAccent }]}>+ Add worker</Text>
+      <Text style={[styles.ctaLabel, { color: theme.onAccent }]}>
+        Add worker
+      </Text>
     </Pressable>
   );
 }
@@ -127,15 +135,15 @@ export default function WorkersScreen() {
   }
 
   function goToAdd() {
-    router.push('/worker-form');
+    router.push("/worker-form");
   }
 
   function goToEdit(id: string) {
-    router.push({ pathname: '/worker-form', params: { id } });
+    router.push({ pathname: "/worker-form", params: { id } });
   }
 
   function goToWorksites() {
-    router.push('/worksites');
+    router.push("/worksites");
   }
 
   return (
@@ -153,7 +161,8 @@ export default function WorkersScreen() {
             style={({ pressed }) => [
               styles.worksitesEntry,
               { opacity: pressed ? 0.85 : 1 },
-            ]}>
+            ]}
+          >
             <Building2 size={18} color={theme.primary} />
             <Text style={[styles.worksitesLabel, { color: theme.primary }]}>
               Worksites
@@ -161,57 +170,70 @@ export default function WorkersScreen() {
           </Pressable>
         </View>
         {chipsCollapsed ? null : (
-        <Animated.View
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(200)}
-          layout={LinearTransition.duration(200)}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipRow}>
-          {[{ id: null as string | null, name: 'All' }].concat(
-            sites.map((site) => ({ id: site.id as string | null, name: site.name })),
-          ).map((chip) => {
-            const selected =
-              chip.id === null ? selectedSite === null : selectedSite === chip.id;
-            const label = chip.id === null ? 'All' : chip.name;
-            return (
-              <Pressable
-                key={label === 'All' ? '__all' : (chip.id as string)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-                accessibilityLabel={label}
-                android_ripple={{
-                  color: selected ? theme.onPrimary : theme.muted,
-                }}
-                onPress={() => setSelectedSite(chip.id)}
-                style={({ pressed }) => [
-                  styles.chip,
-                  selected
-                    ? {
-                        backgroundColor: theme.primary,
-                        borderColor: theme.primary,
-                      }
-                    : {
-                        backgroundColor: theme.surface,
-                        borderColor: theme.border,
-                      },
-                  { opacity: pressed ? 0.85 : 1 },
-                ]}>
-                <Text
-                  style={[
-                    styles.chipText,
-                    {
-                      color: selected ? theme.onPrimary : theme.foreground,
-                    },
-                  ]}>
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-        </Animated.View>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            exiting={FadeOut.duration(200)}
+            layout={LinearTransition.duration(200)}
+          >
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipRow}
+            >
+              {[{ id: null as string | null, name: "All" }]
+                .concat(
+                  sites.map((site) => ({
+                    id: site.id as string | null,
+                    name: site.name,
+                  })),
+                )
+                .map((chip) => {
+                  const selected =
+                    chip.id === null
+                      ? selectedSite === null
+                      : selectedSite === chip.id;
+                  const label = chip.id === null ? "All" : chip.name;
+                  return (
+                    <Pressable
+                      key={label === "All" ? "__all" : (chip.id as string)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected }}
+                      accessibilityLabel={label}
+                      android_ripple={{
+                        color: selected ? theme.onPrimary : theme.muted,
+                      }}
+                      onPress={() => setSelectedSite(chip.id)}
+                      style={({ pressed }) => [
+                        styles.chip,
+                        selected
+                          ? {
+                              backgroundColor: theme.primary,
+                              borderColor: theme.primary,
+                            }
+                          : {
+                              backgroundColor: theme.surface,
+                              borderColor: theme.border,
+                            },
+                        { opacity: pressed ? 0.85 : 1 },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          {
+                            color: selected
+                              ? theme.onPrimary
+                              : theme.foreground,
+                          },
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </ScrollView>
+          </Animated.View>
         )}
         {loading ? (
           <ActivityIndicator
@@ -240,7 +262,8 @@ export default function WorkersScreen() {
         ) : (
           <Animated.View
             style={styles.listWrap}
-            layout={LinearTransition.duration(200)}>
+            layout={LinearTransition.duration(200)}
+          >
             <FlatList
               data={workers}
               keyExtractor={(item) => item.id}
@@ -250,7 +273,7 @@ export default function WorkersScreen() {
               renderItem={({ item }) => (
                 <WorkerRow
                   worker={item}
-                  siteName={siteNames.get(item.worksite_id) ?? '—'}
+                  siteName={siteNames.get(item.worksite_id) ?? "—"}
                   onPress={() => goToEdit(item.id)}
                 />
               )}
@@ -268,25 +291,25 @@ export default function WorkersScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   safeArea: {
     flex: 1,
     maxWidth: MaxContentWidth,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: Spacing.three,
   },
   title: {
     ...Type.h1,
   },
   worksitesEntry: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.two,
     minHeight: 44,
   },
@@ -299,8 +322,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.two,
   },
   chip: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 44,
     paddingHorizontal: Spacing.three,
     borderWidth: 1,
@@ -311,8 +334,8 @@ const styles = StyleSheet.create({
   },
   loader: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyWrap: {
     flex: 1,
@@ -325,9 +348,9 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
   },
   cta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: Spacing.two,
     minHeight: 44,
     borderRadius: Radius.md,
@@ -335,7 +358,7 @@ const styles = StyleSheet.create({
   },
   ctaLabel: {
     ...Type.label,
-    textAlign: 'center',
+    textAlign: "center",
   },
   listContent: {
     gap: Spacing.two,
@@ -350,7 +373,7 @@ const styles = StyleSheet.create({
   },
   name: {
     ...Type.body,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   meta: {
     ...Type.caption,
