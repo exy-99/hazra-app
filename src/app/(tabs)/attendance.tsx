@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DateStrip } from '@/components/date-strip';
 import { EmptyState } from '@/components/empty-state';
 import { NoteField } from '@/components/note-field';
-import { StatusPill } from '@/components/status-pill';
+import { StatusPicker, StatusPill } from '@/components/status-pill';
 import { MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
 import { CYCLE, STATUS, type AttendanceStatus } from '@/constants/status';
 import {
@@ -48,6 +48,7 @@ const AttendanceRow = memo(function AttendanceRow({
   onSaveNote: (text: string | null) => Promise<void>;
 }): React.JSX.Element {
   const theme = useTheme();
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <View
@@ -56,11 +57,28 @@ const AttendanceRow = memo(function AttendanceRow({
         { backgroundColor: theme.surface, borderColor: theme.border },
       ]}>
       <View style={styles.topRow}>
-        <Text style={[styles.name, { color: theme.foreground }]}>{name}</Text>
+        <Text
+          numberOfLines={1}
+          style={[styles.name, { color: theme.foreground }]}>
+          {name}
+        </Text>
         <View style={pending ? styles.pendingWrap : undefined}>
-          <StatusPill status={status} onCycle={onCycle} onPick={onPick} />
+          <StatusPill
+            status={status}
+            onCycle={onCycle}
+            onOpenPicker={() => setPickerOpen(true)}
+          />
         </View>
       </View>
+      {pickerOpen ? (
+        <StatusPicker
+          onPick={(next) => {
+            setPickerOpen(false);
+            onPick(next);
+          }}
+          onClose={() => setPickerOpen(false)}
+        />
+      ) : null}
       <NoteField note={note} onSave={onSaveNote} />
     </View>
   );
@@ -407,6 +425,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 44,
+    minWidth: 96,
     paddingHorizontal: Spacing.three,
     borderWidth: 1,
     borderRadius: Radius.pill,
@@ -451,6 +470,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
   },
   name: {
+    flex: 1,
     ...Type.body,
     fontWeight: '600',
   },
