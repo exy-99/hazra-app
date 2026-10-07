@@ -26,11 +26,13 @@ import { todayKey } from '@/utils/dates';
 const AttendanceRow = memo(function AttendanceRow({
   name,
   status,
+  pending,
   onCycle,
   onPick,
 }: {
   name: string;
   status: AttendanceStatus | null;
+  pending: boolean;
   onCycle: () => void;
   onPick: (s: AttendanceStatus) => void;
 }): React.JSX.Element {
@@ -43,7 +45,9 @@ const AttendanceRow = memo(function AttendanceRow({
         { backgroundColor: theme.surface, borderColor: theme.border },
       ]}>
       <Text style={[styles.name, { color: theme.foreground }]}>{name}</Text>
-      <StatusPill status={status} onCycle={onCycle} onPick={onPick} />
+      <View style={pending ? styles.pendingWrap : undefined}>
+        <StatusPill status={status} onCycle={onCycle} onPick={onPick} />
+      </View>
     </View>
   );
 });
@@ -54,6 +58,8 @@ export default function AttendanceScreen() {
   const [rows, setRows] = useState<AttendanceDateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   async function load() {
     setLoadError(false);
@@ -87,18 +93,33 @@ export default function AttendanceScreen() {
   }
 
   async function applyStatus(workerId: string, next: AttendanceStatus) {
-    const current = rows.find((r) => r.worker_id === workerId);
-    await upsertAttendance({
-      workerId,
-      date: selectedDate,
-      status: next,
-      note: current?.note ?? null,
-    });
-    setRows((prev) =>
-      prev.map((r) =>
-        r.worker_id === workerId ? { ...r, status: next } : r,
-      ),
-    );
+    if (pendingIds.has(workerId)) {
+      return;
+    }
+    setPendingIds((prev) => new Set(prev).add(workerId));
+    try {
+      const current = rows.find((r) => r.worker_id === workerId);
+      await upsertAttendance({
+        workerId,
+        date: selectedDate,
+        status: next,
+        note: current?.note ?? null,
+      });
+      setRows((prev) =>
+        prev.map((r) =>
+          r.worker_id === workerId ? { ...r, status: next } : r,
+        ),
+      );
+      setSaveError(null);
+    } catch {
+      setSaveError("Couldn't save — try again");
+    } finally {
+      setPendingIds((prev) => {
+        const nextSet = new Set(prev);
+        nextSet.delete(workerId);
+        return nextSet;
+      });
+    }
   }
 
   function cycleMark(workerId: string) {
@@ -149,19 +170,29 @@ export default function AttendanceScreen() {
             />
           </View>
         ) : (
-          <FlatList
-            data={rows}
-            keyExtractor={(item) => item.worker_id}
-            contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => (
-              <AttendanceRow
-                name={item.name}
-                status={item.status}
-                onCycle={() => cycleMark(item.worker_id)}
-                onPick={(next) => pickMark(item.worker_id, next)}
-              />
-            )}
-          />
+          <View style={styles.listWrap}>
+            {saveError !== null ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={[styles.saveError, { color: theme.destructive }]}>
+                {saveError}
+              </Text>
+            ) : null}
+            <FlatList
+              data={rows}
+              keyExtractor={(item) => item.worker_id}
+              contentContainerStyle={styles.listContent}
+              renderItem={({ item }) => (
+                <AttendanceRow
+                  name={item.name}
+                  status={item.status}
+                  pending={pendingIds.has(item.worker_id)}
+                  onCycle={() => cycleMark(item.worker_id)}
+                  onPick={(next) => pickMark(item.worker_id, next)}
+                />
+              )}
+            />
+          </View>
         )}
       </SafeAreaView>
     </View>
@@ -206,6 +237,17 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderWidth: 1,
     borderRadius: Radius.md,
+  },
+  pendingWrap: {
+    opacity: 0.6,
+  },
+  listWrap: {
+    flex: 1,
+  },
+  saveError: {
+    ...Type.caption,
+    paddingHorizontal: Spacing.three,
+    paddingTop: Spacing.two,
   },
   name: {
     ...Type.body,
