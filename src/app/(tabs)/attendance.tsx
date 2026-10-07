@@ -23,11 +23,13 @@ import {
   Spacing,
   Type,
 } from '@/constants/theme';
-import { CYCLE, type AttendanceStatus } from '@/constants/status';
+import { CYCLE, STATUS, type AttendanceStatus } from '@/constants/status';
 import {
   getAttendanceForDate,
+  getDailyCounts,
   upsertAttendance,
   type AttendanceDateRow,
+  type DailyCounts,
 } from '@/db/attendance';
 import type { Worksite } from '@/db/types';
 import { listWorksites } from '@/db/worksites';
@@ -70,12 +72,49 @@ const AttendanceRow = memo(function AttendanceRow({
   );
 });
 
+function CountsHeader({ counts }: { counts: DailyCounts }): React.JSX.Element {
+  const theme = useTheme();
+  const stats = [
+    { key: 'present', label: 'Present', value: counts.present, color: STATUS.present.solid },
+    { key: 'absent', label: 'Absent', value: counts.absent, color: STATUS.absent.solid },
+    { key: 'half_day', label: 'Half', value: counts.half_day, color: STATUS.half_day.solid },
+    { key: 'off_day', label: 'Off', value: counts.off_day, color: STATUS.off_day.solid },
+    { key: 'unmarked', label: 'Unmarked', value: counts.unmarked, color: null },
+  ] as const;
+  return (
+    <View style={styles.countsRow}>
+      {stats.map((stat) => (
+        <View
+          key={stat.key}
+          style={styles.stat}
+          accessibilityLabel={`${stat.value} ${stat.label.toLowerCase()}`}>
+          <View style={styles.statTop}>
+            <View
+              style={[
+                styles.dot,
+                { backgroundColor: stat.color ?? theme.mutedForeground },
+              ]}
+            />
+            <Text style={[styles.statValue, { color: theme.foreground }]}>
+              {stat.value}
+            </Text>
+          </View>
+          <Text style={[styles.statLabel, { color: theme.mutedForeground }]}>
+            {stat.label}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 export default function AttendanceScreen() {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<string>(todayKey());
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const [sites, setSites] = useState<Worksite[]>([]);
   const [rows, setRows] = useState<AttendanceDateRow[]>([]);
+  const [counts, setCounts] = useState<DailyCounts | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
@@ -85,12 +124,14 @@ export default function AttendanceScreen() {
     setLoadError(false);
     try {
       const scope = selectedSite ? { worksiteId: selectedSite } : {};
-      const [active, data] = await Promise.all([
+      const [active, data, daily] = await Promise.all([
         listWorksites(),
         getAttendanceForDate(selectedDate, scope),
+        getDailyCounts(selectedDate, scope),
       ]);
       setSites(active);
       setRows(data);
+      setCounts(daily);
     } catch {
       setLoadError(true);
     } finally {
@@ -115,6 +156,10 @@ export default function AttendanceScreen() {
 
   function goToAdd() {
     router.push('/worker-form');
+  }
+
+  function goToWorksiteForm() {
+    router.push('/worksite-form');
   }
 
   async function applyStatus(workerId: string, next: AttendanceStatus) {
@@ -266,15 +311,25 @@ export default function AttendanceScreen() {
           </View>
         ) : rows.length === 0 ? (
           <View style={styles.emptyWrap}>
-            <EmptyState
-              icon={Users}
-              title="No attendance marked for this date"
-              actionLabel="Add worker"
-              onAction={goToAdd}
-            />
+            {sites.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="No worksites yet"
+                actionLabel="Add worksite"
+                onAction={goToWorksiteForm}
+              />
+            ) : (
+              <EmptyState
+                icon={Users}
+                title="No attendance marked for this date"
+                actionLabel="Add worker"
+                onAction={goToAdd}
+              />
+            )}
           </View>
         ) : (
           <View style={styles.listWrap}>
+            {counts !== null ? <CountsHeader counts={counts} /> : null}
             {saveError !== null ? (
               <Text
                 accessibilityLiveRegion="polite"
@@ -365,6 +420,34 @@ const styles = StyleSheet.create({
   },
   chipText: {
     ...Type.label,
+  },
+  countsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  stat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  statTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: Radius.pill,
+  },
+  statValue: {
+    ...Type.caption,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
+  },
+  statLabel: {
+    ...Type.caption,
   },
   listWrap: {
     flex: 1,
