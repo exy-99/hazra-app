@@ -16,13 +16,7 @@ import { DateStrip } from '@/components/date-strip';
 import { EmptyState } from '@/components/empty-state';
 import { NoteField } from '@/components/note-field';
 import { StatusPill } from '@/components/status-pill';
-import {
-  BottomTabInset,
-  MaxContentWidth,
-  Radius,
-  Spacing,
-  Type,
-} from '@/constants/theme';
+import { MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
 import { CYCLE, STATUS, type AttendanceStatus } from '@/constants/status';
 import {
   getAttendanceForDate,
@@ -369,7 +363,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     maxWidth: MaxContentWidth,
-    paddingBottom: BottomTabInset,
   },
   title: {
     ...Type.h1,
