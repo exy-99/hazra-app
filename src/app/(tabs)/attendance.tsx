@@ -281,6 +281,7 @@ export default function AttendanceScreen() {
       setSaveError(null);
     } catch {
       setSaveError("Couldn't save — try again");
+      throw new Error('save-note-failed');
     } finally {
       setPendingIds((prev) => {
         const nextSet = new Set(prev);

@@ -111,7 +111,7 @@ export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX
           accessibilityLabel="Save note"
           accessibilityRole="button"
           disabled={savingNote}
-          onPress={() => void handleSave()}
+          onPress={() => void handleSave().catch(() => {})}
           style={[styles.action, savingNote ? styles.disabled : undefined]}>
           <Text style={[styles.saveText, { color: theme.primary }]}>
             {savingNote ? 'Saving…' : 'Save'}
@@ -122,7 +122,7 @@ export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX
             accessibilityLabel="Clear note"
             accessibilityRole="button"
             disabled={savingNote}
-            onPress={() => void handleClear()}
+            onPress={() => void handleClear().catch(() => {})}
             style={[styles.action, savingNote ? styles.disabled : undefined]}>
             <Text style={[styles.clearText, { color: theme.destructive }]}>
               Clear
