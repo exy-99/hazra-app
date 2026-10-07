@@ -1,7 +1,15 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Users } from 'lucide-react-native';
 import { memo, useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DateStrip } from '@/components/date-strip';
@@ -21,6 +29,8 @@ import {
   upsertAttendance,
   type AttendanceDateRow,
 } from '@/db/attendance';
+import type { Worksite } from '@/db/types';
+import { listWorksites } from '@/db/worksites';
 import { useTheme } from '@/hooks/use-theme';
 import { todayKey } from '@/utils/dates';
 
@@ -63,6 +73,8 @@ const AttendanceRow = memo(function AttendanceRow({
 export default function AttendanceScreen() {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<string>(todayKey());
+  const [selectedSite, setSelectedSite] = useState<string | null>(null);
+  const [sites, setSites] = useState<Worksite[]>([]);
   const [rows, setRows] = useState<AttendanceDateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -72,7 +84,12 @@ export default function AttendanceScreen() {
   async function load() {
     setLoadError(false);
     try {
-      const data = await getAttendanceForDate(selectedDate);
+      const scope = selectedSite ? { worksiteId: selectedSite } : {};
+      const [active, data] = await Promise.all([
+        listWorksites(),
+        getAttendanceForDate(selectedDate, scope),
+      ]);
+      setSites(active);
       setRows(data);
     } catch {
       setLoadError(true);
@@ -84,7 +101,7 @@ export default function AttendanceScreen() {
   useFocusEffect(
     useCallback(() => {
       void load();
-    }, [selectedDate]),
+    }, [selectedDate, selectedSite]),
   );
 
   function retry() {
@@ -186,6 +203,52 @@ export default function AttendanceScreen() {
           Attendance
         </Text>
         <DateStrip selectedDate={selectedDate} onSelectDate={handleSelectDate} />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipRow}>
+          {[{ id: null as string | null, name: 'All' }].concat(
+            sites.map((site) => ({ id: site.id as string | null, name: site.name })),
+          ).map((chip) => {
+            const selected =
+              chip.id === null ? selectedSite === null : selectedSite === chip.id;
+            const label = chip.id === null ? 'All' : chip.name;
+            return (
+              <Pressable
+                key={label === 'All' ? '__all__' : (chip.id as string)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                accessibilityLabel={label}
+                android_ripple={{
+                  color: selected ? theme.onPrimary : theme.muted,
+                }}
+                onPress={() => setSelectedSite(chip.id)}
+                style={({ pressed }) => [
+                  styles.chip,
+                  selected
+                    ? {
+                        backgroundColor: theme.primary,
+                        borderColor: theme.primary,
+                      }
+                    : {
+                        backgroundColor: theme.surface,
+                        borderColor: theme.border,
+                      },
+                  { opacity: pressed ? 0.85 : 1 },
+                ]}>
+                <Text
+                  style={[
+                    styles.chipText,
+                    {
+                      color: selected ? theme.onPrimary : theme.foreground,
+                    },
+                  ]}>
+                  {label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
         {loading ? (
           <ActivityIndicator
             accessibilityLabel="Loading attendance"
@@ -286,6 +349,22 @@ const styles = StyleSheet.create({
   },
   pendingWrap: {
     opacity: 0.6,
+  },
+  chipRow: {
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  chip: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: Spacing.three,
+    borderWidth: 1,
+    borderRadius: Radius.pill,
+  },
+  chipText: {
+    ...Type.label,
   },
   listWrap: {
     flex: 1,
