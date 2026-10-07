@@ -1,8 +1,8 @@
 # State — Hazra Attendance
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
-**Current phase:** 2 — Worksites & Workers
-**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9)
+**Current phase:** 3 — Attendance Marking
+**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 in progress (03-01 done 2026-10-07)
 **Last updated:** 2026-10-06
 
 ## Position
@@ -28,6 +28,7 @@
 - Plan 02-07 COMPLETE (2026-10-06): edit-mode Remove in `src/app/worker-form.tsx` (text-only `theme.destructive` below Save, frozen `ConfirmDialog` import, exact `"will disappear from lists, but their attendance history is kept."` copy, confirm → `deactivateWorker` → `router.back()`, zero DELETE SQL) + all six phase-wide gates pass (COVERAGE_OK strict-frontmatter 8/8 IDs, HEX 0, NET 0, DELETE 0, TOUCH 0, `tsc` exit 0; task 2 verification-only, no diff); SUMMARY at `.planning/phases/02-worksites-workers/02-07-SUMMARY.md`; commit 9a57e71. WK-03 done. Phase 2 COMPLETE (7/7 plans).
 - Plan 02-02 COMPLETE (2026-10-05): rewritten `src/app/worksites.tsx` — active-only `listWorksites()` + per-site `listWorkers({ worksiteId })` counts, memo FlatList rows (name/type/address/count), exact §7.5 "No worksites yet" empty state, row → `/worksite-form?id=…`, single orange `+ Add worksite` CTA; `tsc` exit 0; SUMMARY at `.planning/phases/02-worksites-workers/02-02-SUMMARY.md`; commits c603dd3, 941efdd. WS-04 done.
 - Phase 2 VERIFIED (2026-10-06): 02-VERIFICATION.md (15/15 must-haves, status human_needed, all 8 WS/WK IDs traced, zero orphans); 02-REVIEW.md (standard depth, 12 files, 2 critical/8 warnings/6 info); 02-HUMAN-UAT.md persists 4 on-device proofs (all deferred to Phase 9, no dev build). Post-verification, user chose fix-first: CR-01 fixed (both list screens gained `loadError` state — catch → "Couldn't load …" EmptyState with "Try again" retry, `void load()` floating-call discipline) + CR-02 fixed (both forms gained `saving` re-entry guard + try/catch with polite "Couldn't save — try again" error and "Saving…" label); WR-01 needed no fix (chip key already `__all__`-guarded). `tsc` exit 0, all plan gates re-pass (node equivalents), phase-wide HEX/NET/DELETE/TOUCH all 0; commit 4088df4. Regression fix: `scripts/verify-tab-shell.mjs` repointed at `(tabs)/` group paths after the 02-01 move (all 20 checks pass again); commit 9a3c8eb.
+- Plan 03-01 COMPLETE (2026-10-07): date-navigation foundation — new `src/components/date-strip.tsx` (7-day strip with ±3 recenter backfilled to 7 cells, text-only primary Today jump disabled at today, `CalendarDays` pick-a-date modal with fixed 30-row `FlatList`; all math via `todayKey`/`addDays`, zero `toISOString`) + rewritten `src/app/(tabs)/attendance.tsx` hosting frozen `selectedDate` state (`todayKey()` init) with `DateStrip`; `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-01-SUMMARY.md`; commits 6288a79, 34ef45a. AT-02 date-selection done (register wiring in 03-03/03-05).
 
 ## Decisions (carry into planning)
 
@@ -62,6 +63,9 @@
 - List-load failures render a "Couldn't load …" EmptyState with a "Try again" retry (error state, not empty state) and `load()` never rejects (catch-all inside; callers use `void load()`) — post-verification CR-01 fix, commit 4088df4. Copy this pattern into Phase 3 attendance screens.
 - Form saves carry a `saving` re-entry guard (double-tap safe) + try/catch surfacing a polite `theme.destructive` "Couldn't save — try again" error with a "Saving…" label — post-verification CR-02 fix, commit 4088df4. Copy into Phase 3.
 - The 02-03 `router.back() = 1` gate is stale after 02-06 (confirm-remove adds a second `router.back()`); correct expectation is now 2 in `worksite-form.tsx`.
+- `DateStripProps` (`selectedDate`/`onSelectDate`) is frozen in plan 03-01; 03-05 reuses it as-is and adds `selectedSite` alongside, never resetting `selectedDate` on filter change.
+- DateStrip recentering backfills to 7 cells: clamping future days off the ±3 window around a recent past date prepends earlier days so the strip always renders 7 cells (plan 03-01).
+- Modal scrims use a sibling absolute-fill `Pressable` (not a wrapping backdrop) so the sheet stays undimmed; spread `StyleSheet.absoluteFill` (`absoluteFillObject` does not exist in RN types) — plan 03-01.
 - Standing self-check scripts must track route moves: `scripts/verify-tab-shell.mjs` was repointed at `src/app/(tabs)/` after the 02-01 move (commit 9a3c8eb).
 
 ## Deferred Verification Debt
@@ -76,7 +80,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-discuss-phase 3` — Phase 2 COMPLETE 2026-10-06 (7/7 plans, 15/15 must-haves verified, CR-01/CR-02 fixed, 4 on-device proofs deferred to Phase 9). Next: Phase 3 (Attendance Marking) — discuss first (recommended), then plan, then execute.
+`/gsd-execute-phase 3` — Phase 3 IN PROGRESS (03-01 done 2026-10-07: DateStrip + selectedDate, AT-02 date-selection; register wiring in 03-03/03-05). Next: execute 03-02.
 
 ## Notes
 

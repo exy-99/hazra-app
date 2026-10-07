@@ -88,6 +88,17 @@
 
 **UI hint:** yes
 
+**Plans:** 5 plans
+
+**Status:** In progress — 03-01 done 2026-10-07
+
+**Plan progress:**
+- [x] 03-01 date strip + selectedDate host (AT-02 date-selection) — done 2026-10-07
+- [ ] 03-02
+- [ ] 03-03
+- [ ] 03-04
+- [ ] 03-05
+
 ---
 
 ## Phase 4: Worker Profile & History
