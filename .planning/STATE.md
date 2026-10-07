@@ -2,7 +2,7 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 3 — Attendance Marking
-**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 in progress (03-01, 03-02 done 2026-10-07)
+**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 in progress (03-01, 03-02, 03-03 done 2026-10-07)
 **Last updated:** 2026-10-06
 
 ## Position
@@ -30,6 +30,7 @@
 - Phase 2 VERIFIED (2026-10-06): 02-VERIFICATION.md (15/15 must-haves, status human_needed, all 8 WS/WK IDs traced, zero orphans); 02-REVIEW.md (standard depth, 12 files, 2 critical/8 warnings/6 info); 02-HUMAN-UAT.md persists 4 on-device proofs (all deferred to Phase 9, no dev build). Post-verification, user chose fix-first: CR-01 fixed (both list screens gained `loadError` state — catch → "Couldn't load …" EmptyState with "Try again" retry, `void load()` floating-call discipline) + CR-02 fixed (both forms gained `saving` re-entry guard + try/catch with polite "Couldn't save — try again" error and "Saving…" label); WR-01 needed no fix (chip key already `__all__`-guarded). `tsc` exit 0, all plan gates re-pass (node equivalents), phase-wide HEX/NET/DELETE/TOUCH all 0; commit 4088df4. Regression fix: `scripts/verify-tab-shell.mjs` repointed at `(tabs)/` group paths after the 02-01 move (all 20 checks pass again); commit 9a3c8eb.
 - Plan 03-01 COMPLETE (2026-10-07): date-navigation foundation — new `src/components/date-strip.tsx` (7-day strip with ±3 recenter backfilled to 7 cells, text-only primary Today jump disabled at today, `CalendarDays` pick-a-date modal with fixed 30-row `FlatList`; all math via `todayKey`/`addDays`, zero `toISOString`) + rewritten `src/app/(tabs)/attendance.tsx` hosting frozen `selectedDate` state (`todayKey()` init) with `DateStrip`; `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-01-SUMMARY.md`; commits 6288a79, 34ef45a. AT-02 date-selection done (register wiring in 03-03/03-05).
 - Plan 03-02 COMPLETE (2026-10-07): attendance row pill — new `src/components/status-pill.tsx` (frozen `StatusPillProps`: tap cycles via `onCycle`, long-press `delayLongPress={400}` opens inline 4-option wrapping-row picker, no Modal; marked = STATUS tint/solid/text, unmarked = neutral surface/border + "Mark" label) + `src/app/(tabs)/attendance.tsx` stub rows (memo `AttendanceRow`, `FlatList` + `keyExtractor`, LOCAL-ONLY `marks` state on Demo A/B/C stub roster, `CYCLE[(idx+1)%4]` with `null → present`, date switch resets via `handleSelectDate`); `Radius.md` token used for row card (Rule 2 fix pre-commit); `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-02-SUMMARY.md`; commits 2ac4f02, 9c08100. AT-01 visual slice done (persistence in 03-03).
+- Plan 03-03 COMPLETE (2026-10-07): DAO-backed attendance register — rewritten `src/app/(tabs)/attendance.tsx` loads `AttendanceDateRow[]` via `getAttendanceForDate(selectedDate)` with `useFocusEffect` refetch, `onCycle`/`onPick` write through `applyStatus` → `upsertAttendance` preserving the loaded note (`row.note ?? null`), rows map-updated in place after `await` (no full reload on write); per-row `pendingIds` guard drops double-tap seconds (pending pill at 0.6 opacity via wrapper View, `StatusPillProps` untouched), write failure sets a polite `theme.destructive` "Couldn't save — try again" banner with retry-by-retap; load failure = "Couldn't load attendance" + "Try again", empty roster = exact §7.5 "No attendance marked for this date" + "Add worker" → `/worker-form`; stub roster removed; `tsc` exit 0, all grep gates pass (node equivalents); SUMMARY at `.planning/phases/03-attendance-marking/03-03-SUMMARY.md`; commits c99d797, 6772098. AT-04/AT-05 done.
 
 ## Decisions (carry into planning)
 
@@ -72,6 +73,9 @@
 - StatusPill picker is an inline wrapping-row expansion under the pill, never a `Modal`; dismissal is a text-only muted "Close" plus implicit close on pick, and close-without-pick changes nothing (plan 03-02).
 - 03-02 stub rows are a plain `View` (only the pill is a cycle target) so a tap can never double-advance; the stub roster + in-memory `marks` are replaced by `getAttendanceForDate` data in 03-03.
 - `handleSelectDate` in `src/app/(tabs)/attendance.tsx` is the single date-change path (sets date + resets stub marks); 03-05 must preserve it when adding `selectedSite`.
+- Register writes go only through `applyStatus` → `upsertAttendance` preserving the loaded note (`row.note ?? null`); rows map-update in place after `await` resolves, never a full reload on write; the failed tap is never applied so retry is a re-tap (plan 03-03, AT-04/AT-05).
+- Double-tap safety is two-layer: per-row `pendingIds` handler guard (pending pill wrapped at 0.6 opacity, `StatusPillProps` frozen) + DB `UNIQUE(worker_id,date)` single-statement upsert; write failures surface a polite `theme.destructive` banner only, rows stay interactive (plan 03-03).
+- Empty-roster attendance copy is the exact §7.5 line "No attendance marked for this date" with an "Add worker" action → `/worker-form` ("Mark today" would be a dead affordance with zero rows; plan 03-03).
 
 ## Deferred Verification Debt
 
@@ -85,7 +89,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 3` — Phase 3 IN PROGRESS (03-01 done 2026-10-07: DateStrip + selectedDate, AT-02 date-selection; 03-02 done 2026-10-07: StatusPill + local marks slice, AT-01 visual). Next: execute 03-03 (register persistence).
+`/gsd-execute-phase 3` — Phase 3 IN PROGRESS (03-01, 03-02, 03-03 done 2026-10-07: DateStrip + selectedDate, AT-02 date-selection; StatusPill + local marks slice, AT-01 visual; DAO-backed register + pending guard, AT-04/AT-05). Next: execute 03-04 (notes).
 
 ## Notes
 

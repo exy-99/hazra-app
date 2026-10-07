@@ -90,12 +90,12 @@
 
 **Plans:** 5 plans
 
-**Status:** In progress — 03-01, 03-02 done 2026-10-07
+**Status:** In progress — 03-01, 03-02, 03-03 done 2026-10-07
 
 **Plan progress:**
 - [x] 03-01 date strip + selectedDate host (AT-02 date-selection) — done 2026-10-07
 - [x] 03-02 status pill + local marks slice (AT-01 visual) — done 2026-10-07
-- [ ] 03-03
+- [x] 03-03 DAO-backed register + pending guard (AT-04, AT-05) — done 2026-10-07
 - [ ] 03-04
 - [ ] 03-05
 
