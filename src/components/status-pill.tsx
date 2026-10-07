@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ChevronDown } from 'lucide-react-native';
 
 import { CYCLE, STATUS, type AttendanceStatus } from '@/constants/status';
 import { Radius, Spacing, Type } from '@/constants/theme';
@@ -32,6 +33,7 @@ export function StatusPill({
         accessibilityLabel={
           entry ? entry.label : 'Unmarked — tap to mark present'
         }
+        accessibilityHint="Long press to choose a specific status"
         android_ripple={{ color: entry ? entry.solid : theme.muted }}
         delayLongPress={400}
         onPress={() => {
@@ -50,6 +52,18 @@ export function StatusPill({
           { backgroundColor, borderColor, opacity: pressed ? 0.85 : 1 },
         ]}>
         <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Choose a specific status"
+        accessibilityHint="Opens the list of statuses"
+        android_ripple={{ color: theme.muted }}
+        onPress={onOpenPicker}
+        style={({ pressed }) => [
+          styles.chevron,
+          { opacity: pressed ? 0.85 : 1 },
+        ]}>
+        <ChevronDown size={18} color={theme.mutedForeground} />
       </Pressable>
     </View>
   );
@@ -109,6 +123,9 @@ export function StatusPicker({
 const styles = StyleSheet.create({
   wrap: {
     flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
   },
   pill: {
     alignItems: 'center',
@@ -121,6 +138,12 @@ const styles = StyleSheet.create({
   },
   label: {
     ...Type.label,
+  },
+  chevron: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 44,
+    minHeight: 44,
   },
   picker: {
     flexDirection: 'row',
