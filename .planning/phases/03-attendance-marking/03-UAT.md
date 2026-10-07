@@ -1,5 +1,5 @@
 ---
-status: testing
+status: complete
 phase: 03-attendance-marking
 source:
   [
@@ -10,16 +10,12 @@ source:
     03-05-SUMMARY.md,
   ]
 started: 2026-10-07T13:58:00+05:30
-updated: 2026-10-07T13:58:00+05:30
+updated: 2026-10-07T18:30:00+05:30
 ---
 
 ## Current Test
 
-number: 1
-name: Date strip selects independent daily registers
-expected: |
-Attendance tab shows a 7-day strip. Tapping a past date loads that date's own register — marks made on one date do not appear on another date.
-awaiting: user response
+[testing complete — resumed 2026-10-07, all 13 tests already passed, 0 pending; status flipped to complete per user choice]
 
 ## Tests
 
