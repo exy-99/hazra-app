@@ -1,8 +1,11 @@
-import { memo, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { Users } from 'lucide-react-native';
+import { memo, useCallback, useState } from 'react';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DateStrip } from '@/components/date-strip';
+import { EmptyState } from '@/components/empty-state';
 import { StatusPill } from '@/components/status-pill';
 import {
   BottomTabInset,
@@ -12,15 +15,13 @@ import {
   Type,
 } from '@/constants/theme';
 import { CYCLE, type AttendanceStatus } from '@/constants/status';
+import {
+  getAttendanceForDate,
+  upsertAttendance,
+  type AttendanceDateRow,
+} from '@/db/attendance';
 import { useTheme } from '@/hooks/use-theme';
 import { todayKey } from '@/utils/dates';
-
-// LOCAL-ONLY stub roster. Replaced by real DAO data in 03-03; no DB calls here.
-const STUB_WORKERS = [
-  { id: 'w1', name: 'Demo A' },
-  { id: 'w2', name: 'Demo B' },
-  { id: 'w3', name: 'Demo C' },
-] as const;
 
 const AttendanceRow = memo(function AttendanceRow({
   name,
@@ -50,24 +51,70 @@ const AttendanceRow = memo(function AttendanceRow({
 export default function AttendanceScreen() {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<string>(todayKey());
-  const [marks, setMarks] = useState<Record<string, AttendanceStatus>>({});
+  const [rows, setRows] = useState<AttendanceDateRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  async function load() {
+    setLoadError(false);
+    try {
+      const data = await getAttendanceForDate(selectedDate);
+      setRows(data);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [selectedDate]),
+  );
+
+  function retry() {
+    setLoading(true);
+    void load();
+  }
 
   function handleSelectDate(key: string) {
     setSelectedDate(key);
-    setMarks({});
+  }
+
+  function goToAdd() {
+    router.push('/worker-form');
+  }
+
+  async function applyStatus(workerId: string, next: AttendanceStatus) {
+    const current = rows.find((r) => r.worker_id === workerId);
+    await upsertAttendance({
+      workerId,
+      date: selectedDate,
+      status: next,
+      note: current?.note ?? null,
+    });
+    setRows((prev) =>
+      prev.map((r) =>
+        r.worker_id === workerId ? { ...r, status: next } : r,
+      ),
+    );
   }
 
   function cycleMark(workerId: string) {
-    setMarks((prev) => {
-      const current = prev[workerId] ?? null;
-      const index = current === null ? -1 : CYCLE.indexOf(current);
-      const next = CYCLE[(index + 1) % CYCLE.length];
-      return { ...prev, [workerId]: next };
-    });
+    const row = rows.find((r) => r.worker_id === workerId);
+    if (!row) {
+      return;
+    }
+    const next: AttendanceStatus =
+      row.status === null
+        ? 'present'
+        : CYCLE[(CYCLE.indexOf(row.status) + 1) % CYCLE.length];
+    void applyStatus(workerId, next);
   }
 
   function pickMark(workerId: string, next: AttendanceStatus) {
-    setMarks((prev) => ({ ...prev, [workerId]: next }));
+    void applyStatus(workerId, next);
   }
 
   return (
@@ -77,19 +124,45 @@ export default function AttendanceScreen() {
           Attendance
         </Text>
         <DateStrip selectedDate={selectedDate} onSelectDate={handleSelectDate} />
-        <FlatList
-          data={STUB_WORKERS}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <AttendanceRow
-              name={item.name}
-              status={marks[item.id] ?? null}
-              onCycle={() => cycleMark(item.id)}
-              onPick={(next) => pickMark(item.id, next)}
+        {loading ? (
+          <ActivityIndicator
+            accessibilityLabel="Loading attendance"
+            color={theme.primary}
+            style={styles.loader}
+          />
+        ) : loadError ? (
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              icon={Users}
+              title="Couldn't load attendance"
+              actionLabel="Try again"
+              onAction={retry}
             />
-          )}
-        />
+          </View>
+        ) : rows.length === 0 ? (
+          <View style={styles.emptyWrap}>
+            <EmptyState
+              icon={Users}
+              title="No attendance marked for this date"
+              actionLabel="Add worker"
+              onAction={goToAdd}
+            />
+          </View>
+        ) : (
+          <FlatList
+            data={rows}
+            keyExtractor={(item) => item.worker_id}
+            contentContainerStyle={styles.listContent}
+            renderItem={({ item }) => (
+              <AttendanceRow
+                name={item.name}
+                status={item.status}
+                onCycle={() => cycleMark(item.worker_id)}
+                onPick={(next) => pickMark(item.worker_id, next)}
+              />
+            )}
+          />
+        )}
       </SafeAreaView>
     </View>
   );
@@ -108,6 +181,15 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Type.h1,
+    paddingHorizontal: Spacing.three,
+  },
+  loader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyWrap: {
+    flex: 1,
     paddingHorizontal: Spacing.three,
   },
   listContent: {
