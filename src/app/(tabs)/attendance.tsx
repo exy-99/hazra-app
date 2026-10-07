@@ -1,19 +1,26 @@
-import { StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DateStrip } from '@/components/date-strip';
 import { ThemedText } from '@/components/themed-text';
 import { BottomTabInset, MaxContentWidth, Spacing, Type } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { todayKey } from '@/utils/dates';
 
 export default function AttendanceScreen() {
   const theme = useTheme();
+  const [selectedDate, setSelectedDate] = useState<string>(todayKey());
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText style={styles.title}>Attendance</ThemedText>
-        <ThemedText themeColor="mutedForeground" style={styles.body}>
-          Attendance marking is not built yet
+        <Text style={[styles.title, { color: theme.foreground }]}>
+          Attendance
+        </Text>
+        <DateStrip selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+        <ThemedText themeColor="mutedForeground" style={styles.placeholder}>
+          Register loads in 03-03
         </ThemedText>
       </SafeAreaView>
     </View>
@@ -28,19 +35,15 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.two,
-    paddingHorizontal: Spacing.four,
-    paddingBottom: BottomTabInset + Spacing.three,
     maxWidth: MaxContentWidth,
+    paddingBottom: BottomTabInset,
   },
   title: {
     ...Type.h1,
-    textAlign: 'center',
+    paddingHorizontal: Spacing.three,
   },
-  body: {
+  placeholder: {
     ...Type.body,
-    textAlign: 'center',
+    paddingHorizontal: Spacing.three,
   },
 });
