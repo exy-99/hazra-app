@@ -2,8 +2,8 @@
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 4 — Worker Profile & History
-**Status:** Phase 3 plans complete 2026-10-07 (verification pending). Phase 4 execution started 2026-10-08 (3 plans, 3 waves).
-**Last updated:** 2026-10-06
+**Status:** Phase 3 plans complete 2026-10-07 (verification pending). Phase 4 plans complete 2026-10-08 (3/3, verification pending).
+**Last updated:** 2026-10-08
 
 ## Position
 
@@ -37,6 +37,7 @@
 - Phase 4 PLANNED (2026-10-07): 3 plans in 3 waves — 04-01 summarize() + hand-check (PR-02 math), 04-02 profile shell (PR-02 UI), 04-03 history list + row retarget (PR-01). All autonomous, dependency chain 04-01 → 04-02 → 04-03.
 - Plan 04-01 COMPLETE (2026-10-08): pure `summarize()` in `src/utils/attendance.ts` (off_day-excluded denominator, half_day 0.5, round2, null on zero denominator) + `ATTENDANCE_PCT_FLOOR = 75` + `scripts/verify-summarize.mjs` hand-check (roadmap 76.79 vector exact); `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-01-SUMMARY.md`; commits 1bd8018, c5c2a5c. PR-02 math done (UI in 04-02).
 - Plan 04-02 COMPLETE (2026-10-08): new `src/components/attendance-ring.tsx` (SVG ring, % or —, accent below 75, a11y label) + rewritten `src/app/worker/[id].tsx` (header with tap-to-call phone, 7/30/90 chips defaulting 30, ring + 4 STATUS-dot counts, single orange Edit, skeleton/retry/not-found/Removed-banner states, focus refetch on [id, period]); all five phase gates 0 on both files; `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-02-SUMMARY.md`; commits 65508b6, d3211c5 (task 3 verification-only, no diff). PR-02 UI done (history list in 04-03).
+- Plan 04-03 COMPLETE (2026-10-08): history section in `src/app/worker/[id].tsx` (memo `HistoryRow` — formatDisplay date + read-only STATUS-tint chip View + `numberOfLines={1}` note preview, reversed `FlatList` with `scrollEnabled={false}` + `keyExtractor` on entry id, §7.5 empty state on zero entries, 3 extended skeleton blocks; stats empty-state narrowed to `entries.length > 0` so zero-entries shows exactly one card) + `src/app/(tabs)/workers.tsx` row retarget (`goToProfile` → `/worker/[id]`, `View {name} profile` label); all phase-wide gates 0, single `getAttendanceForWorker` call site, `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-03-SUMMARY.md`; commits 0aa49c8, 7a6b14d (task 3 verification-only, no diff). PR-01 done end to end; Phase 4 plans COMPLETE (3/3).
 
 ## Decisions (carry into planning)
 
@@ -89,6 +90,8 @@
 - `summarize()` is pure over caller-supplied entries (zero `@/db` imports) so Phase 5 reports import it without DAO coupling; percentage rounds to 2 decimals via `Math.round(x*100)/100` so the hand-check reads exactly 76.79 (plan 04-01).
 - Profile `load()` is catch-all-inside with `void` callers, refetching on `[id, period]` focus scope so register corrections reflect on back; ring + counts + (04-03) history share the single period scope (plan 04-02).
 - Removed profile = single-word "Removed" banner (muted bg, destructive text) + full stats visible + Edit hidden; tampered id = no-action "Worker not found" EmptyState; zero countable days = exact §7.5 "No attendance recorded yet" no-action state (plan 04-02).
+- History list = memo read-only `View` rows (formatDisplay date + STATUS tint/solid/text chip + `numberOfLines={1}` note preview when non-null) in a newest-first `FlatList` (`keyExtractor` on entry id, `scrollEnabled={false}` inside the profile ScrollView); never `StatusPill` (it carries cycle handlers); zero-entries empty state owned by the history section while the stats-region card narrows to `entries.length > 0` so exactly one §7.5 card renders (plan 04-03).
+- Workers-list rows open the profile (`goToProfile` → `/worker/[id]`, `View {name} profile` label); Edit lives inside the profile, the `+ Add worker` CTA still → `/worker-form`, and the list stays active-only with removed profiles reachable by deep-link only (plan 04-03, D-06/D-14).
 
 ## Deferred Verification Debt
 
