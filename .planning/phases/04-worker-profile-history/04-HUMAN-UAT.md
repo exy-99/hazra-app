@@ -1,5 +1,5 @@
 ---
-status: partial
+status: resolved
 phase: 04-worker-profile-history
 source: [04-VERIFICATION.md]
 started: 2026-10-08
@@ -18,14 +18,14 @@ result: pass (2026-10-08, user-tested)
 
 ### 2. Removed-worker deep-link and below-75 accent
 expected: Deep-link a soft-deleted worker id → Removed banner + full record (stats + history), no Edit action; ring renders orange below 75% and teal at/above 75%.
-result: [pending]
+result: pass (2026-10-08, user-tested)
 
 ## Summary
 
 total: 2
-passed: 1
+passed: 2
 issues: 0
-pending: 1
+pending: 0
 skipped: 0
 blocked: 0
 

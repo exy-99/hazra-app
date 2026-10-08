@@ -61,4 +61,4 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-10-06 after Phase 2 completion (roster workflow built; FormField/ConfirmDialog contracts frozen; device proofs deferred to Phase 9)*
+*Last updated: 2026-10-08 after Phase 4 completion (summarize() + worker profile + history; PR-01/PR-02 validated, 2/2 UAT passed)*

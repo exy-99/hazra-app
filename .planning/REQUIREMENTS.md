@@ -28,8 +28,8 @@
 
 ### Worker Profile / History (PR)
 
-- [ ] **PR-01**: Manager can view a single worker's full attendance history.
-- [ ] **PR-02**: Manager can see an individual attendance % over a selected period (off_day excluded from denominator, half_day counted as 0.5).
+- [x] **PR-01**: Manager can view a single worker's full attendance history.
+- [x] **PR-02**: Manager can see an individual attendance % over a selected period (off_day excluded from denominator, half_day counted as 0.5).
 
 ### Reports (RP)
 
@@ -102,7 +102,7 @@
 |-------------|-------|--------|
 | WS-01..04, WK-01..04 | Phase 2 | Pending |
 | AT-01..05, NF-04 | Phase 3 | Pending |
-| PR-01..02 | Phase 4 | Pending |
+| PR-01..02 | Phase 4 | Validated 2026-10-08 |
 | RP-01..05 | Phase 5 | Pending |
 | EX-01..03, NF-06 | Phase 6 | Pending |
 | BK-01..03 | Phase 7 | Pending |

@@ -1,8 +1,8 @@
 # State — Hazra Attendance
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
-**Current phase:** 4 — Worker Profile & History
-**Status:** Phase 3 plans complete 2026-10-07 (verification pending). Phase 4 plans complete 2026-10-08 (3/3, verification pending).
+**Current phase:** 5 — Home Dashboard & Reports
+**Status:** Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; verification human_needed → 2/2 UAT passed on-device; review 04-REVIEW.md 0 critical/8 warnings advisory). Phase 3 verification still pending.
 **Last updated:** 2026-10-08
 
 ## Position
@@ -105,7 +105,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-execute-phase 3` — Phase 3 plans COMPLETE 2026-10-07 (5/5: DateStrip + selectedDate; StatusPill + local marks slice; DAO-backed register + pending guard; per-entry notes; worksite filter + counts header). Next: verify Phase 3 (must-haves vs. 03-xx-SUMMARYs, AT-01..05 + NF-04 trace, on-device marking proof deferred to Phase 9 if no dev build).
+`/gsd-discuss-phase 5` — Phase 4 COMPLETE 2026-10-08 (summarize() + profile shell + history list; PR-01/PR-02 validated, 2/2 UAT passed). Next: discuss Phase 5 (Home Dashboard & Reports). Note: Phase 3 verification still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
 
 ## Notes
 

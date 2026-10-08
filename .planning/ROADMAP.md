@@ -118,6 +118,8 @@
 
 **Plans:** 3 plans
 
+**Status:** Complete — 2026-10-08 (3/3 plans; 4/4 must-haves verified human_needed → 2/2 UAT passed on-device; review 0 critical/8 warnings advisory)
+
 **Plan progress:**
 - [x] 04-01 summarize() + hand-check (PR-02 math) — done 2026-10-08
 - [x] 04-02 profile shell — header, chips, ring, stats, states (PR-02 UI) — done 2026-10-08
