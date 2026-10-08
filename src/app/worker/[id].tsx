@@ -1,7 +1,8 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Phone, Users } from 'lucide-react-native';
-import { useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import {
+  FlatList,
   Linking,
   Pressable,
   ScrollView,
@@ -20,7 +21,7 @@ import type { AttendanceEntry, Worker } from '@/db/types';
 import { getWorker } from '@/db/workers';
 import { listWorksites } from '@/db/worksites';
 import { useTheme } from '@/hooks/use-theme';
-import { addDays, todayKey } from '@/utils/dates';
+import { addDays, formatDisplay, todayKey } from '@/utils/dates';
 import { summarize } from '@/utils/attendance';
 
 const PERIODS = [7, 30, 90] as const;
@@ -38,9 +39,59 @@ function StatsSkeleton({ muted }: { muted: string }): React.JSX.Element {
           <View key={`stat-skeleton-${i}`} style={styles.statSkeleton} />
         ))}
       </View>
+      <View style={styles.historySkeletonWrap}>
+        {[0, 1, 2].map((i) => (
+          <View
+            key={`history-skeleton-${i}`}
+            accessibilityLabel="Loading history"
+            style={[styles.historySkeleton, { backgroundColor: muted }]}
+          />
+        ))}
+      </View>
     </View>
   );
 }
+
+const HistoryRow = memo(function HistoryRow({
+  entry,
+}: {
+  entry: AttendanceEntry;
+}): React.JSX.Element {
+  const theme = useTheme();
+  const chip = STATUS[entry.status];
+
+  return (
+    <View
+      accessibilityRole="text"
+      accessibilityLabel={`${formatDisplay(entry.date)}, ${chip.label}`}
+      style={[
+        styles.historyRow,
+        { backgroundColor: theme.surface, borderColor: theme.border },
+      ]}>
+      <View style={styles.historyTop}>
+        <Text style={[styles.historyDate, { color: theme.foreground }]}>
+          {formatDisplay(entry.date)}
+        </Text>
+        <View
+          style={[
+            styles.historyChip,
+            { backgroundColor: chip.tint, borderColor: chip.solid },
+          ]}>
+          <Text style={[styles.historyChipText, { color: chip.text }]}>
+            {chip.label}
+          </Text>
+        </View>
+      </View>
+      {entry.note !== null ? (
+        <Text
+          numberOfLines={1}
+          style={[styles.historyNote, { color: theme.mutedForeground }]}>
+          {entry.note}
+        </Text>
+      ) : null}
+    </View>
+  );
+});
 
 export default function WorkerProfileScreen() {
   const theme = useTheme();
@@ -269,6 +320,7 @@ export default function WorkerProfileScreen() {
             {loading ? (
               <StatsSkeleton muted={theme.muted} />
             ) : (
+              <>
               <View style={styles.statsWrap}>
                 <AttendanceRing value={summary.percentage} />
                 <View style={styles.countsRow}>
@@ -302,7 +354,7 @@ export default function WorkerProfileScreen() {
                     </View>
                   ))}
                 </View>
-                {summary.percentage === null ? (
+                {summary.percentage === null && entries.length > 0 ? (
                   <View style={styles.historyEmptyWrap}>
                     <EmptyState
                       icon={Users}
@@ -333,6 +385,25 @@ export default function WorkerProfileScreen() {
                   </Pressable>
                 )}
               </View>
+              <View style={styles.historyWrap}>
+                {entries.length === 0 ? (
+                  <EmptyState
+                    icon={Users}
+                    title="No attendance recorded yet"
+                  />
+                ) : (
+                  <FlatList
+                    data={[...entries].reverse()}
+                    keyExtractor={(item) => item.id}
+                    scrollEnabled={false}
+                    contentContainerStyle={styles.historyList}
+                    renderItem={({ item }) => (
+                      <HistoryRow entry={item} />
+                    )}
+                  />
+                )}
+              </View>
+              </>
             )}
           </ScrollView>
         )}
@@ -439,6 +510,54 @@ const styles = StyleSheet.create({
   },
   historyEmptyWrap: {
     alignSelf: 'stretch',
+  },
+  historyWrap: {
+    alignSelf: 'stretch',
+    paddingVertical: Spacing.two,
+  },
+  historyList: {
+    gap: Spacing.two,
+  },
+  historyRow: {
+    gap: Spacing.one,
+    padding: Spacing.three,
+    borderWidth: 1,
+    borderRadius: Radius.md,
+  },
+  historyTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  historyDate: {
+    ...Type.body,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+  },
+  historyChip: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 32,
+    paddingHorizontal: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Radius.pill,
+  },
+  historyChipText: {
+    ...Type.caption,
+    fontWeight: '600',
+  },
+  historyNote: {
+    ...Type.caption,
+  },
+  historySkeletonWrap: {
+    alignSelf: 'stretch',
+    gap: Spacing.two,
+  },
+  historySkeleton: {
+    alignSelf: 'stretch',
+    height: 72,
+    borderRadius: Radius.md,
   },
   edit: {
     alignSelf: 'stretch',
