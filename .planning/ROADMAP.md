@@ -143,6 +143,18 @@
 
 **UI hint:** yes
 
+**Plans:** 4 plans
+
+**Status:** Planned — 2026-10-08 (05-01 Home hero RP-01 · 05-02 filters+picker RP-05 · 05-03 list+bottom-3 RP-02/RP-04 · 05-04 trend RP-03; verification passed 0 blockers)
+
+**Plans:** 4 plans
+
+**Plan progress:**
+- [ ] 05-01 Home hero + CTA (RP-01)
+- [ ] 05-02 Reports shell + filters + custom picker + aggregate ring (RP-05)
+- [ ] 05-03 per-worker list + bottom-3 (RP-02, RP-04)
+- [ ] 05-04 trend chart (RP-03)
+
 ---
 
 ## Phase 6: Export (CSV / PDF)
