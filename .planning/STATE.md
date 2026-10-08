@@ -1,8 +1,8 @@
 # State — Hazra Attendance
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
-**Current phase:** 3 — Attendance Marking
-**Status:** Phase 1 verified 2026-10-03 (8/8 plans, 32/32 must-haves; verification: human_needed → 2 static fixes applied, 3 on-device proofs deferred to Phase 9). Phase 2 complete 2026-10-06 (7/7 plans; on-device roster/restart proofs deferred to Phase 9). Phase 3 plans complete 2026-10-07 (03-01..03-05 done; verification pending)
+**Current phase:** 4 — Worker Profile & History
+**Status:** Phase 3 plans complete 2026-10-07 (verification pending). Phase 4 execution started 2026-10-08 (3 plans, 3 waves).
 **Last updated:** 2026-10-06
 
 ## Position
@@ -35,6 +35,7 @@
 - Plan 03-05 COMPLETE (2026-10-07): worksite filter + daily counts — `selectedSite` sibling state (null = All) with 02-04-mirror chips row (`__all__` key, `radio` role), single `load()` fetching `listWorksites` + `getAttendanceForDate` + `getDailyCounts` with identical `(date, worksiteId)` scope on `[selectedDate, selectedSite]` focus refetch, 5-stat `CountsHeader` (status dots, tabular-nums, per-stat labels) in the non-empty branch only, zero-sites empty state uses exact §7.5 "No worksites yet" + "Add worksite" → `/worksite-form`; `tsc` exit 0, all grep/phase-wide gates pass (hex 0, network 0, DELETE 0, TouchableOpacity 0, setSelectedDate 2 hits); SUMMARY at `.planning/phases/03-attendance-marking/03-05-SUMMARY.md`; commits 0b45634, 73f6158. AT-01..05 + NF-04 traced across 03-01..03-05, zero orphans. Phase 3 plans COMPLETE (5/5).
 - Phase 4 CONTEXT gathered (2026-10-07): `.planning/phases/04-worker-profile-history/04-CONTEXT.md` (7 areas: 30-day default, 7/30/90 presets, no custom range; row → profile with Edit inside; SVG ring + 4 counts, accent-only <75%; flat read-only marked-days history; removed = deep-link + frozen record; tap-to-call; skeleton loading; formatDisplay + tabular-nums). Phase 3 verification still pending — plan order stays `/gsd-verify-work 3` before `/gsd-plan-phase 4`.
 - Phase 4 PLANNED (2026-10-07): 3 plans in 3 waves — 04-01 summarize() + hand-check (PR-02 math), 04-02 profile shell (PR-02 UI), 04-03 history list + row retarget (PR-01). All autonomous, dependency chain 04-01 → 04-02 → 04-03.
+- Plan 04-01 COMPLETE (2026-10-08): pure `summarize()` in `src/utils/attendance.ts` (off_day-excluded denominator, half_day 0.5, round2, null on zero denominator) + `ATTENDANCE_PCT_FLOOR = 75` + `scripts/verify-summarize.mjs` hand-check (roadmap 76.79 vector exact); `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-01-SUMMARY.md`; commits 1bd8018, c5c2a5c. PR-02 math done (UI in 04-02).
 
 ## Decisions (carry into planning)
 
@@ -84,6 +85,7 @@
 - Note writes reuse the per-row `pendingIds` guard (`saveNote` early-returns when pending); unmarked+note defaults status to `present` explicitly; both `upsertAttendance` call sites always pass the full `(status, note)` pair so neither axis nulls the other (plan 03-04, T-03-12).
 - Attendance filter state is a `selectedSite` sibling of `selectedDate` (null = All); chip press calls only `setSelectedSite`, `handleSelectDate` only `setSelectedDate` — retention is structural, grep-gated at 2 `setSelectedDate` hits (plan 03-05, T-03-14).
 - Daily counts come from `getDailyCounts` in the same `load()` with the identical `(date, worksiteId)` scope as the rows — never client math — and the counts header renders only in the non-empty branch (plan 03-05, T-03-16/T-03-17).
+- `summarize()` is pure over caller-supplied entries (zero `@/db` imports) so Phase 5 reports import it without DAO coupling; percentage rounds to 2 decimals via `Math.round(x*100)/100` so the hand-check reads exactly 76.79 (plan 04-01).
 
 ## Deferred Verification Debt
 
