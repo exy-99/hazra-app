@@ -14,7 +14,7 @@ updated: 2026-10-08
 
 ### 1. Row to profile to Edit round-trip
 expected: Tap a workers-list row → profile opens with header/chips/ring/counts/history; switching 7/30/90 chips recomputes ring + counts + history together; Edit → save → back shows updated values on the profile.
-result: [pending]
+result: pass (2026-10-08, user-tested)
 
 ### 2. Removed-worker deep-link and below-75 accent
 expected: Deep-link a soft-deleted worker id → Removed banner + full record (stats + history), no Edit action; ring renders orange below 75% and teal at/above 75%.
@@ -23,9 +23,9 @@ result: [pending]
 ## Summary
 
 total: 2
-passed: 0
+passed: 1
 issues: 0
-pending: 2
+pending: 1
 skipped: 0
 blocked: 0
 
