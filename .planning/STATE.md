@@ -3,7 +3,7 @@
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 5 — Home Dashboard & Reports
 **Status:** Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; verification human_needed → 2/2 UAT passed on-device; review 04-REVIEW.md 0 critical/8 warnings advisory). Phase 3 UAT (13/13) + security (17/17) done 2026-10-08; 03-VERIFICATION.md still pending.
-**Last updated:** 2026-10-08
+**Last updated:** 2026-10-08 (Phase 5 plans complete, 4/4)
 
 ## Position
 
@@ -39,6 +39,7 @@
 - Plan 04-01 COMPLETE (2026-10-08): pure `summarize()` in `src/utils/attendance.ts` (off_day-excluded denominator, half_day 0.5, round2, null on zero denominator) + `ATTENDANCE_PCT_FLOOR = 75` + `scripts/verify-summarize.mjs` hand-check (roadmap 76.79 vector exact); `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-01-SUMMARY.md`; commits 1bd8018, c5c2a5c. PR-02 math done (UI in 04-02).
 - Plan 04-02 COMPLETE (2026-10-08): new `src/components/attendance-ring.tsx` (SVG ring, % or —, accent below 75, a11y label) + rewritten `src/app/worker/[id].tsx` (header with tap-to-call phone, 7/30/90 chips defaulting 30, ring + 4 STATUS-dot counts, single orange Edit, skeleton/retry/not-found/Removed-banner states, focus refetch on [id, period]); all five phase gates 0 on both files; `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-02-SUMMARY.md`; commits 65508b6, d3211c5 (task 3 verification-only, no diff). PR-02 UI done (history list in 04-03).
 - Plan 04-03 COMPLETE (2026-10-08): history section in `src/app/worker/[id].tsx` (memo `HistoryRow` — formatDisplay date + read-only STATUS-tint chip View + `numberOfLines={1}` note preview, reversed `FlatList` with `scrollEnabled={false}` + `keyExtractor` on entry id, §7.5 empty state on zero entries, 3 extended skeleton blocks; stats empty-state narrowed to `entries.length > 0` so zero-entries shows exactly one card) + `src/app/(tabs)/workers.tsx` row retarget (`goToProfile` → `/worker/[id]`, `View {name} profile` label); all phase-wide gates 0, single `getAttendanceForWorker` call site, `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-03-SUMMARY.md`; commits 0aa49c8, 7a6b14d (task 3 verification-only, no diff). PR-01 done end to end; Phase 4 plans COMPLETE (3/3).
+- Phase 5 plans COMPLETE (2026-10-08, 4/4 across 3 waves, `tsc` exit 0): 05-01 Home hero (`src/app/(tabs)/index.tsx` — date + size-170 ring + 4 tappable pills + unmarked line + one orange CTA, zero-workers/untouched/skeleton/retry states); 05-02 Reports foundation (pure `src/utils/reports.ts`, shared `src/components/calendar-sheet.tsx`, DateStrip thin wrapper, `src/app/(tabs)/reports.tsx` shell with site + 7/30/90/gated-custom filters + aggregate ring + anchors); 05-03 per-worker list (memo `src/components/report-row.tsx`, Frequently-absent bottom-3 + highest-first list, object-form profile push); 05-04 trend chart (read-only `src/components/trend-chart.tsx` SVG with GAP_H muted gaps, Trends section grouped from the shared dataset). Next: `/gsd-verify-work 5` then code review.
 
 ## Decisions (carry into planning)
 
