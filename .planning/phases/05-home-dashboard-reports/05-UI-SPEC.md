@@ -1,10 +1,12 @@
 ---
 phase: 05-home-dashboard-reports
 slug: home-dashboard-reports
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-10-08
+reviewed_at: 2026-10-08
+approval: APPROVED (6/6 dimensions: 5 PASS + 1 FLAG Typography non-blocking, frozen Type scale reuse)
 ---
 
 # Phase 5 — UI Design Contract
@@ -160,11 +162,11 @@ Order top→bottom in a `ScrollView` (flat lists inside use `scrollEnabled={fals
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: FLAG (non-blocking — 6 sizes / 4 weights all reuse frozen `Type` scale with clear hierarchy; h1/h2 one role, caption-13 floor token)
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS (not applicable — no shadcn, no third-party)
 
-**Approval:** pending
+**Approval:** approved 2026-10-08
