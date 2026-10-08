@@ -1,8 +1,6 @@
 import { CalendarDays } from 'lucide-react-native';
 import { useState } from 'react';
 import {
-  FlatList,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +8,7 @@ import {
   View,
 } from 'react-native';
 
+import { CalendarSheet } from '@/components/calendar-sheet';
 import { Radius, Spacing, Type } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { addDays, formatDisplay, lastNDays, todayKey } from '@/utils/dates';
@@ -34,18 +33,12 @@ function stripFor(selectedDate: string): string[] {
   return filled;
 }
 
-function pastThirtyDays(): string[] {
-  const today = todayKey();
-  return Array.from({ length: 30 }, (_, i) => addDays(today, -i));
-}
-
 export function DateStrip({ selectedDate, onSelectDate }: DateStripProps): React.JSX.Element {
   const theme = useTheme();
   const [pickerOpen, setPickerOpen] = useState(false);
   const today = todayKey();
   const isToday = selectedDate === today;
   const strip = stripFor(selectedDate);
-  const pastDates = pastThirtyDays();
 
   function closePicker() {
     setPickerOpen(false);
@@ -135,50 +128,14 @@ export function DateStrip({ selectedDate, onSelectDate }: DateStripProps): React
           Pick a date
         </Text>
       </Pressable>
-      <Modal
+      <CalendarSheet
         visible={pickerOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={closePicker}>
-        <View style={styles.backdrop}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Close date picker"
-            onPress={closePicker}
-            style={[styles.scrim, { backgroundColor: theme.foreground }]}
-          />
-          <View
-            style={[styles.sheet, { backgroundColor: theme.surface }]}>
-            <FlatList
-              data={pastDates}
-              keyExtractor={(key) => key}
-              renderItem={({ item }) => {
-                const selected = item === selectedDate;
-                return (
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected }}
-                    accessibilityLabel={formatDisplay(item)}
-                    android_ripple={{ color: theme.muted }}
-                    onPress={() => pickDate(item)}
-                    style={({ pressed }) => [
-                      styles.pickItem,
-                      { opacity: pressed ? 0.85 : 1 },
-                    ]}>
-                    <Text
-                      style={[
-                        styles.pickItemLabel,
-                        { color: selected ? theme.primary : theme.foreground },
-                      ]}>
-                      {formatDisplay(item)}
-                    </Text>
-                  </Pressable>
-                );
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
+        selectedKey={selectedDate}
+        maxDate={today}
+        daysBack={30}
+        onPick={pickDate}
+        onClose={closePicker}
+      />
     </View>
   );
 }
@@ -234,28 +191,5 @@ const styles = StyleSheet.create({
   },
   pickLabel: {
     ...Type.label,
-  },
-  backdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  scrim: {
-    ...StyleSheet.absoluteFill,
-    opacity: 0.5,
-  },
-  sheet: {
-    maxHeight: '70%',
-    borderTopLeftRadius: Radius.lg,
-    borderTopRightRadius: Radius.lg,
-    paddingVertical: Spacing.two,
-  },
-  pickItem: {
-    justifyContent: 'center',
-    minHeight: 44,
-    paddingHorizontal: Spacing.three,
-  },
-  pickItemLabel: {
-    ...Type.body,
-    fontVariant: ['tabular-nums'],
   },
 });
