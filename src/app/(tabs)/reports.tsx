@@ -1,7 +1,8 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { CalendarDays, Users } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import {
+  FlatList,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AttendanceRing } from '@/components/attendance-ring';
 import { CalendarSheet } from '@/components/calendar-sheet';
 import { EmptyState } from '@/components/empty-state';
+import { ReportRow } from '@/components/report-row';
 import { STATUS } from '@/constants/status';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
 import { getAttendanceForWorker } from '@/db/attendance';
@@ -24,8 +26,11 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatDisplay, todayKey } from '@/utils/dates';
 import { summarize, type AttendanceSummary } from '@/utils/attendance';
 import {
+  bottomThree,
   isValidRange,
   rangeForPeriod,
+  sortWorkersHighestFirst,
+  type PerWorkerStat,
   type ReportPeriod,
   type ReportRange,
 } from '@/utils/reports';
@@ -68,6 +73,8 @@ export default function ReportsScreen() {
   const [toOpen, setToOpen] = useState(false);
   const [sites, setSites] = useState<Worksite[]>([]);
   const [aggregate, setAggregate] = useState<AttendanceSummary | null>(null);
+  const [sorted, setSorted] = useState<PerWorkerStat[]>([]);
+  const [lowest, setLowest] = useState<PerWorkerStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
@@ -93,6 +100,13 @@ export default function ReportsScreen() {
       );
       const allFlat = entriesByWorker.flat();
       setAggregate(summarize(allFlat));
+      const perWorker: PerWorkerStat[] = workers.map((w, i) => ({
+        workerId: w.id,
+        name: w.name,
+        summary: summarize(entriesByWorker[i]),
+      }));
+      setSorted(sortWorkersHighestFirst(perWorker));
+      setLowest(bottomThree(perWorker));
     } catch {
       setLoadError(true);
     } finally {
@@ -105,6 +119,10 @@ export default function ReportsScreen() {
       void load();
     }, [selectedSite, from, to]),
   );
+
+  function goToProfile(id: string) {
+    router.push({ pathname: '/worker/[id]', params: { id } });
+  }
 
   function retry() {
     setLoading(true);
@@ -342,7 +360,57 @@ export default function ReportsScreen() {
               </View>
             )
           ) : null}
-          {/* REPORTS-LIST-ANCHOR (05-03) */}
+          {/* Per-worker list + bottom-3 (05-03), derived from the 05-02 dataset */}
+          {aggregate !== null && !loading ? (
+            <View style={styles.listWrap}>
+              {lowest.length > 0 ? (
+                <View style={styles.section}>
+                  <Text
+                    accessibilityRole="header"
+                    style={[styles.sectionTitle, { color: theme.foreground }]}>
+                    Frequently absent
+                  </Text>
+                  <View style={styles.list}>
+                    {lowest.map((item) => (
+                      <ReportRow
+                        key={item.workerId}
+                        workerId={item.workerId}
+                        name={item.name}
+                        summary={item.summary}
+                        onOpen={goToProfile}
+                      />
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+              <View style={styles.section}>
+                <Text style={[styles.sectionTitle, { color: theme.foreground }]}>
+                  All workers
+                </Text>
+                <Text
+                  style={[
+                    styles.sectionCount,
+                    { color: theme.mutedForeground },
+                  ]}>
+                  {`${sorted.length} workers`}
+                </Text>
+                <FlatList
+                  data={sorted}
+                  keyExtractor={(item) => item.workerId}
+                  scrollEnabled={false}
+                  contentContainerStyle={styles.list}
+                  renderItem={({ item }) => (
+                    <ReportRow
+                      workerId={item.workerId}
+                      name={item.name}
+                      summary={item.summary}
+                      onOpen={goToProfile}
+                    />
+                  )}
+                />
+              </View>
+            </View>
+          ) : null}
           {/* REPORTS-TREND-ANCHOR (05-04) */}
         </ScrollView>
         <CalendarSheet
@@ -497,6 +565,25 @@ const styles = StyleSheet.create({
   },
   historySkeletonWrap: {
     alignSelf: 'stretch',
+    gap: Spacing.two,
+  },
+  listWrap: {
+    alignSelf: 'stretch',
+    gap: Spacing.two,
+  },
+  section: {
+    alignSelf: 'stretch',
+    gap: Spacing.two,
+    paddingVertical: Spacing.two,
+  },
+  sectionTitle: {
+    ...Type.h2,
+  },
+  sectionCount: {
+    ...Type.caption,
+    fontVariant: ['tabular-nums'],
+  },
+  list: {
     gap: Spacing.two,
   },
   rowSkeleton: {
