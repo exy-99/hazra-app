@@ -13,12 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AttendanceRing } from '@/components/attendance-ring';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
 import { STATUS } from '@/constants/status';
 import { MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
 import { getAttendanceForWorker } from '@/db/attendance';
 import type { AttendanceEntry, Worker } from '@/db/types';
-import { getWorker } from '@/db/workers';
+import { deleteWorker, getWorker } from '@/db/workers';
 import { listWorksites } from '@/db/worksites';
 import { useTheme } from '@/hooks/use-theme';
 import { addDays, formatDisplay, todayKey } from '@/utils/dates';
@@ -104,6 +105,8 @@ export default function WorkerProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -159,6 +162,19 @@ export default function WorkerProfileScreen() {
   function callPhone() {
     if (worker?.phone) {
       void Linking.openURL(`tel:${worker.phone}`);
+    }
+  }
+
+  async function handleConfirmDelete(): Promise<void> {
+    if (typeof id !== 'string') {
+      return;
+    }
+    try {
+      await deleteWorker(id);
+      setConfirmVisible(false);
+      router.back();
+    } catch {
+      setDeleteError(true);
     }
   }
 
@@ -238,21 +254,55 @@ export default function WorkerProfileScreen() {
         ) : (
           <ScrollView contentContainerStyle={styles.content}>
             {removed ? (
-              <View
-                accessibilityRole="text"
-                accessibilityLabel="Removed worker"
-                style={[
-                  styles.removedBanner,
-                  { backgroundColor: theme.muted },
-                ]}>
-                <Text
+              <>
+                <View
+                  accessibilityRole="text"
+                  accessibilityLabel="Removed worker"
                   style={[
-                    styles.removedText,
-                    { color: theme.destructive },
+                    styles.removedBanner,
+                    { backgroundColor: theme.muted },
                   ]}>
-                  Removed
-                </Text>
-              </View>
+                  <Text
+                    style={[
+                      styles.removedText,
+                      { color: theme.destructive },
+                    ]}>
+                    Removed
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Delete worker permanently"
+                  android_ripple={{ color: theme.muted }}
+                  onPress={() => {
+                    setDeleteError(false);
+                    setConfirmVisible(true);
+                  }}
+                  style={({ pressed }) => [
+                    styles.delete,
+                    { opacity: pressed ? 0.85 : 1 },
+                  ]}>
+                  <Text
+                    style={[styles.deleteLabel, { color: theme.destructive }]}>
+                    Delete permanently
+                  </Text>
+                </Pressable>
+                {deleteError ? (
+                  <Text
+                    accessibilityLiveRegion="polite"
+                    style={[styles.deleteError, { color: theme.destructive }]}>
+                    Couldn't delete — try again
+                  </Text>
+                ) : null}
+                <ConfirmDialog
+                  visible={confirmVisible}
+                  title={`Delete ${worker.name} permanently`}
+                  message={`${worker.name} and all their attendance history will be permanently deleted. This cannot be undone.`}
+                  confirmLabel="Delete"
+                  onConfirm={handleConfirmDelete}
+                  onCancel={() => setConfirmVisible(false)}
+                />
+              </>
             ) : null}
             <Text style={[styles.name, { color: theme.foreground }]}>
               {worker.name}
@@ -442,6 +492,18 @@ const styles = StyleSheet.create({
   removedText: {
     ...Type.label,
     textAlign: 'center',
+  },
+  delete: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  deleteLabel: {
+    ...Type.label,
+    textAlign: 'center',
+  },
+  deleteError: {
+    ...Type.caption,
   },
   name: {
     ...Type.h1,

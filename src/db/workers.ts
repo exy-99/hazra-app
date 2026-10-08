@@ -98,3 +98,17 @@ export async function deactivateWorker(id: string): Promise<void> {
   const db = getDb();
   await db.runAsync('UPDATE workers SET is_active = 0 WHERE id = ?', [id]);
 }
+
+/**
+ * Permanently delete a worker and all of their attendance history.
+ * Destructive and irreversible — intended for workers already removed via
+ * deactivateWorker(); the UI only exposes it on inactive (is_active = 0)
+ * workers. Attendance rows are deleted first because the FK has no cascade.
+ */
+export async function deleteWorker(id: string): Promise<void> {
+  const db = getDb();
+  await db.withTransactionAsync(async () => {
+    await db.runAsync('DELETE FROM attendance WHERE worker_id = ?', [id]);
+    await db.runAsync('DELETE FROM workers WHERE id = ?', [id]);
+  });
+}

@@ -90,7 +90,7 @@
 
 **Plans:** 5 plans
 
-**Status:** Complete — 03-01..03-05 done 2026-10-07 (verification pending)
+**Status:** Complete — 03-01..03-05 done 2026-10-07 (UAT 13/13 passed + security 17/17 closed 2026-10-08; 03-VERIFICATION.md pending)
 
 **Plan progress:**
 - [x] 03-01 date strip + selectedDate host (AT-02 date-selection) — done 2026-10-07
