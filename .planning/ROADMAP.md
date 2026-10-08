@@ -120,7 +120,7 @@
 
 **Plan progress:**
 - [x] 04-01 summarize() + hand-check (PR-02 math) — done 2026-10-08
-- [ ] 04-02 profile shell — header, chips, ring, stats, states (PR-02 UI)
+- [x] 04-02 profile shell — header, chips, ring, stats, states (PR-02 UI) — done 2026-10-08
 - [ ] 04-03 history list + row retarget (PR-01)
 
 ---

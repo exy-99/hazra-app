@@ -36,6 +36,7 @@
 - Phase 4 CONTEXT gathered (2026-10-07): `.planning/phases/04-worker-profile-history/04-CONTEXT.md` (7 areas: 30-day default, 7/30/90 presets, no custom range; row → profile with Edit inside; SVG ring + 4 counts, accent-only <75%; flat read-only marked-days history; removed = deep-link + frozen record; tap-to-call; skeleton loading; formatDisplay + tabular-nums). Phase 3 verification still pending — plan order stays `/gsd-verify-work 3` before `/gsd-plan-phase 4`.
 - Phase 4 PLANNED (2026-10-07): 3 plans in 3 waves — 04-01 summarize() + hand-check (PR-02 math), 04-02 profile shell (PR-02 UI), 04-03 history list + row retarget (PR-01). All autonomous, dependency chain 04-01 → 04-02 → 04-03.
 - Plan 04-01 COMPLETE (2026-10-08): pure `summarize()` in `src/utils/attendance.ts` (off_day-excluded denominator, half_day 0.5, round2, null on zero denominator) + `ATTENDANCE_PCT_FLOOR = 75` + `scripts/verify-summarize.mjs` hand-check (roadmap 76.79 vector exact); `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-01-SUMMARY.md`; commits 1bd8018, c5c2a5c. PR-02 math done (UI in 04-02).
+- Plan 04-02 COMPLETE (2026-10-08): new `src/components/attendance-ring.tsx` (SVG ring, % or —, accent below 75, a11y label) + rewritten `src/app/worker/[id].tsx` (header with tap-to-call phone, 7/30/90 chips defaulting 30, ring + 4 STATUS-dot counts, single orange Edit, skeleton/retry/not-found/Removed-banner states, focus refetch on [id, period]); all five phase gates 0 on both files; `tsc` exit 0; SUMMARY at `.planning/phases/04-worker-profile-history/04-02-SUMMARY.md`; commits 65508b6, d3211c5 (task 3 verification-only, no diff). PR-02 UI done (history list in 04-03).
 
 ## Decisions (carry into planning)
 
@@ -86,6 +87,8 @@
 - Attendance filter state is a `selectedSite` sibling of `selectedDate` (null = All); chip press calls only `setSelectedSite`, `handleSelectDate` only `setSelectedDate` — retention is structural, grep-gated at 2 `setSelectedDate` hits (plan 03-05, T-03-14).
 - Daily counts come from `getDailyCounts` in the same `load()` with the identical `(date, worksiteId)` scope as the rows — never client math — and the counts header renders only in the non-empty branch (plan 03-05, T-03-16/T-03-17).
 - `summarize()` is pure over caller-supplied entries (zero `@/db` imports) so Phase 5 reports import it without DAO coupling; percentage rounds to 2 decimals via `Math.round(x*100)/100` so the hand-check reads exactly 76.79 (plan 04-01).
+- Profile `load()` is catch-all-inside with `void` callers, refetching on `[id, period]` focus scope so register corrections reflect on back; ring + counts + (04-03) history share the single period scope (plan 04-02).
+- Removed profile = single-word "Removed" banner (muted bg, destructive text) + full stats visible + Edit hidden; tampered id = no-action "Worker not found" EmptyState; zero countable days = exact §7.5 "No attendance recorded yet" no-action state (plan 04-02).
 
 ## Deferred Verification Debt
 
