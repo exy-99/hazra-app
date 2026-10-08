@@ -15,6 +15,7 @@ import { AttendanceRing } from '@/components/attendance-ring';
 import { CalendarSheet } from '@/components/calendar-sheet';
 import { EmptyState } from '@/components/empty-state';
 import { ReportRow } from '@/components/report-row';
+import { TrendChart, type BucketSummary } from '@/components/trend-chart';
 import { STATUS } from '@/constants/status';
 import { BottomTabInset, MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
 import { getAttendanceForWorker } from '@/db/attendance';
@@ -27,7 +28,9 @@ import { formatDisplay, todayKey } from '@/utils/dates';
 import { summarize, type AttendanceSummary } from '@/utils/attendance';
 import {
   bottomThree,
+  bucketDates,
   isValidRange,
+  listDatesInRange,
   rangeForPeriod,
   sortWorkersHighestFirst,
   type PerWorkerStat,
@@ -58,6 +61,10 @@ function StatsSkeleton({ muted }: { muted: string }): React.JSX.Element {
           />
         ))}
       </View>
+      <View
+        accessibilityLabel="Loading trend"
+        style={[styles.chartSkeleton, { backgroundColor: muted }]}
+      />
     </View>
   );
 }
@@ -75,6 +82,7 @@ export default function ReportsScreen() {
   const [aggregate, setAggregate] = useState<AttendanceSummary | null>(null);
   const [sorted, setSorted] = useState<PerWorkerStat[]>([]);
   const [lowest, setLowest] = useState<PerWorkerStat[]>([]);
+  const [trend, setTrend] = useState<BucketSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
@@ -107,6 +115,26 @@ export default function ReportsScreen() {
       }));
       setSorted(sortWorkersHighestFirst(perWorker));
       setLowest(bottomThree(perWorker));
+      const dates = listDatesInRange(from, to);
+      const buckets = bucketDates(dates);
+      const byDate: Record<string, AttendanceEntry[]> = {};
+      for (const entry of allFlat) {
+        const list = byDate[entry.date];
+        if (list) {
+          list.push(entry);
+        } else {
+          byDate[entry.date] = [entry];
+        }
+      }
+      const trendData: BucketSummary[] = buckets.map((b) => {
+        const dayEntries = b.dates.flatMap((d) => byDate[d] ?? []);
+        return {
+          key: b.key,
+          label: b.label,
+          percentage: summarize(dayEntries).percentage,
+        };
+      });
+      setTrend(trendData);
     } catch {
       setLoadError(true);
     } finally {
@@ -411,7 +439,17 @@ export default function ReportsScreen() {
               </View>
             </View>
           ) : null}
-          {/* REPORTS-TREND-ANCHOR (05-04) */}
+          {/* Trend section (05-04), derived from the shared 05-02 dataset */}
+          {aggregate !== null && !loading ? (
+            <View style={styles.section}>
+              <Text
+                accessibilityRole="header"
+                style={[styles.sectionTitle, { color: theme.foreground }]}>
+                Trends
+              </Text>
+              <TrendChart buckets={trend} />
+            </View>
+          ) : null}
         </ScrollView>
         <CalendarSheet
           visible={fromOpen}
@@ -589,6 +627,11 @@ const styles = StyleSheet.create({
   rowSkeleton: {
     alignSelf: 'stretch',
     height: 72,
+    borderRadius: Radius.md,
+  },
+  chartSkeleton: {
+    alignSelf: 'stretch',
+    height: 200,
     borderRadius: Radius.md,
   },
 });
