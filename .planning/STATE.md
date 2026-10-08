@@ -105,7 +105,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-discuss-phase 5` — Phase 4 COMPLETE 2026-10-08 (summarize() + profile shell + history list; PR-01/PR-02 validated, 2/2 UAT passed). Next: discuss Phase 5 (Home Dashboard & Reports). Note: Phase 3 verification still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
+`/gsd-discuss-phase 5` — Phase 4 COMPLETE 2026-10-08 (summarize() + profile shell + history list; PR-01/PR-02 validated, 2/2 UAT passed). Next: discuss Phase 5 (Home Dashboard & Reports). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
 
 ## Notes
 
