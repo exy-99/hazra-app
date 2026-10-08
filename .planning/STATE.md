@@ -106,7 +106,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-plan-phase 5` — Phase 5 CONTEXT gathered 2026-10-08 (6 areas, 25 decisions: Home hero, range + filters, per-worker + lowest, row depth, trends, custom picker; `.planning/phases/05-home-dashboard-reports/05-CONTEXT.md`). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
+`/gsd-plan-phase 5` — Phase 5 CONTEXT gathered 2026-10-08 (6 areas, 25 decisions; `.planning/phases/05-home-dashboard-reports/05-CONTEXT.md`) + UI-SPEC approved 2026-10-08 (`.planning/phases/05-home-dashboard-reports/05-UI-SPEC.md`, 5 PASS + 1 FLAG Typography advisory; planner consumes as design context). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
 
 ## Notes
 
