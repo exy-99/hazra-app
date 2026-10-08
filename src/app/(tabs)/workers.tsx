@@ -37,7 +37,7 @@ const WorkerRow = memo(function WorkerRow({
 
   return (
     <Pressable
-      accessibilityLabel={`Edit ${worker.name}`}
+      accessibilityLabel={`View ${worker.name} profile`}
       android_ripple={{ color: theme.muted }}
       onPress={onPress}
       style={({ pressed }) => [
@@ -138,8 +138,8 @@ export default function WorkersScreen() {
     router.push("/worker-form");
   }
 
-  function goToEdit(id: string) {
-    router.push({ pathname: "/worker-form", params: { id } });
+  function goToProfile(id: string) {
+    router.push({ pathname: "/worker/[id]", params: { id } });
   }
 
   function goToWorksites() {
@@ -274,7 +274,7 @@ export default function WorkersScreen() {
                 <WorkerRow
                   worker={item}
                   siteName={siteNames.get(item.worksite_id) ?? "—"}
-                  onPress={() => goToEdit(item.id)}
+                  onPress={() => goToProfile(item.id)}
                 />
               )}
             />
