@@ -50,7 +50,7 @@
 **Success criteria:**
 1. Manager can add 2 worksites and 5+ workers split across them; restart restores everything.
 2. Worksite and worker forms show visible labels, inline required-field errors, and an orange full-width Save.
-3. Removing a worker hides it from all active lists/pickers but its history remains viewable.
+3. Removing a worker hides it from all active lists/pickers but its history remains viewable (until optionally deleted permanently via the removed-profile action, which destroys history).
 4. Worker list filters by worksite; reassigning a worker updates the filter immediately.
 5. Removing a worksite with active workers surfaces the worker count (no silent cascade).
 
@@ -112,7 +112,7 @@
 1. `summarize()` matches PRD §9 by hand: 20 present, 5 absent, 3 half_day, 2 off_day → pct 76.79 (off_day excluded).
 2. Zero-denominator cases render `—`, never `NaN`, `Infinity`, or `0%`.
 3. Profile shows a period selector that recomputes ring + counts together; ring turns `accent` below 75%.
-4. History survives soft-delete — a removed worker's profile is still reachable.
+4. History survives soft-delete - a removed worker's profile is still reachable (unless later deleted permanently, which removes worker + history rows).
 
 **UI hint:** yes
 

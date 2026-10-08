@@ -28,12 +28,16 @@ result: [pending]
 expected: router.push to /worksites, /worksite-form, /worker-form presents a screen with an always-visible back arrow; tab URLs unchanged
 result: [pending]
 
+### 5. Permanent delete of a removed worker
+expected: Removed-profile "Delete permanently" (confirm-gated) deletes the worker row and all its attendance rows; profile no longer resolves and history is gone. Covered by commit 05b0d56; verify on-device in Phase 9
+result: [pending]
+
 ## Summary
 
-total: 4
+total: 5
 passed: 0
 issues: 0
-pending: 4
+pending: 5
 skipped: 0
 blocked: 0
 

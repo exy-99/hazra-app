@@ -92,6 +92,7 @@
 - Removed profile = single-word "Removed" banner (muted bg, destructive text) + full stats visible + Edit hidden; tampered id = no-action "Worker not found" EmptyState; zero countable days = exact §7.5 "No attendance recorded yet" no-action state (plan 04-02).
 - History list = memo read-only `View` rows (formatDisplay date + STATUS tint/solid/text chip + `numberOfLines={1}` note preview when non-null) in a newest-first `FlatList` (`keyExtractor` on entry id, `scrollEnabled={false}` inside the profile ScrollView); never `StatusPill` (it carries cycle handlers); zero-entries empty state owned by the history section while the stats-region card narrows to `entries.length > 0` so exactly one §7.5 card renders (plan 04-03).
 - Workers-list rows open the profile (`goToProfile` → `/worker/[id]`, `View {name} profile` label); Edit lives inside the profile, the `+ Add worker` CTA still → `/worker-form`, and the list stays active-only with removed profiles reachable by deep-link only (plan 04-03, D-06/D-14).
+- Permanent delete is a deliberate scope change on top of soft-delete (commit 05b0d56, user-approved 2026-10-08): a removed (`is_active = 0`) worker's profile exposes a confirm-gated "Delete permanently" action running `deleteWorker()` — one transaction deleting attendance rows then the worker row (FK has no cascade). History is then unrecoverable. Future zero-`DELETE` gate sweeps must allowlist `src/db/workers.ts`; backup/restore (Phase 7) covers inactive rows but cannot recover hard-deleted ones.
 
 ## Deferred Verification Debt
 

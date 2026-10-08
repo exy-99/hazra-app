@@ -15,7 +15,7 @@
 
 - [x] **WK-01**: Manager can add a worker with name (required), assigned worksite (required), optional role and phone.
 - [x] **WK-02**: Manager can edit an existing worker's details, including reassignment to another worksite.
-- [x] **WK-03**: Manager can remove a worker via soft-delete — hidden from active lists, history preserved.
+- [x] **WK-03**: Manager can remove a worker via soft-delete - hidden from active lists, history preserved. A removed worker can additionally be permanently deleted (worker row + all attendance rows, transactional, confirm-gated) — history is then unrecoverable.
 - [x] **WK-04**: Manager can view and filter the worker list by worksite.
 
 ### Attendance (AT)
