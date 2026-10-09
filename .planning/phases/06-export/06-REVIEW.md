@@ -13,10 +13,10 @@ files_reviewed_list:
   - src/app/(tabs)/reports.tsx
   - src/components/report-row.tsx
 findings:
-  critical: 0
-  warning: 7
-  info: 9
-  total: 16
+  critical: 1
+  warning: 12
+  info: 12
+  total: 25
 status: issues_found
 ---
 
@@ -179,3 +179,204 @@ _Verified clean (no finding): `?workerId=`/`?worksiteId=` params stay display st
 _Reviewed: 2026-10-09T08:30:00Z_
 _Reviewer: OpenCode (gsd-code-reviewer)_
 _Depth: deep_
+
+---
+
+# Gap-closure review: plans 06-04 + 06-05 (2026-10-10)
+
+**Depth:** standard
+**Files reviewed:** 2 (`src/app/export.tsx`, `src/utils/files.ts`)
+**Plans/summaries read:** `06-04-PLAN.md`, `06-05-PLAN.md`, `06-04-SUMMARY.md`, `06-05-SUMMARY.md`
+**Status:** issues_found — 1 critical, 5 warnings, 3 info
+
+## Summary
+
+Reviewed the gap-closure diffs (web success setters, share notice, preview
+footer, `openWebPrintHtml` + web-PDF branches, stale-guard, tap-time empty
+guard) against the implementation. The threat-model mitigations hold:
+only escaped builder HTML reaches `document.write` (verified
+`escapeHtml` at every name/note/title/subtitle interpolation in
+`src/utils/export.ts`), no DAO/SQL touched, popup-blocked and
+share-unavailable paths are honest. One critical defect blocks this
+from shipping: the tap-time empty guard returns **before** the `try`
+whose `finally` releases the export lock, so one empty tap permanently
+disables Export until the screen remounts — directly contradicting the
+06-05 summary's "inside try so the finally lock reset still runs" claim.
+
+## Critical Issues
+
+### CR-01: Empty-tap guard leaks `exportLock`/`exporting` — Export permanently disabled after one empty tap
+
+**File:** `src/app/export.tsx:381-393`
+**Issue:** `handleExport` sets `exportLock.current = true` (385) and
+`setExporting(true)` (386), then the new tap-time guard
+(`const rows = …; if (rows.length === 0) { setExportError(…); return; }`,
+388-392) returns **before** the `try` block (395) whose `finally`
+(520-523) is the only place that resets the lock and `exporting`.
+After a single empty export, `exportLock` stays `true` and `exporting`
+stays `true` forever: every later tap hits `if (exportLock.current)
+return` (382), and `ctaDisabled` (569, includes `exporting`) stays
+`true`. Neither `resetExport` (541-548) nor `retry` (376-379) clears
+either flag — only a remount (refocus with changed deps is not enough,
+since the ref persists per mount) recovers. Repro: fresh worker with no
+marks → tap Export → "No attendance" shows, CTA stuck on "Exporting…"
+even after marks are added. The 06-05 summary claims the guard was
+"placed … inside `try` so the `finally` lock reset still runs" — the
+code shows it is outside `try`.
+**Fix:**
+```tsx
+setExportError(null);
+try {
+  const rows = selectedScope === 'worker' ? entries : regRows;
+  if (rows.length === 0) {
+    setExportError('No attendance to export yet');
+    return;
+  }
+  let tempUri: string | null = null;
+  …
+```
+(move the guard to the top of the existing `try`; `finally` then
+releases the lock. Alternatively reset both flags before the early
+`return`, but moving inside `try` matches the summary's stated intent.)
+
+## Warnings
+
+### WR-08: Web-PDF success card claims "Saved to Downloads" but nothing was saved there
+
+**File:** `src/app/export.tsx:432-444`, `485-497` (web-PDF branches) → `758-772` (success card)
+**Issue:** On web+PDF the `'opened'` path opens the browser print dialog
+and stores an in-memory `text/html` Blob URL as `savedUri`; no file is
+written to any Downloads folder (the user only gets a PDF if they pick
+"Save as PDF" in the dialog). The success card then unconditionally
+renders "Saved to Downloads" with the `.pdf` filename, overstating what
+happened — if the user cancels the print dialog, the card still claims
+a save. (Prior IN-08 noted the same overclaim for iOS; this extends it
+to a flow where no file exists at all.)
+**Fix:** Gate the heading/copy on the delivery path, e.g. track `const
+[printOnly, setPrintOnly] = useState(false)` (set true in the web-PDF
+`'opened'` branch, cleared in `resetExport`) and render `{printOnly ?
+'Opened print dialog' : 'Saved to Downloads'}` plus a caption like
+"Choose Save as PDF in the print dialog".
+
+### WR-09: Web-PDF Blob URLs are never revoked — object-URL leak on every export
+
+**File:** `src/app/export.tsx:438-439`, `491-492`; `src/app/export.tsx:541-548` (`resetExport`)
+**Issue:** Both web-PDF branches `URL.createObjectURL(new Blob([html]))`
+and keep the URL live as `savedUri` (deliberate, per summary, so Share
+stays wired). But nothing ever calls `URL.revokeObjectURL`: repeated
+PDF exports orphan each prior URL (overwritten `savedUri` is
+unreachable), and `resetExport` drops the URL without revoking. The
+web-CSV branches revoke after 1s (425, 478); the PDF path has no
+equivalent. Each leaked URL pins the full HTML string in memory for the
+tab lifetime.
+**Fix:**
+```tsx
+// before overwriting savedUri, and in resetExport:
+const prev = savedUri; // capture via ref or functional read
+if (prev !== null && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
+```
+At minimum revoke the previous `savedUri` before setting the new one
+and inside `resetExport`.
+
+### WR-10: Empty-data message shares the generic Try-again surface — futile retry loop
+
+**File:** `src/app/export.tsx:389-391` (guard) + `899-923` (error surface)
+**Issue:** The honest "No attendance to export yet" message renders
+through the same `exportError` + "Try again" block as transient
+failures. Retrying with unchanged (still empty) data deterministically
+reproduces the message — the button implies a transient fault the user
+can push through rather than "add attendance first". (After CR-01 is
+fixed the loop becomes tappable-but-futile instead of dead.)
+**Fix:** Suppress the retry affordance for the empty case, e.g.
+`{exportError !== null && !showSuccess && exportError !== 'No
+attendance to export yet' ? (…Try again…) : null}` or branch the copy
+to "Add attendance, then try again" with no button.
+
+### WR-11: `handleExport` can export stale rows after a failed load
+
+**File:** `src/app/export.tsx:381-392` (no `loadError`/`notFound` check); `src/app/export.tsx:358-362` (`catch` leaves rows); `569` (`ctaDisabled`)
+**Issue:** `load()`'s `catch` sets `loadError(true)` but leaves the
+previous `entries`/`regRows` intact, and `ctaDisabled` does not include
+`loadError` or `notFound`. If a reload fails (or the screen is in
+`notFound` with leftover rows from a prior selection — the `notFound`
+branches for explicit ids clear rows, but the `catch` path does not),
+the CTA stays enabled over non-empty stale rows and `handleExport`
+writes a file for the wrong worker/site/month with no indication it is
+stale. The tap-time guard only catches the empty case.
+**Fix:**
+```tsx
+const ctaDisabled = exporting || loading || loadError || notFound || scopeCount === 0 || showSuccess;
+```
+and/or clear `entries`/`regRows` in the `catch`, and/or snapshot-guard
+`if (loadError || notFound)` in `handleExport` with an honest message.
+
+### WR-12: `loadSiteRegister` reads `selectedMonth` from closure instead of a parameter
+
+**File:** `src/app/export.tsx:225-231`
+**Issue:** The function signature takes `(siteId, name, isActive,
+isStale)` but computes `monthRange(selectedMonth)` from the render
+closure. Correctness currently depends entirely on the `isStale`
+generation check discarding results computed for a superseded month;
+any future caller that reuses a stale closure (or a direct call outside
+`load()`) silently builds the wrong month's register. The month is an
+input to the query and should be explicit like the site id.
+**Fix:** `async function loadSiteRegister(siteId: string, name: string,
+isActive: number, month: string, isStale: () => boolean)` with `const {
+from, to } = monthRange(month);` and update both call sites (333, 351)
+to pass `selectedMonth`.
+
+## Info
+
+### IN-10: `footerSummary` computed twice per preview render
+
+**File:** `src/app/export.tsx:870-883`
+**Issue:** The PDF footer `Text` calls `footerSummary(selectedScope ===
+'worker' ? entries : regRows)` once for `accessibilityLabel` and again
+for children. Pure and cheap (per the 06-04 summary, deliberate), but a
+single hoisted `const footerLine = selectedFormat === 'pdf' ?
+footerSummary(…) : null` above the return would keep label and content
+from ever diverging and save the double walk.
+**Fix:** Hoist to a const; use it in both props.
+
+### IN-11: `window.open('', '_blank')` without `noopener`
+
+**File:** `src/utils/files.ts:113`
+**Issue:** The print window keeps an `opener` reference to the app tab.
+Both sides are app-controlled (`about:blank` + builder HTML, no remote
+content), so exploitability is negligible, but `noopener` is the
+expected hygiene for `_blank` programmatic opens.
+**Fix:** `window.open('', '_blank', 'noopener')` (guard the extra-arg
+typing if the RN web types complain).
+
+### IN-12: Unhandled `print()` throw + unguarded DOM globals narrow the 'blocked' honesty
+
+**File:** `src/utils/files.ts:109-122`; `src/app/export.tsx:419-424`, `470-477`
+**Issue:** (a) `openWebPrintHtml` maps only `window.open() === null` to
+`'blocked'`; if `w.print()` itself throws (aggressive popup/print
+blockers, headless test env), the exception surfaces via
+`handleExport`'s generic catch as "Couldn't export — try again",
+losing the actionable popup copy. (b) `export.tsx` touches `document`
+/ `URL` / `Blob` guarded only by `Platform.OS === 'web'` with no
+`typeof document/URL` checks — under SSR/tests `Platform.OS` can be
+`'web'` while the globals are undefined, turning the branch into a
+`ReferenceError` (still caught, but as a generic failure).
+**Fix:**
+```ts
+try { w.focus(); w.print(); } catch { return 'blocked'; }
+```
+and prefer `typeof window !== 'undefined'`-style guards (or `globalThis.URL`)
+before touching DOM globals at the call sites.
+
+---
+
+_Verified still-clean in gap scope: `openWebPrintHtml` synchronous
+(popup-blocker-safe tap-stack call), `printHtmlToPdf` web-throw
+preserved, both callers pass `isStale`, `loading` in `ctaDisabled`,
+exact "No attendance to export yet" / "Popup blocked — allow popups to
+print the PDF" / share-notice strings, no DAO/SQL changes, Pressable
+only, no hardcoded hex, `tsc` premise accepted from plan summaries
+(not re-run in review)._
+
+_Reviewed: 2026-10-10_
+_Reviewer: OpenCode (gsd-code-reviewer)_
+_Depth: standard_
