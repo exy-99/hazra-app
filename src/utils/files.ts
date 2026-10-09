@@ -14,6 +14,9 @@ import * as Sharing from 'expo-sharing';
  * unavailable the helpers THROW (fail loudly, D-16) — there is intentionally
  * no silent fallback to a location the success card does not promise.
  * Partial files are deleted before rethrowing, never surfaced.
+ *
+ * Web PDF path (06-05): browsers print HTML via a new window +
+ * `window.print` (user picks Save as PDF); native still uses `expo-print`.
  */
 
 /** Strip any directory components the caller passed in (T-06-02). */
@@ -91,6 +94,31 @@ export async function printHtmlToPdf(html: string): Promise<string> {
   }
   const { uri } = await Print.printToFileAsync({ html });
   return uri;
+}
+
+/**
+ * Web-only print path: open the builder HTML in a new tab and invoke the
+ * browser print dialog (user picks Save as PDF). Synchronous so the
+ * `window.open` call stays in the tap handler's call stack (async gaps
+ * trigger popup blockers). Returns `'blocked'` when there is no window or
+ * the popup was blocked — callers surface an actionable message. Only
+ * `buildWorkerPdfHtml`/`buildRegisterPdfHtml` output (escaped inside the
+ * builders) ever reaches `document.write`; never concatenate names/notes
+ * at the call site (T-06-05-01).
+ */
+export function openWebPrintHtml(html: string): 'opened' | 'blocked' {
+  if (typeof window === 'undefined') {
+    return 'blocked';
+  }
+  const w = window.open('', '_blank');
+  if (w === null) {
+    return 'blocked';
+  }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  w.print();
+  return 'opened';
 }
 
 /**
