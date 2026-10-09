@@ -80,7 +80,14 @@ export const ReportRow = memo(function ReportRow({
           accessibilityRole="button"
           accessibilityLabel={`Export ${name} history`}
           android_ripple={{ color: theme.muted }}
-          onPress={() => onExport?.(workerId)}
+          // WR-06: on web this Pressable nests inside the card Pressable
+          // and the DOM click bubbles to onOpen — stop it so an Export
+          // tap cannot also push the profile route. No-op on native
+          // (innermost responder wins there already).
+          onPress={(e) => {
+            e.stopPropagation?.();
+            onExport?.(workerId);
+          }}
           style={({ pressed }) => [
             styles.exportRow,
             { opacity: pressed ? 0.85 : 1 },
