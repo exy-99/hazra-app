@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 06-export
 source: [06-01-SUMMARY.md, 06-02-SUMMARY.md, 06-03-SUMMARY.md]
 started: 2026-10-09T15:00:00Z
@@ -62,19 +62,43 @@ blocked: 0
   reason: "User reported: it saves the file but share button does not work and , it does not show sucess or failed on the screen . export another works too . and the export csv works but with issues"
   severity: major
   test: 3
-  artifacts: []
-  missing: []
+  root_cause: "Web CSV fast-path in handleExport (export.tsx:401-413 worker, 438-450 register) sets savedName/savedUri then bare-returns, skipping setSavedScope/setSavedFormat (463-464); the four-field showSuccess gate (512-516) is therefore permanently false on web so the success card (709-753) can never render. Separately handleShare (479-491) silently swallows shareFile's 'unavailable' (files.ts:102-108, always on web) so Share gives zero feedback."
+  artifacts:
+    - path: "src/app/export.tsx"
+      issue: "web CSV early-return skips savedScope/savedFormat; showSuccess gate unreachable on web; handleShare swallows 'unavailable'"
+    - path: "src/utils/files.ts"
+      issue: "shareFile returns 'unavailable' on web by design; caller gives no feedback"
+  missing:
+    - "Set savedScope/savedFormat before the web Blob-download early-returns so the success card + CTA lock work on web"
+    - "Surface feedback (or hide Share) when shareFile returns 'unavailable'"
+  debug_session: ".planning/debug/export-success-card.md"
 - truth: "Switch to Worksite month scope. Pick one active worksite, tap the month trigger to open a descending month grid capped at the current month, pick a past-or-current month. Preview shows the register row count plus up to 5 date-ordered samples; PDF preview includes a 4-status legend and a % footer line."
   status: failed
   reason: "User reported: % footer line does not apper other than that everything works asked above"
   severity: major
   test: 4
-  artifacts: []
-  missing: []
+  root_cause: "Preview card (export.tsx:759-811) renders the 4-status legend for pdf format but never calls footerSummary() and has no summary/% Text element; footerSummary (export.ts:170-173) is only invoked by the file builders (251, 290) via pdfShell (213). The saved PDF file contains the footer; only the on-screen preview omits it."
+  artifacts:
+    - path: "src/app/export.tsx"
+      issue: "preview card omits footerSummary line for pdf format"
+  missing:
+    - "Render footerSummary(entries-or-regRows) line in the preview card when selectedFormat is pdf"
+  debug_session: ".planning/debug/export-pdf-footer.md"
 - truth: "Export the same worksite+month once as CSV and once as PDF. Both files appear in Downloads named hazra-register-{siteslug}-{yyyymm}.csv and .pdf (lowercase slugs). PDF opens with legend row plus summary footer; CSV opens with header date,worker,status,note."
   status: failed
   reason: "User reported: the pdf does not get exported(i dont get any pdf file ) and gives try againg error , and still does not work after trying again . the csv file gets exported but it does not contain the attendence of a worksite or individual , the naming works fine and correctly"
   severity: blocker
   test: 5
-  artifacts: []
-  missing: []
+  root_cause: "(a) PDF-on-web deterministically throws: printHtmlToPdf throws pdf-unsupported on web (files.ts:89-91) and handleExport has web Blob branches only for CSV (export.tsx:401-450), so every PDF tap lands in the catch (472) with persistent retry failure. (b) CSV header-only means entries/regRows was [] at build time (serializers proven lossless, probe EXPORT_VERIFY_OK): either the picked month legitimately has no stored rows (unmarked days store nothing) or a stale loadSiteRegister resolution clobbered fresh rows — its setRegRows (251) runs before the caller's isStale bail (324/342) with no guard inside."
+  artifacts:
+    - path: "src/utils/files.ts"
+      issue: "printHtmlToPdf throws pdf-unsupported on web with no fallback path"
+    - path: "src/app/export.tsx"
+      issue: "no web PDF branch in handleExport; loadSiteRegister state writes unguarded by isStale"
+    - path: "src/utils/export.ts"
+      issue: "builders verified lossless — rules out serialization as the empty-CSV cause"
+  missing:
+    - "Add a web PDF path (or an honest unavailable message) instead of the throwing path"
+    - "Guard loadSiteRegister writes with the generation counter so stale resolutions cannot clobber rows"
+    - "Surface the actual row count / honest empty state at export time so header-only files cannot surprise"
+  debug_session: ".planning/debug/export-pdf-empty-csv.md"
