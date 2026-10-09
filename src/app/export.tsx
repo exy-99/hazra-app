@@ -210,6 +210,7 @@ export default function ExportScreen() {
   const [savedScope, setSavedScope] = useState<'worker' | 'worksite' | null>(null);
   const [savedFormat, setSavedFormat] = useState<'csv' | 'pdf' | null>(null);
   const [monthOpen, setMonthOpen] = useState(false);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
   // WR-01: synchronous re-entry lock. `exporting` state updates
   // asynchronously, so two taps in the same tick both see `false`;
   // this ref closes that gap (reset in the `finally` below).
@@ -487,6 +488,7 @@ export default function ExportScreen() {
     try {
       const result = await shareFile(savedUri);
       if (result === 'unavailable') {
+        setShareNotice("Sharing isn't available here — your file is in Downloads.");
         return;
       }
     } catch {
@@ -500,6 +502,7 @@ export default function ExportScreen() {
     setSavedScope(null);
     setSavedFormat(null);
     setExportError(null);
+    setShareNotice(null);
   }
 
   const siteNames = new Map(sites.map((s) => [s.id, s.name] as const));
@@ -740,6 +743,16 @@ export default function ExportScreen() {
                   Share file
                 </Text>
               </Pressable>
+              {shareNotice !== null ? (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={[
+                    styles.shareNotice,
+                    { color: theme.mutedForeground },
+                  ]}>
+                  {shareNotice}
+                </Text>
+              ) : null}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Export another"
@@ -1113,6 +1126,10 @@ const styles = StyleSheet.create({
   },
   shareLabel: {
     ...Type.label,
+    textAlign: 'center',
+  },
+  shareNotice: {
+    ...Type.caption,
     textAlign: 'center',
   },
 });
