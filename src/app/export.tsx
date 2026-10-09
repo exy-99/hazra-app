@@ -3,6 +3,7 @@ import { CalendarDays, Download, Users } from 'lucide-react-native';
 import { memo, useCallback, useState } from 'react';
 import {
   FlatList,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -350,16 +351,34 @@ export default function ExportScreen() {
       };
       if (selectedScope === 'worker') {
         const filename = workerFilename(workerName, todayKey(), selectedFormat);
-        if (selectedFormat === 'csv') {
-          destUri = await writeTextFile(filename, buildWorkerCsv(entries));
-        } else {
-          tempUri = await printHtmlToPdf(
-            buildWorkerPdfHtml({
-              title: `${workerName} attendance`,
-              entries,
-              theme: pdfTheme,
-            }),
-          );
+        const content =
+          selectedFormat === 'csv' ? buildWorkerCsv(entries) : null;
+        const html =
+          selectedFormat === 'pdf'
+            ? buildWorkerPdfHtml({
+                title: `${workerName} attendance`,
+                entries,
+                theme: pdfTheme,
+              })
+            : null;
+        if (Platform.OS === 'web' && selectedFormat === 'csv' && content !== null) {
+          const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setSavedName(filename);
+          setSavedUri(url);
+          return;
+        }
+        if (content !== null) {
+          destUri = await writeTextFile(filename, content);
+        } else if (html !== null) {
+          tempUri = await printHtmlToPdf(html);
           destUri = await copyBinaryFile(tempUri, filename);
           await deleteFile(tempUri);
           tempUri = null;
@@ -368,17 +387,35 @@ export default function ExportScreen() {
         setSavedUri(destUri);
       } else {
         const filename = registerFilename(siteName, selectedMonth, selectedFormat);
-        if (selectedFormat === 'csv') {
-          destUri = await writeTextFile(filename, buildRegisterCsv(regRows));
-        } else {
-          tempUri = await printHtmlToPdf(
-            buildRegisterPdfHtml({
-              title: `${siteName} register`,
-              subtitle: `${siteName} · ${monthLabel(selectedMonth)}`,
-              rows: regRows,
-              theme: pdfTheme,
-            }),
-          );
+        const content =
+          selectedFormat === 'csv' ? buildRegisterCsv(regRows) : null;
+        const html =
+          selectedFormat === 'pdf'
+            ? buildRegisterPdfHtml({
+                title: `${siteName} register`,
+                subtitle: `${siteName} · ${monthLabel(selectedMonth)}`,
+                rows: regRows,
+                theme: pdfTheme,
+              })
+            : null;
+        if (Platform.OS === 'web' && selectedFormat === 'csv' && content !== null) {
+          const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setSavedName(filename);
+          setSavedUri(url);
+          return;
+        }
+        if (content !== null) {
+          destUri = await writeTextFile(filename, content);
+        } else if (html !== null) {
+          tempUri = await printHtmlToPdf(html);
           destUri = await copyBinaryFile(tempUri, filename);
           await deleteFile(tempUri);
           tempUri = null;
@@ -406,7 +443,10 @@ export default function ExportScreen() {
       return;
     }
     try {
-      await shareFile(savedUri);
+      const result = await shareFile(savedUri);
+      if (result === 'unavailable') {
+        return;
+      }
     } catch {
       // Share-sheet dismiss changes nothing; stay on the success card.
     }
