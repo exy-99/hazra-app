@@ -229,7 +229,10 @@ export function buildWorkerPdfHtml(args: {
   const sorted = [...args.entries].sort(compareDateAsc);
   const bodyRows = sorted
     .map((entry) => {
-      const chip = STATUS[entry.status];
+      // WR-05: degrade gracefully on unknown status keys (future
+      // migration / corrupt row) instead of throwing TypeError — the
+      // CSV path already writes the raw key.
+      const chip = STATUS[entry.status] ?? { label: entry.status, solid: '#808080' };
       const note = entry.note === null || entry.note === '' ? '—' : escapeHtml(entry.note);
       return (
         `<tr>` +
@@ -266,7 +269,8 @@ export function buildRegisterPdfHtml(args: {
   );
   const bodyRows = sorted
     .map((row) => {
-      const chip = STATUS[row.status];
+      // WR-05: same graceful fallback as the worker table.
+      const chip = STATUS[row.status] ?? { label: row.status, solid: '#808080' };
       const note = row.note === null || row.note === '' ? '—' : escapeHtml(row.note);
       return (
         `<tr>` +
