@@ -46,6 +46,7 @@ import {
 import {
   copyBinaryFile,
   deleteFile,
+  openWebPrintHtml,
   printHtmlToPdf,
   shareFile,
   writeTextFile,
@@ -416,6 +417,20 @@ export default function ExportScreen() {
           setSavedFormat(selectedFormat);
           return;
         }
+        if (Platform.OS === 'web' && selectedFormat === 'pdf' && html !== null) {
+          const result = openWebPrintHtml(html);
+          if (result === 'blocked') {
+            setExportError('Popup blocked — allow popups to print the PDF');
+            return;
+          }
+          const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          setSavedName(filename);
+          setSavedUri(url);
+          setSavedScope(selectedScope);
+          setSavedFormat(selectedFormat);
+          return;
+        }
         if (content !== null) {
           destUri = await writeTextFile(filename, content);
         } else if (html !== null) {
@@ -449,6 +464,20 @@ export default function ExportScreen() {
           a.click();
           a.remove();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setSavedName(filename);
+          setSavedUri(url);
+          setSavedScope(selectedScope);
+          setSavedFormat(selectedFormat);
+          return;
+        }
+        if (Platform.OS === 'web' && selectedFormat === 'pdf' && html !== null) {
+          const result = openWebPrintHtml(html);
+          if (result === 'blocked') {
+            setExportError('Popup blocked — allow popups to print the PDF');
+            return;
+          }
+          const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
           setSavedName(filename);
           setSavedUri(url);
           setSavedScope(selectedScope);
