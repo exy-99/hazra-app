@@ -509,15 +509,15 @@ export default function ExportScreen() {
   const registerSamples = regRows.slice(0, 5);
   const ctaLabel =
     selectedScope === 'worker' ? 'Export worker history' : 'Export monthly register';
-  // WR-07: once the success card shows for the current scope+format,
-  // the CTA stays disabled — a repeat tap would write a deterministic
-  // duplicate file. "Export another" (resetExport) re-enables it.
-  const ctaDisabled = exporting || scopeCount === 0 || showSuccess;
   const showSuccess =
     savedName !== null &&
     savedUri !== null &&
     savedScope === selectedScope &&
     savedFormat === selectedFormat;
+  // WR-07: once the success card shows for the current scope+format,
+  // the CTA stays disabled — a repeat tap would write a deterministic
+  // duplicate file. "Export another" (resetExport) re-enables it.
+  const ctaDisabled = exporting || scopeCount === 0 || showSuccess;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
