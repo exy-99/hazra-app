@@ -1,9 +1,9 @@
 # State — Hazra Attendance
 
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
-**Current phase:** 5 — Home Dashboard & Reports
-**Status:** Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; verification human_needed → 2/2 UAT passed on-device; review 04-REVIEW.md 0 critical/8 warnings advisory). Phase 3 UAT (13/13) + security (17/17) done 2026-10-08; 03-VERIFICATION.md still pending.
-**Last updated:** 2026-10-09 (Plan 06-03 complete: export entry points + phase gates)
+**Current phase:** 7 — Backup & Restore
+**Status:** Phase 6 complete 2026-10-09 (3/3 plans, 12/12 must-haves; verification human_needed → 4 on-device proofs deferred to Phase 9; review 06-REVIEW.md 0 critical/7 warnings, all 7 fixed + re-verified 12/12). Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; verification human_needed → 2/2 UAT passed on-device; review 04-REVIEW.md 0 critical/8 warnings advisory). Phase 3 UAT (13/13) + security (17/17) done 2026-10-08; 03-VERIFICATION.md still pending.
+**Last updated:** 2026-10-09 (Phase 6 complete: export re-verified after review fixes)
 
 ## Position
 
@@ -108,6 +108,7 @@
 - Plan 01-08 on-device proof deferred to Phase 9 (user-approved 2026-10-03): `__boot_probe__` row-survives-restart counts + airplane-mode boot check. No development build exists in this environment; execute the exact steps recorded in `.planning/phases/01-foundation/01-08-SUMMARY.md` ("Deferred Verification") once a dev build exists.
 - Plan 02-01 on-device proof deferred to Phase 9: drill-down push + always-visible back header check. Execute once a dev build exists (see `.planning/phases/02-worksites-workers/02-01-SUMMARY.md` "Next Phase Readiness").
 - Phase 2 roster proofs deferred to Phase 9 (verified statically 2026-10-06, no dev build; tracked in `.planning/phases/02-worksites-workers/02-HUMAN-UAT.md`): 2 worksites + 5 workers → restart restores with correct assignments/counts; worker remove hides from lists while history stays viewable; worksite remove states the live worker count with no cascade.
+- Phase 6 on-device proofs deferred to Phase 9 (verified statically 2026-10-09, no dev build; tracked in `.planning/phases/06-export/06-HUMAN-UAT.md`): worker CSV column-count probe in Excel/Sheets, register CSV+PDF in Downloads, second-device transfer open, entry-point deep-link preselect.
 
 ## Blockers
 
@@ -115,7 +116,8 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-- Code review fixes for 06-REVIEW.md (2026-10-09): all 7 warnings fixed — WR-01 useRef export lock, WR-02 load() generation guard, WR-03 UTF-8 BOM in both CSV builders, WR-04 probe stages + imports the real modules (formula guard, BOM, monthRange, footerSummary parity, PDF unknown-status all asserted), WR-05 PDF unknown-status fallback, WR-06 Export press stopPropagation, WR-07 CTA disabled under success card; `tsc` exit 0, `node scripts/verify-export.mjs` → EXPORT_VERIFY_OK; commits c48f309…102ae16. 06-VERIFICATION.md untouched (re-verification separate).
+- Phase 6 COMPLETE (2026-10-09): all 3 plans executed across 3 waves; code review 06-REVIEW.md (0 critical/7 warnings, all 7 fixed — useRef export lock, load() generation guard, CSV BOM, real-module probe, PDF unknown-status fallback, stopPropagation, CTA-under-success guard); verification 06-VERIFICATION.md (12/12 must-haves, status human_needed → re-verified after fixes); 06-HUMAN-UAT.md tracks 4 Phase-9-deferred on-device proofs.
+- `/gsd-discuss-phase 7` — start here: discuss Backup & Restore before planning (recommended). No 07-CONTEXT.md exists yet.
 - Plan 06-03 COMPLETE (2026-10-09): export entry points — secondary Export action on worker profile (`src/app/worker/[id].tsx`, below Edit, incl. removed) + `onExport` affordance in `src/components/report-row.tsx` wired to `goToExportWorker` on both reports lists + site-context "Export monthly register" (`?worksiteId=&month=`) + all five phase-wide gates pass (`tsc` exit 0, no hex, Pressable-only, tabular-nums, no toISOString); SUMMARY at `.planning/phases/06-export/06-03-SUMMARY.md`; commits 09cb7d7, f2bc5b0. EX-01/EX-02/EX-03 reachable end-to-end. Phase 6 plans COMPLETE (3/3).
 - Plan 06-02 COMPLETE (2026-10-09): export drill-down screen (`src/app/export.tsx` rewritten — scope switcher with deep-link init, active-only pickers, MonthSheet month grid, CSV/PDF chips, same-scope preview card with samples + PDF legend, guarded one-file export with binary-safe PDF, success/share card, web Blob CSV download) + `src/components/month-sheet.tsx` (CalendarSheet-precedent month grid); `tsc` exit 0, NATIVE/DISCIPLINE/SCREEN/WEB gates pass; SUMMARY at `.planning/phases/06-export/06-02-SUMMARY.md`; commits ed5f7c3, 67b8806, 1b4f6f0. EX-01/EX-02/EX-03 screen flow + NF-06 grounded at UI level; on-device open + second-device transfer deferred to Phase 9.
 - Plan 06-01 COMPLETE (2026-10-09): pure export serializers in `src/utils/export.ts` (12 exports: RFC-4180 quoting + formula guard, worker/register CSV, slugify + slug filenames, monthRange/monthLabel, escapeHtml, theme-driven PDF HTML with legend + summarize() footer) + `src/utils/files.ts` (5 helpers: Downloads-first writeTextFile, printHtmlToPdf, gated shareFile, never-throws deleteFile, binary-safe copyBinaryFile) + `scripts/verify-export.mjs` (EXPORT_VERIFY_OK); `tsc` exit 0, no new deps; SUMMARY at `.planning/phases/06-export/06-01-SUMMARY.md`; commits a5fe965, 0cf58df, 002585b. EX-01/EX-02 file-content + NF-06 parseability grounded at serializer level; on-device open + second-device transfer deferred to Phase 9.

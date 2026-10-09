@@ -173,6 +173,8 @@
 
 **Plans:** 3 plans
 
+**Status:** Complete — 2026-10-09 (3/3 plans; 12/12 must-haves verified human_needed → 4 on-device proofs deferred to Phase 9; review 06-REVIEW.md 0 critical/7 warnings, all 7 fixed + re-verified)
+
 **Plan progress:**
 - [x] 06-01 pure serializers + file helpers + probe (EX-01, EX-02, NF-06)
 - [x] 06-02 export screen + month sheet (EX-01, EX-02, EX-03, NF-06) — done 2026-10-09
