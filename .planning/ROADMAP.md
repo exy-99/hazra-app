@@ -179,7 +179,7 @@
 - [x] 06-01 pure serializers + file helpers + probe (EX-01, EX-02, NF-06)
 - [x] 06-02 export screen + month sheet (EX-01, EX-02, EX-03, NF-06) — done 2026-10-09
 - [x] 06-03 entry points + phase gates (EX-01, EX-02, EX-03) — done 2026-10-09
-- [ ] 06-04 web success card + share feedback + preview footer (UAT gaps 1-2)
+- [x] 06-04 web success card + share feedback + preview footer (UAT gaps 1-2) — done 2026-10-10
 - [ ] 06-05 web PDF print path + stale-guard + empty-tap guard (UAT gap 3 blocker)
 
 ---
