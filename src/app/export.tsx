@@ -214,6 +214,10 @@ export default function ExportScreen() {
   // asynchronously, so two taps in the same tick both see `false`;
   // this ref closes that gap (reset in the `finally` below).
   const exportLock = useRef(false);
+  // WR-02: generation counter — rapid scope/worker/site/month changes
+  // leave multiple load() promises in flight; a stale resolution landing
+  // last must not overwrite newer state (e.g. notFound/data mismatch).
+  const loadGen = useRef(0);
 
   async function loadSiteRegister(
     siteId: string,
@@ -250,6 +254,8 @@ export default function ExportScreen() {
   }
 
   async function load() {
+    const gen = ++loadGen.current;
+    const isStale = () => gen !== loadGen.current;
     setLoading(true);
     setLoadError(false);
     try {
@@ -257,6 +263,9 @@ export default function ExportScreen() {
         listWorkers({}),
         listWorksites(),
       ]);
+      if (isStale()) {
+        return;
+      }
       setWorkers(activeWorkers);
       setSites(activeSites);
       if (selectedScope === 'worker') {
@@ -270,6 +279,9 @@ export default function ExportScreen() {
           } else {
             setSelectedWorker(first.id);
             const data = await getAttendanceForWorker(first.id);
+            if (isStale()) {
+              return;
+            }
             setEntries(
               data.map((e) => ({ date: e.date, status: e.status, note: e.note })),
             );
@@ -278,6 +290,9 @@ export default function ExportScreen() {
           }
         } else {
           const found = await getWorker(rawW);
+          if (isStale()) {
+            return;
+          }
           if (found === null) {
             setNotFound(true);
             setEntries([]);
@@ -285,6 +300,9 @@ export default function ExportScreen() {
           } else {
             setNotFound(false);
             const data = await getAttendanceForWorker(rawW);
+            if (isStale()) {
+              return;
+            }
             setEntries(
               data.map((e) => ({ date: e.date, status: e.status, note: e.note })),
             );
@@ -303,10 +321,16 @@ export default function ExportScreen() {
           } else {
             setSelectedSite(first.id);
             await loadSiteRegister(first.id, first.name, first.is_active);
+            if (isStale()) {
+              return;
+            }
             setNotFound(false);
           }
         } else {
           const site = await getWorksite(rawS);
+          if (isStale()) {
+            return;
+          }
           if (site === null) {
             setNotFound(true);
             setRegRows([]);
@@ -315,13 +339,21 @@ export default function ExportScreen() {
           } else {
             setNotFound(false);
             await loadSiteRegister(site.id, site.name, site.is_active);
+            if (isStale()) {
+              return;
+            }
           }
         }
       }
     } catch {
+      if (isStale()) {
+        return;
+      }
       setLoadError(true);
     } finally {
-      setLoading(false);
+      if (!isStale()) {
+        setLoading(false);
+      }
     }
   }
 
