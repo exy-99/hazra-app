@@ -159,6 +159,13 @@ export default function WorkerProfileScreen() {
     router.push({ pathname: '/worker-form', params: { id } });
   }
 
+  function goToExport() {
+    if (typeof id !== 'string') {
+      return;
+    }
+    router.push({ pathname: '/export', params: { workerId: id } });
+  }
+
   function callPhone() {
     if (worker?.phone) {
       void Linking.openURL(`tel:${worker.phone}`);
@@ -434,6 +441,23 @@ export default function WorkerProfileScreen() {
                     </Text>
                   </Pressable>
                 )}
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Export worker history"
+                  android_ripple={{ color: theme.muted }}
+                  onPress={goToExport}
+                  style={({ pressed }) => [
+                    styles.exportAction,
+                    {
+                      backgroundColor: theme.surface,
+                      borderColor: theme.border,
+                      opacity: pressed ? 0.85 : 1,
+                    },
+                  ]}>
+                  <Text style={[styles.exportLabel, { color: theme.primary }]}>
+                    Export
+                  </Text>
+                </Pressable>
               </View>
               <View style={styles.historyWrap}>
                 {entries.length === 0 ? (
@@ -630,6 +654,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
   },
   editLabel: {
+    ...Type.label,
+    textAlign: 'center',
+  },
+  exportAction: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.three,
+  },
+  exportLabel: {
     ...Type.label,
     textAlign: 'center',
   },
