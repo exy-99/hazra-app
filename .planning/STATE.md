@@ -3,7 +3,7 @@
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 5 — Home Dashboard & Reports
 **Status:** Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; verification human_needed → 2/2 UAT passed on-device; review 04-REVIEW.md 0 critical/8 warnings advisory). Phase 3 UAT (13/13) + security (17/17) done 2026-10-08; 03-VERIFICATION.md still pending.
-**Last updated:** 2026-10-09 (Phase 6 context gathered, 22 decisions)
+**Last updated:** 2026-10-09 (Plan 06-01 complete: export serializers + file helpers + probe)
 
 ## Position
 
@@ -95,6 +95,10 @@
 - History list = memo read-only `View` rows (formatDisplay date + STATUS tint/solid/text chip + `numberOfLines={1}` note preview when non-null) in a newest-first `FlatList` (`keyExtractor` on entry id, `scrollEnabled={false}` inside the profile ScrollView); never `StatusPill` (it carries cycle handlers); zero-entries empty state owned by the history section while the stats-region card narrows to `entries.length > 0` so exactly one §7.5 card renders (plan 04-03).
 - Workers-list rows open the profile (`goToProfile` → `/worker/[id]`, `View {name} profile` label); Edit lives inside the profile, the `+ Add worker` CTA still → `/worker-form`, and the list stays active-only with removed profiles reachable by deep-link only (plan 04-03, D-06/D-14).
 - Permanent delete is a deliberate scope change on top of soft-delete (commit 05b0d56, user-approved 2026-10-08): a removed (`is_active = 0`) worker's profile exposes a confirm-gated "Delete permanently" action running `deleteWorker()` — one transaction deleting attendance rows then the worker row (FK has no cascade). History is then unrecoverable. Future zero-`DELETE` gate sweeps must allowlist `src/db/workers.ts`; backup/restore (Phase 7) covers inactive rows but cannot recover hard-deleted ones.
+- Export serializers are pure like `summarize()` (plan 06-01): zero runtime `@/db` imports (type-only `AttendanceStatus` from `@/db/types` allowed); CSV formula guard keys off the ORIGINAL field so quoted formula cells still get the `'` prefix; empty-string notes map to `-` like null (D-18).
+- Export PDF legend colspan comes from the header count (worker table 3, register table 4) — never hardcode the span in a shared shell (plan 06-01, Rule 1 fix).
+- File helpers fail loudly (plan 06-01): SAF `createFileAsync` uses the granted `directoryUri`; unavailable Downloads/document dir throws `downloads-unavailable` (no silent fallback location); `printHtmlToPdf` throws `pdf-unsupported` on web; `deleteFile` never throws; `copyBinaryFile` never round-trips bytes through UTF-8 text.
+- Plan acceptance `node -e` one-liners must run from temp `.cjs` files on Windows PowerShell (inline double-quoted JS is mangled by the shell parser); `npx tsc` stderr noise is normal — the exit code is the signal (plan 06-01).
 
 ## Deferred Verification Debt
 
@@ -108,7 +112,8 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-plan-phase 6` — Phase 6 CONTEXT gathered 2026-10-09 (7 areas, 22 decisions; `.planning/phases/06-export/06-CONTEXT.md`) + UI-SPEC approved 2026-10-09 (`.planning/phases/06-export/06-UI-SPEC.md`; planner consumes as design context with 2 user overrides: D-19 theme-matched PDF, D-02 profile Export action). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
+- Plan 06-01 COMPLETE (2026-10-09): pure export serializers in `src/utils/export.ts` (12 exports: RFC-4180 quoting + formula guard, worker/register CSV, slugify + slug filenames, monthRange/monthLabel, escapeHtml, theme-driven PDF HTML with legend + summarize() footer) + `src/utils/files.ts` (5 helpers: Downloads-first writeTextFile, printHtmlToPdf, gated shareFile, never-throws deleteFile, binary-safe copyBinaryFile) + `scripts/verify-export.mjs` (EXPORT_VERIFY_OK); `tsc` exit 0, no new deps; SUMMARY at `.planning/phases/06-export/06-01-SUMMARY.md`; commits a5fe965, 0cf58df, 002585b. EX-01/EX-02 file-content + NF-06 parseability grounded at serializer level; on-device open + second-device transfer deferred to Phase 9.
+- `/gsd-plan-phase 6` — Phase 6 CONTEXT gathered 2026-10-09 (7 areas, 22 decisions; `.planning/phases/06-export/06-CONTEXT.md`) + UI-SPEC approved 2026-10-09 (`.planning/phases/06-export/06-UI-SPEC.md`; planner consumes as design context with 2 user overrides: D-19 theme-matched PDF, D-02 profile Export action). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
 
 ## Notes
 
