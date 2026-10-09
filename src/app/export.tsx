@@ -410,6 +410,8 @@ export default function ExportScreen() {
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           setSavedName(filename);
           setSavedUri(url);
+          setSavedScope(selectedScope);
+          setSavedFormat(selectedFormat);
           return;
         }
         if (content !== null) {
@@ -447,6 +449,8 @@ export default function ExportScreen() {
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           setSavedName(filename);
           setSavedUri(url);
+          setSavedScope(selectedScope);
+          setSavedFormat(selectedFormat);
           return;
         }
         if (content !== null) {
