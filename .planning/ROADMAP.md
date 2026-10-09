@@ -175,7 +175,7 @@
 
 **Plan progress:**
 - [x] 06-01 pure serializers + file helpers + probe (EX-01, EX-02, NF-06)
-- [ ] 06-02 export screen + month sheet (EX-01, EX-02, EX-03, NF-06)
+- [x] 06-02 export screen + month sheet (EX-01, EX-02, EX-03, NF-06) — done 2026-10-09
 - [ ] 06-03 entry points + phase gates (EX-01, EX-02, EX-03)
 
 ---
