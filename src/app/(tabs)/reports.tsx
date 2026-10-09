@@ -152,6 +152,10 @@ export default function ReportsScreen() {
     router.push({ pathname: '/worker/[id]', params: { id } });
   }
 
+  function goToExportWorker(workerId: string) {
+    router.push({ pathname: '/export', params: { workerId } });
+  }
+
   function retry() {
     setLoading(true);
     void load();
@@ -226,6 +230,29 @@ export default function ReportsScreen() {
               );
             })}
           </ScrollView>
+          {selectedSite !== null ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Export monthly register"
+              android_ripple={{ color: theme.muted }}
+              onPress={() =>
+                router.push({
+                  pathname: '/export',
+                  params: {
+                    worksiteId: selectedSite,
+                    month: todayKey().slice(0, 7),
+                  },
+                })
+              }
+              style={({ pressed }) => [
+                styles.siteExport,
+                { opacity: pressed ? 0.85 : 1 },
+              ]}>
+              <Text style={[styles.siteExportLabel, { color: theme.primary }]}>
+                Export monthly register
+              </Text>
+            </Pressable>
+          ) : null}
           <View style={styles.rangeWrap}>
             <View style={styles.chipRowInline}>
               {PERIODS.map((p) => {
@@ -406,6 +433,7 @@ export default function ReportsScreen() {
                         name={item.name}
                         summary={item.summary}
                         onOpen={goToProfile}
+                        onExport={goToExportWorker}
                       />
                     ))}
                   </View>
@@ -433,6 +461,7 @@ export default function ReportsScreen() {
                       name={item.name}
                       summary={item.summary}
                       onOpen={goToProfile}
+                      onExport={goToExportWorker}
                     />
                   )}
                 />
@@ -519,6 +548,14 @@ const styles = StyleSheet.create({
     borderRadius: Radius.pill,
   },
   chipText: {
+    ...Type.label,
+  },
+  siteExport: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  siteExportLabel: {
     ...Type.label,
   },
   rangeWrap: {

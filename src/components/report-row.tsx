@@ -11,6 +11,7 @@ export interface ReportRowProps {
   name: string;
   summary: AttendanceSummary;
   onOpen: (id: string) => void;
+  onExport?: (workerId: string) => void;
 }
 
 export const ReportRow = memo(function ReportRow({
@@ -18,6 +19,7 @@ export const ReportRow = memo(function ReportRow({
   name,
   summary,
   onOpen,
+  onExport,
 }: ReportRowProps): React.JSX.Element {
   const theme = useTheme();
   const belowFloor =
@@ -73,6 +75,21 @@ export const ReportRow = memo(function ReportRow({
           );
         })}
       </View>
+      {onExport !== undefined ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Export ${name} history`}
+          android_ripple={{ color: theme.muted }}
+          onPress={() => onExport?.(workerId)}
+          style={({ pressed }) => [
+            styles.exportRow,
+            { opacity: pressed ? 0.85 : 1 },
+          ]}>
+          <Text style={[styles.exportLabel, { color: theme.primary }]}>
+            Export
+          </Text>
+        </Pressable>
+      ) : null}
     </Pressable>
   );
 });
@@ -114,5 +131,13 @@ const styles = StyleSheet.create({
   chipText: {
     ...Type.caption,
     fontVariant: ['tabular-nums'],
+  },
+  exportRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+  },
+  exportLabel: {
+    ...Type.label,
   },
 });
