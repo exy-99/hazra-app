@@ -69,7 +69,8 @@ function noteOrDash(note: string | null): string {
  * Worker-history CSV (EX-01): header `date,status,note`, rows sorted by
  * date ASC. Status is the raw lowercase machine key (D-08); missing notes
  * write exactly `-` (D-18). No summary rows (D-06). CRLF joins (RFC-4180),
- * no trailing newline.
+ * no trailing newline. A UTF-8 BOM opens the file so desktop Excel renders
+ * non-ASCII names/notes correctly (Sheets sniffs UTF-8 either way).
  */
 export function buildWorkerCsv(entries: WorkerCsvEntry[]): string {
   const sorted = [...entries].sort(compareDateAsc);
@@ -77,13 +78,13 @@ export function buildWorkerCsv(entries: WorkerCsvEntry[]): string {
   for (const entry of sorted) {
     lines.push([entry.date, entry.status, noteOrDash(entry.note)].map(escapeCsvField).join(','));
   }
-  return lines.join('\r\n');
+  return '\uFEFF' + lines.join('\r\n');
 }
 
 /**
  * Worksite-month register CSV (EX-02): header `date,worker,status,note`,
  * rows sorted by date ASC then worker name. Same lowercase keys, same `-`
- * note rule, same escaping and CRLF join as the worker CSV.
+ * note rule, same escaping, CRLF join, and UTF-8 BOM as the worker CSV.
  */
 export function buildRegisterCsv(rows: RegisterCsvRow[]): string {
   const sorted = [...rows].sort(
@@ -95,7 +96,7 @@ export function buildRegisterCsv(rows: RegisterCsvRow[]): string {
       [row.date, row.workerName, row.status, noteOrDash(row.note)].map(escapeCsvField).join(','),
     );
   }
-  return lines.join('\r\n');
+  return '\uFEFF' + lines.join('\r\n');
 }
 
 /**
