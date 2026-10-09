@@ -34,6 +34,7 @@ import {
   buildRegisterPdfHtml,
   buildWorkerCsv,
   buildWorkerPdfHtml,
+  footerSummary,
   monthLabel,
   monthRange,
   registerFilename,
@@ -825,6 +826,20 @@ export default function ExportScreen() {
                   ))}
                 </View>
               ) : null}
+              {selectedFormat === 'pdf' ? (
+                <Text
+                  accessibilityLabel={footerSummary(
+                    selectedScope === 'worker' ? entries : regRows,
+                  )}
+                  style={[
+                    styles.footerLine,
+                    { color: theme.mutedForeground },
+                  ]}>
+                  {footerSummary(
+                    selectedScope === 'worker' ? entries : regRows,
+                  )}
+                </Text>
+              ) : null}
             </View>
           )}
           {exporting ? (
@@ -1048,6 +1063,10 @@ const styles = StyleSheet.create({
   },
   legendLabel: {
     ...Type.caption,
+  },
+  footerLine: {
+    ...Type.caption,
+    fontVariant: ['tabular-nums'],
   },
   calmLine: {
     ...Type.body,
