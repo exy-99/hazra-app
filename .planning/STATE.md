@@ -3,7 +3,7 @@
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 5 — Home Dashboard & Reports
 **Status:** Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; verification human_needed → 2/2 UAT passed on-device; review 04-REVIEW.md 0 critical/8 warnings advisory). Phase 3 UAT (13/13) + security (17/17) done 2026-10-08; 03-VERIFICATION.md still pending.
-**Last updated:** 2026-10-08 (Phase 5 plans complete, 4/4)
+**Last updated:** 2026-10-09 (Phase 6 context gathered, 22 decisions)
 
 ## Position
 
@@ -108,7 +108,7 @@ None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verif
 
 ## Next
 
-`/gsd-plan-phase 5` — Phase 5 CONTEXT gathered 2026-10-08 (6 areas, 25 decisions; `.planning/phases/05-home-dashboard-reports/05-CONTEXT.md`) + UI-SPEC approved 2026-10-08 (`.planning/phases/05-home-dashboard-reports/05-UI-SPEC.md`, 5 PASS + 1 FLAG Typography advisory; planner consumes as design context). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
+`/gsd-plan-phase 6` — Phase 6 CONTEXT gathered 2026-10-09 (7 areas, 22 decisions; `.planning/phases/06-export/06-CONTEXT.md`) + UI-SPEC approved 2026-10-09 (`.planning/phases/06-export/06-UI-SPEC.md`; planner consumes as design context with 2 user overrides: D-19 theme-matched PDF, D-02 profile Export action). Note: Phase 3 UAT + security done 2026-10-08, 03-VERIFICATION.md still pending; `/gsd-secure-phase 4` recommended before advancing (security enforcement enabled, no 04-SECURITY.md).
 
 ## Notes
 
