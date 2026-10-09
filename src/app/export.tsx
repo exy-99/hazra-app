@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { CalendarDays, Download, Users } from 'lucide-react-native';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import {
   FlatList,
   Platform,
@@ -210,6 +210,10 @@ export default function ExportScreen() {
   const [savedScope, setSavedScope] = useState<'worker' | 'worksite' | null>(null);
   const [savedFormat, setSavedFormat] = useState<'csv' | 'pdf' | null>(null);
   const [monthOpen, setMonthOpen] = useState(false);
+  // WR-01: synchronous re-entry lock. `exporting` state updates
+  // asynchronously, so two taps in the same tick both see `false`;
+  // this ref closes that gap (reset in the `finally` below).
+  const exportLock = useRef(false);
 
   async function loadSiteRegister(
     siteId: string,
@@ -333,9 +337,10 @@ export default function ExportScreen() {
   }
 
   async function handleExport(): Promise<void> {
-    if (exporting) {
+    if (exportLock.current) {
       return;
     }
+    exportLock.current = true;
     setExporting(true);
     setExportError(null);
     let tempUri: string | null = null;
@@ -434,6 +439,7 @@ export default function ExportScreen() {
       }
       setExportError("Couldn't export — try again");
     } finally {
+      exportLock.current = false;
       setExporting(false);
     }
   }
