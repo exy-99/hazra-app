@@ -226,6 +226,7 @@ export default function ExportScreen() {
     siteId: string,
     name: string,
     isActive: number,
+    isStale: () => boolean,
   ): Promise<void> {
     const { from, to } = monthRange(selectedMonth);
     const siteWorkers = await listWorkers(
@@ -233,9 +234,15 @@ export default function ExportScreen() {
         ? { worksiteId: siteId }
         : { worksiteId: siteId, includeInactive: true },
     );
+    if (isStale()) {
+      return;
+    }
     const perWorker = await Promise.all(
       siteWorkers.map((w) => getAttendanceForWorker(w.id, { from, to })),
     );
+    if (isStale()) {
+      return;
+    }
     const rows: RegisterCsvRow[] = perWorker.flatMap((list, i) =>
       list.map((e) => ({
         date: e.date,
@@ -323,7 +330,7 @@ export default function ExportScreen() {
             setNotFound(false);
           } else {
             setSelectedSite(first.id);
-            await loadSiteRegister(first.id, first.name, first.is_active);
+            await loadSiteRegister(first.id, first.name, first.is_active, isStale);
             if (isStale()) {
               return;
             }
@@ -341,7 +348,7 @@ export default function ExportScreen() {
             setSiteName('');
           } else {
             setNotFound(false);
-            await loadSiteRegister(site.id, site.name, site.is_active);
+            await loadSiteRegister(site.id, site.name, site.is_active, isStale);
             if (isStale()) {
               return;
             }
@@ -378,6 +385,11 @@ export default function ExportScreen() {
     exportLock.current = true;
     setExporting(true);
     setExportError(null);
+    const rows = selectedScope === 'worker' ? entries : regRows;
+    if (rows.length === 0) {
+      setExportError('No attendance to export yet');
+      return;
+    }
     let tempUri: string | null = null;
     let destUri: string | null = null;
     try {
@@ -554,7 +566,7 @@ export default function ExportScreen() {
   // WR-07: once the success card shows for the current scope+format,
   // the CTA stays disabled — a repeat tap would write a deterministic
   // duplicate file. "Export another" (resetExport) re-enables it.
-  const ctaDisabled = exporting || scopeCount === 0 || showSuccess;
+  const ctaDisabled = exporting || loading || scopeCount === 0 || showSuccess;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
