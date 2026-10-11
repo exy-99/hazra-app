@@ -765,8 +765,16 @@ export default function ExportScreen() {
               <Text
                 accessibilityLiveRegion="polite"
                 style={[styles.successTitle, { color: theme.foreground }]}>
-                Saved to Downloads
+                {Platform.OS === 'web' && savedFormat === 'pdf'
+                  ? 'Opened print dialog'
+                  : 'Saved to Downloads'}
               </Text>
+              {Platform.OS === 'web' && savedFormat === 'pdf' ? (
+                <Text
+                  style={[styles.filename, { color: theme.mutedForeground }]}>
+                  Choose Save as PDF in the print dialog to keep the file.
+                </Text>
+              ) : null}
               <Text style={[styles.filename, { color: theme.mutedForeground }]}>
                 {savedName}
               </Text>
@@ -903,22 +911,24 @@ export default function ExportScreen() {
                 style={[styles.errorText, { color: theme.destructive }]}>
                 {exportError}
               </Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Try again"
-                android_ripple={{ color: theme.muted }}
-                onPress={() => {
-                  void handleExport();
-                }}
-                style={({ pressed }) => [
-                  styles.retryRow,
-                  { opacity: pressed ? 0.85 : 1 },
-                ]}>
-                <Text
-                  style={[styles.retryLabel, { color: theme.destructive }]}>
-                  Try again
-                </Text>
-              </Pressable>
+              {exportError !== 'No attendance to export yet' ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Try again"
+                  android_ripple={{ color: theme.muted }}
+                  onPress={() => {
+                    void handleExport();
+                  }}
+                  style={({ pressed }) => [
+                    styles.retryRow,
+                    { opacity: pressed ? 0.85 : 1 },
+                  ]}>
+                  <Text
+                    style={[styles.retryLabel, { color: theme.destructive }]}>
+                    Try again
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
           ) : null}
           <Pressable
