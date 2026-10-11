@@ -385,14 +385,14 @@ export default function ExportScreen() {
     exportLock.current = true;
     setExporting(true);
     setExportError(null);
-    const rows = selectedScope === 'worker' ? entries : regRows;
-    if (rows.length === 0) {
-      setExportError('No attendance to export yet');
-      return;
-    }
     let tempUri: string | null = null;
     let destUri: string | null = null;
     try {
+      const rows = selectedScope === 'worker' ? entries : regRows;
+      if (rows.length === 0) {
+        setExportError('No attendance to export yet');
+        return;
+      }
       const pdfTheme: PdfTheme = {
         background: theme.background,
         surface: theme.surface,
