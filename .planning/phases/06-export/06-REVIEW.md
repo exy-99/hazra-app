@@ -14,9 +14,9 @@ files_reviewed_list:
   - src/components/report-row.tsx
 findings:
   critical: 1
-  warning: 12
+  warning: 13
   info: 12
-  total: 25
+  total: 26
 status: issues_found
 ---
 
@@ -378,5 +378,85 @@ only, no hardcoded hex, `tsc` premise accepted from plan summaries
 (not re-run in review)._
 
 _Reviewed: 2026-10-10_
+_Reviewer: OpenCode (gsd-code-reviewer)_
+_Depth: standard_
+
+---
+
+# Gap-closure review: plan 06-06 (2026-10-11)
+
+**Depth:** standard
+**Files reviewed:** 1 (`src/app/export.tsx`)
+**Plans/summaries read:** `06-06-PLAN.md`, `06-06-SUMMARY.md`
+**Status:** clean — 0 blockers, 1 warning (new, minor), 0 info
+
+## Summary
+
+Reviewed the 06-06 diff against its plan and the three findings it
+claims to close (CR-01, WR-08, WR-10). All three are genuinely fixed
+in code — verified by location, not by summary claim:
+
+- **CR-01 CLOSED:** the empty guard (`const rows …` + `rows.length
+  === 0` return) now sits at lines 391-395 **inside** the `try` that
+  opens at line 390, before `const pdfTheme` (396). The single reset
+  (`exportLock.current = false`, line 521, in `finally` 520-523)
+  therefore runs on the empty path — returns inside `try` execute
+  `finally`. No duplicate manual reset was added
+  (`exportLock.current = false` has exactly 1 hit). The lock-leak
+  repro (empty tap → CTA stuck on "Exporting…") no longer holds.
+- **WR-08 CLOSED:** the success heading is now gated —
+  `Platform.OS === 'web' && savedFormat === 'pdf' ? 'Opened print
+  dialog' : 'Saved to Downloads'` (768-770) — with the
+  "Choose Save as PDF in the print dialog to keep the file." caption
+  rendered only on that path (772-777, existing `styles.filename` +
+  `theme.mutedForeground`). All other success paths keep the exact
+  'Saved to Downloads' fallback. No new state was introduced
+  (`useState` count unchanged; `savedFormat` + `Platform` reused).
+- **WR-10 CLOSED:** the 'Try again' Pressable is gated on
+  `exportError !== 'No attendance to export yet'` (914) while the
+  message Text always renders (907-913) — empty-data shows with no
+  futile retry; transient failures keep theirs.
+
+AGENTS.md constraints hold on the diff: Pressable-only (retry gate
+reuses the existing Pressable), theme tokens only (no hardcoded hex
+added), `tsc` premise accepted from the plan summary (exit 0, not
+re-run in this review). No DAO/serializer/file-helper file touched —
+`handleExport` guard move + render-only copy, as scoped.
+
+Carryover (still open, deferred to Phase 9 per 06-06 summary):
+WR-09 (web-PDF Blob URLs never revoked — confirmed: `revokeObjectURL`
+hits only on the web-CSV paths, lines 425/478), WR-11 (stale rows
+exportable after failed load), WR-12 (closure month param),
+IN-10/IN-11/IN-12.
+
+## Warnings
+
+### WR-13: Empty-message retry gate keys off a duplicated string literal
+
+**File:** `src/app/export.tsx:393` (setter) + `src/app/export.tsx:914` (gate)
+**Issue:** The WR-10 gate compares against the literal
+`'No attendance to export yet'` in two places. If either copy is
+edited (punctuation, wording), the gate silently diverges: the empty
+case regains a futile retry button or a transient error loses its
+retry. Minor — behavior is correct today — but a one-line const
+removes the drift risk.
+**Fix:**
+```tsx
+const EMPTY_EXPORT_MESSAGE = 'No attendance to export yet';
+// …setExportError(EMPTY_EXPORT_MESSAGE);
+// …{exportError !== EMPTY_EXPORT_MESSAGE ? (…Try again…) : null}
+```
+
+---
+
+_Verified in gap scope: guard line (391) below `try {` (390) and above
+`const pdfTheme` (396); message text byte-identical; single finally
+reset; `Opened print dialog` + `Choose Save as PDF` hits present;
+`Saved to Downloads` fallback intact (1 capital-S hit + untouched
+lowercase top caption at 577, as the 06-06 summary notes);
+`exportError !== 'No attendance to export yet'` gate present with the
+retry Pressable retained for transient paths; no new `useState`._
+
+_Reviewed: 2026-10-11_
 _Reviewer: OpenCode (gsd-code-reviewer)_
 _Depth: standard_
