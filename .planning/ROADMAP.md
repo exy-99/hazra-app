@@ -145,7 +145,7 @@
 
 **Plans:** 4 plans
 
-**Status:** Planned — 2026-10-08 (05-01 Home hero RP-01 · 05-02 filters+picker RP-05 · 05-03 list+bottom-3 RP-02/RP-04 · 05-04 trend RP-03; verification passed 0 blockers)
+**Status:** Complete — 2026-10-13 (05-01..05-04 done; UAT 8/8 passed; security verified 0 threats open; review 0 critical/9 warnings advisory)
 
 **Plans:** 4 plans
 
