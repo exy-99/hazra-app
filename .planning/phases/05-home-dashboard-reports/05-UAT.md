@@ -3,7 +3,7 @@ status: complete
 phase: 05-home-dashboard-reports
 source: [05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md]
 started: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-13
 ---
 
 ## Current Test
@@ -34,8 +34,7 @@ result: pass
 
 ### 6. Per-worker list and Frequently-absent callout
 expected: Reports shows a "Frequently absent" bottom-3 callout above the full "All workers" list (highest % first, "—" workers sunk to the bottom). Each row shows name + % (orange below 75%) + 4 mini counts; numbers match the register exactly.
-result: skipped
-reason: "for later"
+result: pass
 
 ### 7. Report row to profile
 expected: Tapping a report row opens that worker's profile (/worker/[id]); corrections stay in the register (no edit affordance on the row itself).
@@ -48,10 +47,10 @@ result: pass
 ## Summary
 
 total: 8
-passed: 7
+passed: 8
 issues: 0
 pending: 0
-skipped: 1
+skipped: 0
 blocked: 0
 
 ## Gaps
