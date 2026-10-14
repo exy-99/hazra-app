@@ -153,16 +153,34 @@ export async function deleteFile(uri: string): Promise<void> {
  * corrupt PDF bytes) — moves them with `copyAsync` (`moveAsync` fallback
  * only if copy is unsupported). Returns the real destination uri; throws
  * (after deleting partials) when Downloads is unavailable.
+ *
+ * Android SAF note: the Downloads destination is a `content://` URI, and
+ * the native `copyAsync`/`moveAsync` implementations only resolve `file://`
+ * destinations (`toFile()` on a SAF uri throws), so every PDF save threw
+ * into the screen's generic "Couldn't export — try again" surface while CSV
+ * (which uses the SAF-aware `writeAsStringAsync` branch) kept working.
+ * On Android the bytes are therefore streamed through base64 into
+ * `StorageAccessFramework.writeAsStringAsync`, the documented SAF binary
+ * write path — still never UTF-8, so PDF bytes stay intact.
  */
 export async function copyBinaryFile(fromUri: string, filename: string): Promise<string> {
   const base = basenameOf(filename);
   let destUri: string | null = null;
   try {
     destUri = await createDownloadsFile(base, 'application/pdf');
-    try {
-      await FileSystem.copyAsync({ from: fromUri, to: destUri });
-    } catch {
-      await FileSystem.moveAsync({ from: fromUri, to: destUri });
+    if (Platform.OS === 'android') {
+      const base64 = await FileSystem.readAsStringAsync(fromUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      await FileSystem.StorageAccessFramework.writeAsStringAsync(destUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+    } else {
+      try {
+        await FileSystem.copyAsync({ from: fromUri, to: destUri });
+      } catch {
+        await FileSystem.moveAsync({ from: fromUri, to: destUri });
+      }
     }
     return destUri;
   } catch (err) {
