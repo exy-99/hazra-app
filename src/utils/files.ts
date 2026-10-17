@@ -148,6 +148,43 @@ export async function deleteFile(uri: string): Promise<void> {
 }
 
 /**
+ * Read a picked document as UTF-8 text, cross-platform.
+ *
+ * - Native: `uri` is a `file://` URI → `readAsStringAsync`.
+ * - Web: `base64` is provided by default → decode; falls back to `file.text()`.
+ *
+ * Returns `null` when the content cannot be read (caller surfaces the error).
+ */
+export async function readPickedFile(uri: string, base64?: string, file?: File): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    if (file) {
+      try {
+        return await file.text();
+      } catch {
+        return null;
+      }
+    }
+    if (base64) {
+      try {
+        return decodeURIComponent(
+          Array.prototype.map
+            .call(atob(base64), (c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join(''),
+        );
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+  try {
+    return await FileSystem.readAsStringAsync(uri);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Binary-safe save of the `expo-print` artifact under the slug `filename`.
  * NEVER reads/writes the bytes as UTF-8 text (that round-trip would
  * corrupt PDF bytes) — moves them with `copyAsync` (`moveAsync` fallback

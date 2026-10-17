@@ -201,7 +201,13 @@
 
 **UI hint:** yes
 
----
+**Status:** Complete — 2026-10-17 (4/4 plans; `npx tsc --noEmit` exits 0; on-device proofs deferred to Phase 9; no dev build in this environment)
+
+**Plan progress:**
+- [x] 07-01 backup serializer + validator (BK-01, BK-02, BK-03, NF-06) — done 2026-10-17
+- [x] 07-02 DB export/import + last-backup state (BK-01, BK-02, BK-03, NF-06) — done 2026-10-17
+- [x] 07-03 file read helper for document picker (BK-02, BK-03) — done 2026-10-17
+- [x] 07-04 Backup & Restore screen UI (BK-01, BK-02, BK-03, NF-06, DS-03/05/06/07/08/09) — done 2026-10-17
 
 ## Phase 8: Polish & Edge Cases
 *(legacy Phase 7)*
@@ -218,6 +224,18 @@
 5. Icon + splash wired into `app.json`; verified at 360dp width on low-end Android.
 
 **UI hint:** yes
+
+**Plans:** 8 plans
+
+**Plan progress:**
+- [ ] 08-01 Inter runtime + 13px floor + Type fontFamily + reduced-motion hook (DS-07) — wave 1
+- [ ] 08-08 dead-starter cleanup + app-wide text gates (DS-04 trace) — wave 2
+- [ ] 08-02 §7.5 copy lock + skeleton sweep: attendance/worksites/workers (DS-06) — wave 2
+- [ ] 08-03 shared-component a11y + 44px targets + focus (DS-07, DS-05) — wave 2
+- [ ] 08-04 screen sweep: targets/feedback/one-orange/tabular/keyboard (DS-05, DS-08) — wave 3
+- [ ] 08-05 tab chrome DS-09 + Android resize mode + web focus ring (DS-09, DS-05) — wave 3
+- [ ] 08-06 computational contrast + token bumps (DS-07) — wave 4
+- [ ] 08-07 icon/splash wiring + 360dp low-end device checkpoint (autonomous: false; user assets pending D-31) — wave 5
 
 ---
 

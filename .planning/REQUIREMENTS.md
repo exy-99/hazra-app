@@ -47,9 +47,9 @@
 
 ### Backup & Restore (BK)
 
-- [ ] **BK-01**: Manager can manually back up the entire local database to a file in Downloads.
-- [ ] **BK-02**: Manager can manually restore data from a previously saved backup file.
-- [ ] **BK-03**: Backup includes worksites, workers, and attendance (including soft-deleted rows); restore replaces local data.
+- [x] **BK-01**: Manager can manually back up the entire local database to a file in Downloads.
+- [x] **BK-02**: Manager can manually restore data from a previously saved backup file.
+- [x] **BK-03**: Backup includes worksites, workers, and attendance (including soft-deleted rows); restore replaces local data.
 
 ### Platform / Non-Functional (NF)
 
@@ -58,7 +58,7 @@
 - [x] **NF-03**: Single manager, single device — no authentication/login.
 - [ ] **NF-04**: Clean, minimal, fast UI usable with zero training.
 - [x] **NF-05**: Zero data loss across app updates (soft-delete + stable schema with a `user_version` migration hook).
-- [ ] **NF-06**: Exports (CSV/PDF) and backups open/parse correctly outside the app.
+- [x] **NF-06**: Exports (CSV/PDF) and backups open/parse correctly outside the app.
 
 ### Design System Contract (DS)
 
