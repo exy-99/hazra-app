@@ -7,6 +7,13 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { Spacing, Type } from '@/constants/theme';
 import { initDatabase } from '@/db/index';
 import { useTheme } from '@/hooks/use-theme';
+import { useFonts } from '@expo-google-fonts/inter';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -18,6 +25,17 @@ export default function TabLayout() {
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [fontsLoaded, fontError] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
+  // Fonts load inside the bundle (no network). A font error must not freeze the
+  // app: D-29 falls back to system fonts. The gate opens once db resolves AND
+  // fonts have either loaded or errored.
+  const uiReady = dbReady && (fontsLoaded || !!fontError);
 
   useEffect(() => {
     if (initialized) return;
@@ -60,7 +78,7 @@ export default function TabLayout() {
             <Text style={[styles.retryLabel, { color: theme.onAccent }]}>Try again</Text>
           </Pressable>
         </View>
-      ) : dbReady ? (
+      ) : uiReady ? (
         <Stack
           screenOptions={{
             headerStyle: { backgroundColor: theme.surface },

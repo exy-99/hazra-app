@@ -52,30 +52,12 @@ export const Colors = {
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export const Fonts = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+} as const;
 
 export const Spacing = {
   half: 2,
@@ -91,12 +73,12 @@ export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
 
 export const Type = {
-  display: { fontSize: 48, lineHeight: 52, fontWeight: '700' },
-  h1: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
-  h2: { fontSize: 20, lineHeight: 26, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
-  label: { fontSize: 14, lineHeight: 20, fontWeight: '600' },
-  caption: { fontSize: 13, lineHeight: 18, fontWeight: '500' },
+  display: { fontFamily: Fonts.bold, fontSize: 48, lineHeight: 52, fontWeight: '700' },
+  h1: { fontFamily: Fonts.bold, fontSize: 28, lineHeight: 34, fontWeight: '700' },
+  h2: { fontFamily: Fonts.semibold, fontSize: 20, lineHeight: 26, fontWeight: '600' },
+  body: { fontFamily: Fonts.regular, fontSize: 16, lineHeight: 24, fontWeight: '400' },
+  label: { fontFamily: Fonts.semibold, fontSize: 14, lineHeight: 20, fontWeight: '600' },
+  caption: { fontFamily: Fonts.medium, fontSize: 13, lineHeight: 18, fontWeight: '500' },
 } as const;
 
 export const Radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;
