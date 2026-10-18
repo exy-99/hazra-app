@@ -572,7 +572,7 @@ export default function ExportScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={[styles.title, { color: theme.foreground }]}>Export</Text>
+          <Text style={[styles.title, { color: theme.foreground }]} accessibilityRole="header">Export</Text>
           <Text style={[styles.caption, { color: theme.mutedForeground }]}>
             Payroll-ready files saved to Downloads.
           </Text>
@@ -632,6 +632,7 @@ export default function ExportScreen() {
               </View>
             ) : (
               <FlatList
+                accessibilityRole="list"
                 data={workers}
                 keyExtractor={(item) => item.id}
                 scrollEnabled={false}
@@ -657,6 +658,7 @@ export default function ExportScreen() {
             </View>
           ) : (
             <FlatList
+              accessibilityRole="list"
               data={sites}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}

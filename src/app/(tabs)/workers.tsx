@@ -190,7 +190,7 @@ export default function WorkersScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.foreground }]}>
+          <Text style={[styles.title, { color: theme.foreground }]} accessibilityRole="header">
             Workers
           </Text>
           <Pressable
@@ -305,6 +305,7 @@ export default function WorkersScreen() {
             layout={LinearTransition.duration(200)}
           >
             <FlatList
+              accessibilityRole="list"
               data={workers}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}

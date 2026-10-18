@@ -334,7 +334,7 @@ export default function AttendanceScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
-        <Text style={[styles.title, { color: theme.foreground }]}>
+        <Text style={[styles.title, { color: theme.foreground }]} accessibilityRole="header">
           Attendance
         </Text>
         <DateStrip selectedDate={selectedDate} onSelectDate={handleSelectDate} />
@@ -437,6 +437,7 @@ export default function AttendanceScreen() {
               </Text>
             ) : null}
             <FlatList
+              accessibilityRole="list"
               data={rows}
               keyExtractor={(item) => item.worker_id}
               contentContainerStyle={styles.listContent}

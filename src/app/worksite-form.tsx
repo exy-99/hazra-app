@@ -4,6 +4,8 @@ import type { JSX } from 'react';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -142,9 +144,12 @@ export default function WorksiteFormScreen(): JSX.Element {
             <EmptyState icon={Building2} title="Worksite not found" />
           </View>
         ) : (
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.form}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={120}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.form}>
             <FormField
               label="Name"
               value={name}
@@ -255,6 +260,7 @@ export default function WorksiteFormScreen(): JSX.Element {
               onCancel={() => setConfirmVisible(false)}
             />
           </ScrollView>
+          </KeyboardAvoidingView>
         )}
       </SafeAreaView>
     </View>

@@ -311,7 +311,7 @@ export default function WorkerProfileScreen() {
                 />
               </>
             ) : null}
-            <Text style={[styles.name, { color: theme.foreground }]}>
+            <Text style={[styles.name, { color: theme.foreground }]} accessibilityRole="header">
               {worker.name}
             </Text>
             <Text style={[styles.meta, { color: theme.mutedForeground }]}>
@@ -322,6 +322,7 @@ export default function WorkerProfileScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Call ${worker.phone}`}
                 android_ripple={{ color: theme.muted }}
+                hitSlop={{ top: 12, bottom: 12, left: 6, right: 6 }}
                 onPress={callPhone}
                 style={({ pressed }) => [
                   styles.phoneRow,
@@ -467,6 +468,7 @@ export default function WorkerProfileScreen() {
                   />
                 ) : (
                   <FlatList
+                    accessibilityRole="list"
                     data={[...entries].reverse()}
                     keyExtractor={(item) => item.id}
                     scrollEnabled={false}

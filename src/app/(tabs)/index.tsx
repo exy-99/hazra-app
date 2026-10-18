@@ -136,6 +136,7 @@ export default function HomeScreen() {
         ) : (
           <ScrollView contentContainerStyle={styles.content}>
             <Text
+              accessibilityRole="header"
               accessibilityLabel={dateLabel}
               style={[styles.date, { color: theme.mutedForeground }]}>
               {dateLabel}

@@ -161,7 +161,7 @@ export default function WorksitesScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
-        <Text style={[styles.title, { color: theme.foreground }]}>Worksites</Text>
+        <Text style={[styles.title, { color: theme.foreground }]} accessibilityRole="header">Worksites</Text>
         {loading ? (
           <View style={styles.skeletonRegion} accessibilityLabel="Loading worksites">
             {[0, 1, 2].map((i) => (
@@ -189,6 +189,7 @@ export default function WorksitesScreen() {
         ) : (
           <View style={styles.listWrap}>
             <FlatList
+              accessibilityRole="list"
               data={sites}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.listContent}

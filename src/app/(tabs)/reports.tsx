@@ -183,7 +183,7 @@ export default function ReportsScreen() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={[styles.title, { color: theme.foreground }]}>Reports</Text>
+          <Text style={[styles.title, { color: theme.foreground }]} accessibilityRole="header">Reports</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -451,6 +451,7 @@ export default function ReportsScreen() {
                   {`${sorted.length} workers`}
                 </Text>
                 <FlatList
+                  accessibilityRole="list"
                   data={sorted}
                   keyExtractor={(item) => item.workerId}
                   scrollEnabled={false}

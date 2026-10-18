@@ -4,6 +4,8 @@ import type { JSX } from 'react';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -156,9 +158,12 @@ export default function WorkerFormScreen(): JSX.Element {
             <EmptyState icon={Users} title="Worker not found" />
           </View>
         ) : (
-          <ScrollView
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.form}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={120}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.form}>
             <FormField
               label="Name"
               value={name}
@@ -328,6 +333,7 @@ export default function WorkerFormScreen(): JSX.Element {
               />
             ) : null}
           </ScrollView>
+          </KeyboardAvoidingView>
         )}
       </SafeAreaView>
     </View>
