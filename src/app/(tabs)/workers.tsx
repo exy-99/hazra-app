@@ -1,7 +1,8 @@
 import { router, useFocusEffect } from "expo-router";
 import { Building2, Plus, Users } from "lucide-react-native";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Animated as RNAnimated,
   ActivityIndicator,
   FlatList,
   Pressable,
@@ -22,6 +23,7 @@ import { MaxContentWidth, Radius, Spacing, Type } from "@/constants/theme";
 import type { Worker, Worksite } from "@/db/types";
 import { listWorkers } from "@/db/workers";
 import { listWorksites } from "@/db/worksites";
+import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useTheme } from "@/hooks/use-theme";
 
 const WorkerRow = memo(function WorkerRow({
@@ -85,8 +87,46 @@ function AddWorkerButton({
   );
 }
 
+function WorkerCardSkeleton({ reduced }: { reduced: boolean }) {
+  const theme = useTheme();
+  const pulseValue = useMemo(() => new RNAnimated.Value(0), []);
+  const pulseOpacity = pulseValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.55, 1],
+  });
+
+  useEffect(() => {
+    if (!reduced) {
+      RNAnimated.loop(
+        RNAnimated.timing(pulseValue, {
+          toValue: 1,
+          duration: 240,
+          useNativeDriver: true,
+        })
+      ).start();
+    }
+    return () => {
+      pulseValue.stopAnimation();
+    };
+  }, [reduced, pulseValue]);
+
+  const opacity = reduced ? 0.55 : pulseOpacity;
+
+  return (
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: theme.muted, borderWidth: 0 },
+      ]}>
+      <View style={[styles.skeletonNameBar, { opacity, backgroundColor: theme.mutedForeground }]} />
+      <View style={[styles.skeletonMetaBar, { opacity, backgroundColor: theme.mutedForeground, marginTop: 4 }]} />
+    </View>
+  );
+}
+
 export default function WorkersScreen() {
   const theme = useTheme();
+  const reduced = useReducedMotion();
   const [sites, setSites] = useState<Worksite[]>([]);
   const [siteNames, setSiteNames] = useState<Map<string, string>>(new Map());
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -236,11 +276,11 @@ export default function WorkersScreen() {
           </Animated.View>
         )}
         {loading ? (
-          <ActivityIndicator
-            accessibilityLabel="Loading workers"
-            color={theme.primary}
-            style={styles.loader}
-          />
+          <View style={styles.skeletonRegion} accessibilityLabel="Loading workers">
+            {[0, 1, 2, 3].map((i) => (
+              <WorkerCardSkeleton key={i} reduced={reduced} />
+            ))}
+          </View>
         ) : loadError ? (
           <View style={styles.emptyWrap}>
             <EmptyState
@@ -377,5 +417,21 @@ const styles = StyleSheet.create({
   },
   meta: {
     ...Type.caption,
+  },
+  skeletonRegion: {
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  skeletonNameBar: {
+    height: 16,
+    borderRadius: 4,
+    width: '70%',
+  },
+  skeletonMetaBar: {
+    height: 12,
+    borderRadius: 4,
+    width: '90%',
+    marginTop: 4,
   },
 });

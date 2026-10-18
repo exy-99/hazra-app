@@ -1,7 +1,8 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Users } from 'lucide-react-native';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Animated as RNAnimated,
   ActivityIndicator,
   FlatList,
   Pressable,
@@ -32,6 +33,7 @@ import {
 } from '@/db/attendance';
 import type { Worksite } from '@/db/types';
 import { listWorksites } from '@/db/worksites';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import { useTheme } from '@/hooks/use-theme';
 import { todayKey } from '@/utils/dates';
 
@@ -127,8 +129,45 @@ function CountsHeader({ counts }: { counts: DailyCounts }): React.JSX.Element {
   );
 }
 
+function AttendanceCardSkeleton({ reduced }: { reduced: boolean }) {
+  const theme = useTheme();
+  const pulseValue = useMemo(() => new RNAnimated.Value(0), []);
+  const pulseOpacity = pulseValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.55, 1],
+  });
+
+  useEffect(() => {
+    if (!reduced) {
+      RNAnimated.loop(
+        RNAnimated.timing(pulseValue, {
+          toValue: 1,
+          duration: 240,
+          useNativeDriver: true,
+        })
+      ).start();
+    }
+    return () => {
+      pulseValue.stopAnimation();
+    };
+  }, [reduced, pulseValue]);
+
+  const opacity = reduced ? 0.55 : pulseOpacity;
+
+  return (
+    <View style={[styles.row, { backgroundColor: theme.muted, borderWidth: 0 }]}>
+      <View style={styles.topRow}>
+        <View style={[styles.skeletonBar, { width: '62%', opacity, backgroundColor: theme.mutedForeground }]} />
+        <View style={[styles.skeletonBar, { width: '42%', opacity, backgroundColor: theme.mutedForeground }]} />
+        <View style={[styles.skeletonPill, { opacity, backgroundColor: theme.mutedForeground }]} />
+      </View>
+    </View>
+  );
+}
+
 export default function AttendanceScreen() {
   const theme = useTheme();
+  const reduced = useReducedMotion();
   const [selectedDate, setSelectedDate] = useState<string>(todayKey());
   const [selectedSite, setSelectedSite] = useState<string | null>(null);
   const [sites, setSites] = useState<Worksite[]>([]);
@@ -353,11 +392,11 @@ export default function AttendanceScreen() {
         </Animated.View>
         )}
         {loading ? (
-          <ActivityIndicator
-            accessibilityLabel="Loading attendance"
-            color={theme.primary}
-            style={styles.loader}
-          />
+          <View style={styles.skeletonRegion} accessibilityLabel="Loading attendance">
+            {[0, 1, 2, 3].map((i) => (
+              <AttendanceCardSkeleton key={i} reduced={reduced} />
+            ))}
+          </View>
         ) : loadError ? (
           <View style={styles.emptyWrap}>
             <EmptyState
@@ -526,5 +565,22 @@ const styles = StyleSheet.create({
     flex: 1,
     ...Type.body,
     fontWeight: '600',
+  },
+  skeletonRegion: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  skeletonBar: {
+    height: 12,
+    borderRadius: 6,
+  },
+  skeletonPill: {
+    width: 76,
+    height: 24,
+    borderRadius: Radius.pill,
   },
 });
