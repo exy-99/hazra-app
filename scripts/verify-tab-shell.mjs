@@ -40,4 +40,12 @@ for (const f of ['src/components/app-tabs.tsx', 'src/components/app-tabs.web.tsx
   hex += count(f, '#[0-9a-fA-F]{3,8}');
 }
 eq(hex, 0, 'no hardcoded hex');
+
+// DS-09 additions: tablist/tab semantics on web, color contract on native
+eq(count('src/components/app-tabs.web.tsx', 'accessibilityRole="tablist"'), 1, 'web tablist role');
+eq(count('src/components/app-tabs.web.tsx', 'accessibilityRole="tab"'), 1, 'web tab role defined');
+eq(count('src/components/app-tabs.web.tsx', 'accessibilityState={{ selected: isFocused }}'), 1, 'web tab selected state defined');
+eq(count('src/components/app-tabs.tsx', 'colors.mutedForeground'), 2, 'native mutedForeground default ×2');
+eq(count('src/components/app-tabs.tsx', 'colors.primary'), 2, 'native primary selected ×2');
+
 process.exit(fail ? 1 : 0);

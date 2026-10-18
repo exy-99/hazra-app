@@ -16,7 +16,7 @@ import { AttendanceRing } from '@/components/attendance-ring';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { EmptyState } from '@/components/empty-state';
 import { STATUS } from '@/constants/status';
-import { MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, Radius, Spacing, Type } from '@/constants/theme';
 import { getAttendanceForWorker } from '@/db/attendance';
 import type { AttendanceEntry, Worker } from '@/db/types';
 import { deleteWorker, getWorker } from '@/db/workers';
@@ -502,6 +502,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
+    paddingBottom: BottomTabInset + Spacing.three,
   },
   emptyWrap: {
     flex: 1,

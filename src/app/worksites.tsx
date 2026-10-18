@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState } from '@/components/empty-state';
-import { Radius, Spacing, Type } from '@/constants/theme';
+import { BottomTabInset, Radius, Spacing, Type } from '@/constants/theme';
 import type { Worksite } from '@/db/types';
 import { listWorkers } from '@/db/workers';
 import { listWorksites } from '@/db/worksites';
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   listContent: {
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.three,
+    paddingBottom: BottomTabInset + Spacing.three,
   },
   footer: {
     padding: Spacing.three,

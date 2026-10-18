@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.exy99.hazraapp"
+      "package": "com.exy99.hazraapp",
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "output": "static",

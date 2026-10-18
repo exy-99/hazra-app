@@ -19,7 +19,7 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { EmptyState } from "@/components/empty-state";
-import { MaxContentWidth, Radius, Spacing, Type } from "@/constants/theme";
+import { BottomTabInset, MaxContentWidth, Radius, Spacing, Type } from "@/constants/theme";
 import type { Worker, Worksite } from "@/db/types";
 import { listWorkers } from "@/db/workers";
 import { listWorksites } from "@/db/worksites";
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   listContent: {
     gap: Spacing.two,
     paddingHorizontal: Spacing.three,
-    paddingBottom: Spacing.three,
+    paddingBottom: BottomTabInset + Spacing.three,
   },
   card: {
     minHeight: 44,

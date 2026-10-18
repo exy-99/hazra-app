@@ -38,7 +38,12 @@ export default function AppTabs() {
 export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
   const theme = useTheme();
   return (
-    <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
+    <Pressable
+      {...props}
+      accessibilityRole="tab"
+      accessibilityLabel={String(children)}
+      accessibilityState={{ selected: isFocused }}
+      style={({ pressed }) => pressed && styles.pressed}>
       <View
         style={[
           styles.tabButtonView,
@@ -63,7 +68,7 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
 export function CustomTabList(props: TabListProps) {
   const theme = useTheme();
   return (
-    <View {...props} style={styles.tabListContainer}>
+    <View {...props} style={styles.tabListContainer} accessibilityRole="tablist">
       <View
         style={[
           styles.innerContainer,
