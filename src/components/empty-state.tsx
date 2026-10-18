@@ -21,6 +21,8 @@ export function EmptyState({
 
   return (
     <View
+      accessibilityRole="summary"
+      accessibilityLabel={title}
       style={[
         styles.card,
         { backgroundColor: theme.surface, borderColor: theme.border },

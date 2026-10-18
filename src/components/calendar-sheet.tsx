@@ -1,4 +1,5 @@
-import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 import { Radius, Spacing, Type } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -23,17 +24,39 @@ export function CalendarSheet({
 }: CalendarSheetProps): React.JSX.Element {
   const theme = useTheme();
   const dates = Array.from({ length: daysBack }, (_, i) => addDays(maxDate, -i));
+  const activeElementRef = useRef<HTMLElement | null>(null);
+  const wasVisible = useRef(false);
+
+  // Web-only: return focus to the element that triggered the modal when it closes.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    if (visible && !wasVisible.current) {
+      activeElementRef.current = document.activeElement as HTMLElement | null;
+    }
+    if (!visible && wasVisible.current) {
+      activeElementRef.current?.focus?.();
+      activeElementRef.current = null;
+    }
+    wasVisible.current = visible;
+    return () => {
+      activeElementRef.current?.focus?.();
+      activeElementRef.current = null;
+    };
+  }, [visible]);
 
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}>
+      onRequestClose={onClose}
+      accessibilityViewIsModal={true}
+      accessibilityLabel="Choose a date">
       <View style={styles.backdrop}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close date picker"
+          importantForAccessibility="no-hide-descendants"
           onPress={onClose}
           style={[styles.scrim, { backgroundColor: theme.foreground }]}
         />

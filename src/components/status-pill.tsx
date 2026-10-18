@@ -58,6 +58,7 @@ export function StatusPill({
         accessibilityLabel="Choose a specific status"
         accessibilityHint="Opens the list of statuses"
         android_ripple={{ color: theme.muted }}
+        hitSlop={{ top: 12, bottom: 12, left: 6, right: 6 }}
         onPress={onOpenPicker}
         style={({ pressed }) => [
           styles.chevron,
@@ -88,6 +89,7 @@ export function StatusPicker({
           accessibilityRole="button"
           accessibilityLabel={`Mark ${STATUS[option].label}`}
           android_ripple={{ color: STATUS[option].solid }}
+          hitSlop={{ top: 12, bottom: 12, left: 6, right: 6 }}
           onPress={() => onPick(option)}
           style={({ pressed }) => [
             styles.miniPill,
@@ -107,6 +109,7 @@ export function StatusPicker({
         accessibilityRole="button"
         accessibilityLabel="Close status picker"
         android_ripple={{ color: theme.muted }}
+        hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
         onPress={onClose}
         style={({ pressed }) => [
           styles.closeRow,

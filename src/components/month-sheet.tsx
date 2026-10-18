@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
-import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 import { Radius, Spacing, Type } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -26,17 +27,38 @@ export function MonthSheet({
   const months = Array.from({ length: monthsBack ?? 12 }, (_, i) =>
     dayjs(`${maxMonth}-01`).subtract(i, 'month').format('YYYY-MM'),
   );
+  const activeElementRef = useRef<HTMLElement | null>(null);
+  const wasVisible = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    if (visible && !wasVisible.current) {
+      activeElementRef.current = document.activeElement as HTMLElement | null;
+    }
+    if (!visible && wasVisible.current) {
+      activeElementRef.current?.focus?.();
+      activeElementRef.current = null;
+    }
+    wasVisible.current = visible;
+    return () => {
+      activeElementRef.current?.focus?.();
+      activeElementRef.current = null;
+    };
+  }, [visible]);
 
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}>
+      onRequestClose={onClose}
+      accessibilityViewIsModal={true}
+      accessibilityLabel="Choose a month">
       <View style={styles.backdrop}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Close month picker"
+          importantForAccessibility="no-hide-descendants"
           onPress={onClose}
           style={[styles.scrim, { backgroundColor: theme.foreground }]}
         />

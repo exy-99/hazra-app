@@ -31,10 +31,15 @@ export function TrendChart({ buckets }: TrendChartProps): React.JSX.Element {
   const values = buckets
     .map((b) => b.percentage)
     .filter((v): v is number => v !== null);
+  const firstValue = values.length > 0 ? values[0] : null;
+  const lastValue = values.length > 0 ? values[values.length - 1] : null;
+  const minValue = values.length > 0 ? Math.min(...values) : null;
+  const maxValue = values.length > 0 ? Math.max(...values) : null;
+
   const accessibilityLabel =
     values.length === 0
       ? 'No trend data'
-      : `Trend, ${buckets.length} bars, range ${Math.min(...values)}% to ${Math.max(...values)}%`;
+      : `Trend over ${buckets.length} periods, from ${firstValue}% to ${lastValue}%, range ${minValue}% to ${maxValue}%`;
 
   const bw =
     buckets.length === 0

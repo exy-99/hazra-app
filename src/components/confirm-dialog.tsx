@@ -1,5 +1,6 @@
 import type { JSX } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
 
 import { Radius, Spacing, Type } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -14,16 +15,37 @@ export function ConfirmDialog(props: {
 }): JSX.Element {
   const theme = useTheme();
   const { visible, title, message, confirmLabel, onConfirm, onCancel } = props;
+  const activeElementRef = useRef<HTMLElement | null>(null);
+  const wasVisible = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    if (visible && !wasVisible.current) {
+      activeElementRef.current = document.activeElement as HTMLElement | null;
+    }
+    if (!visible && wasVisible.current) {
+      activeElementRef.current?.focus?.();
+      activeElementRef.current = null;
+    }
+    wasVisible.current = visible;
+    return () => {
+      activeElementRef.current?.focus?.();
+      activeElementRef.current = null;
+    };
+  }, [visible]);
 
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onCancel}>
+      onRequestClose={onCancel}
+      accessibilityViewIsModal={true}
+      accessibilityLabel={title}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Dismiss dialog"
+        importantForAccessibility="no-hide-descendants"
         onPress={onCancel}
         style={styles.backdrop}>
         <View style={[styles.card, { backgroundColor: theme.surface }]}>

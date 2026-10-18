@@ -66,8 +66,10 @@ export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX
       <Pressable
         accessibilityLabel={note !== null ? 'Edit note' : 'Add note'}
         accessibilityRole="button"
+        android_ripple={{ color: theme.muted }}
+        hitSlop={{ top: 12, bottom: 12, left: 6, right: 6 }}
         onPress={expand}
-        style={styles.collapsed}>
+        style={({ pressed }) => [styles.collapsed, { opacity: pressed ? 0.85 : 1 }]}>
         <StickyNote
           size={20}
           color={note !== null ? theme.primary : theme.mutedForeground}
@@ -110,9 +112,14 @@ export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX
         <Pressable
           accessibilityLabel="Save note"
           accessibilityRole="button"
+          android_ripple={{ color: theme.primary }}
           disabled={savingNote}
           onPress={() => void handleSave().catch(() => {})}
-          style={[styles.action, savingNote ? styles.disabled : undefined]}>
+          style={({ pressed }) => [
+            styles.action,
+            savingNote ? styles.disabled : undefined,
+            { opacity: pressed ? 0.85 : 1 },
+          ]}>
           <Text style={[styles.saveText, { color: theme.primary }]}>
             {savingNote ? 'Saving…' : 'Save'}
           </Text>
@@ -121,9 +128,14 @@ export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX
           <Pressable
             accessibilityLabel="Clear note"
             accessibilityRole="button"
+            android_ripple={{ color: theme.destructive }}
             disabled={savingNote}
             onPress={() => void handleClear().catch(() => {})}
-            style={[styles.action, savingNote ? styles.disabled : undefined]}>
+            style={({ pressed }) => [
+              styles.action,
+              savingNote ? styles.disabled : undefined,
+              { opacity: pressed ? 0.85 : 1 },
+            ]}>
             <Text style={[styles.clearText, { color: theme.destructive }]}>
               Clear
             </Text>
@@ -132,9 +144,14 @@ export function NoteField({ note, onSave, onExpandChange }: NoteFieldProps): JSX
         <Pressable
           accessibilityLabel="Cancel note edit"
           accessibilityRole="button"
+          android_ripple={{ color: theme.muted }}
           disabled={savingNote}
           onPress={cancel}
-          style={[styles.action, savingNote ? styles.disabled : undefined]}>
+          style={({ pressed }) => [
+            styles.action,
+            savingNote ? styles.disabled : undefined,
+            { opacity: pressed ? 0.85 : 1 },
+          ]}>
           <Text style={[styles.cancelText, { color: theme.mutedForeground }]}>
             Cancel
           </Text>

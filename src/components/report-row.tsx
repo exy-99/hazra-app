@@ -34,7 +34,7 @@ export const ReportRow = memo(function ReportRow({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`View ${name} profile`}
+      accessibilityLabel={`View ${name} profile, ${summary.percentage === null ? 'no marks recorded' : summary.percentage + '% attendance'}`}
       android_ripple={{ color: theme.muted }}
       onPress={() => onOpen(workerId)}
       style={({ pressed }) => [

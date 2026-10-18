@@ -61,6 +61,7 @@ export function DateStrip({ selectedDate, onSelectDate }: DateStripProps): React
           accessibilityLabel="Jump to today"
           android_ripple={{ color: theme.muted }}
           disabled={isToday}
+          hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
           onPress={() => onSelectDate(todayKey())}
           style={({ pressed }) => [
             styles.todayButton,
@@ -118,6 +119,7 @@ export function DateStrip({ selectedDate, onSelectDate }: DateStripProps): React
         accessibilityRole="button"
         accessibilityLabel="Pick a date"
         android_ripple={{ color: theme.muted }}
+        hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
         onPress={() => setPickerOpen(true)}
         style={({ pressed }) => [
           styles.pickRow,
