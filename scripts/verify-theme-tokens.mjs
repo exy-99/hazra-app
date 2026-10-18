@@ -23,10 +23,10 @@ function expectKey(key) {
 }
 
 // Exact light/dark primary + accent hexes (design.md §3).
-expectOnce("'#0D9488'", 2); // light primary + light ring
+expectOnce("'#0B7A6F'", 1); // light primary
+expectOnce("'#0D9488'", 1); // light ring (no longer shared with primary)
+expectOnce("'#C24100'", 1); // light accent
 expectOnce("'#2DD4BF'", 2); // dark primary + dark ring
-expectOnce("'#EA580C'");
-expectOnce("'#FB923C'");
 expectOnce("'#DC2626'");
 expectOnce("'#F87171'");
 
