@@ -287,7 +287,7 @@ export default function BackupScreen() {
               </Text>
               {lastBackup !== null ? (
                 <View style={styles.lastBackupLine}>
-                  <Text style={[styles.caption, { color: theme.mutedForeground }]}>
+                  <Text style={[styles.caption, { color: theme.mutedForeground, fontVariant: ['tabular-nums'] }]}>
                     Last backup:{' '}
                     {formatDisplay(lastBackup.exported_at.slice(0, 10), 'DD MMM YYYY')}
                   </Text>
@@ -372,7 +372,7 @@ export default function BackupScreen() {
                   <Text style={[styles.filename, { color: theme.mutedForeground }]}>
                     {savedName}
                   </Text>
-                  <Text style={[styles.countsLine, { color: theme.mutedForeground }]}>
+                  <Text style={[styles.countsLine, { color: theme.mutedForeground }]} accessibilityLiveRegion="polite">
                     {counts.worksites} worksites · {counts.workers} workers · {counts.marks} marks
                   </Text>
                   <Pressable
@@ -380,7 +380,7 @@ export default function BackupScreen() {
                     accessibilityLabel="Share file"
                     android_ripple={{ color: theme.primary }}
                     onPress={handleShare}
-                    style={styles.shareRow}>
+                    style={({ pressed }) => [styles.shareRow, { opacity: pressed ? 0.85 : 1 }]}>
                     <Share2 size={16} color={theme.primary} />
                     <Text style={[styles.shareLabel, { color: theme.primary }]}>Share file</Text>
                   </Pressable>
@@ -389,7 +389,7 @@ export default function BackupScreen() {
                     accessibilityLabel="Back up again"
                     android_ripple={{ color: theme.muted }}
                     onPress={resetBackup}
-                    style={styles.shareRow}>
+                    style={({ pressed }) => [styles.shareRow, { opacity: pressed ? 0.85 : 1 }]}>
                     <Text style={[styles.shareLabel, { color: theme.mutedForeground }]}>
                       Back up again
                     </Text>
@@ -400,13 +400,13 @@ export default function BackupScreen() {
               {/* Error state */}
               {backupError && error !== null ? (
                 <View style={styles.errorWrap}>
-                  <Text style={[styles.errorText, { color: theme.destructive }]}>{error}</Text>
+                  <Text style={[styles.errorText, { color: theme.destructive }]} accessibilityLiveRegion="polite">{error}</Text>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Try again"
                     android_ripple={{ color: theme.muted }}
                     onPress={handleBackup}
-                    style={styles.retryRow}>
+                    style={({ pressed }) => [styles.retryRow, { opacity: pressed ? 0.85 : 1 }]}>
                     <Text style={[styles.retryLabel, { color: theme.destructive }]}>Try again</Text>
                   </Pressable>
                 </View>
@@ -496,6 +496,7 @@ export default function BackupScreen() {
                     accessibilityLabel="Replace all data"
                     android_ripple={{ color: theme.muted }}
                     disabled={restoreLock.current}
+                    hitSlop={{ top: 12, bottom: 12, left: 10, right: 10 }}
                     onPress={handleRestoreConfirm}
                     style={({ pressed }) => [{ opacity: restoreLock.current ? 0.6 : pressed ? 0.85 : 1 }]}>
                     <Text style={[styles.destructiveText, { color: theme.destructive }]}>
@@ -511,7 +512,7 @@ export default function BackupScreen() {
                       setValidatedPayload(null);
                       setError(null);
                     }}
-                    style={styles.mutedTextRow}>
+                    style={({ pressed }) => [styles.mutedTextRow, { opacity: pressed ? 0.85 : 1 }]}>
                     <Text style={[styles.mutedText, { color: theme.mutedForeground }]}>
                       Choose a different file
                     </Text>
@@ -522,13 +523,13 @@ export default function BackupScreen() {
               {/* Restore error state */}
               {restoreError && error !== null ? (
                 <View style={styles.errorWrap}>
-                  <Text style={[styles.errorText, { color: theme.destructive }]}>{error}</Text>
+                  <Text style={[styles.errorText, { color: theme.destructive }]} accessibilityLiveRegion="polite">{error}</Text>
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Try again"
                     android_ripple={{ color: theme.muted }}
                     onPress={handleRestorePick}
-                    style={styles.retryRow}>
+                    style={({ pressed }) => [styles.retryRow, { opacity: pressed ? 0.85 : 1 }]}>
                     <Text style={[styles.retryLabel, { color: theme.destructive }]}>Try again</Text>
                   </Pressable>
                 </View>
@@ -544,7 +545,7 @@ export default function BackupScreen() {
                   <Text style={[styles.successTitle, { color: theme.foreground }]}>
                     Restore complete
                   </Text>
-                  <Text style={[styles.countsLine, { color: theme.mutedForeground }]}>
+                  <Text style={[styles.countsLine, { color: theme.mutedForeground }]} accessibilityLiveRegion="polite">
                     Restored {counts.worksites} worksites · {counts.workers} workers · {counts.marks} marks
                   </Text>
                   <Pressable
@@ -555,7 +556,7 @@ export default function BackupScreen() {
                       setRestoreMode('idle');
                       setError(null);
                     }}
-                    style={styles.shareRow}>
+                    style={({ pressed }) => [styles.shareRow, { opacity: pressed ? 0.85 : 1 }]}>
                     <Text style={[styles.shareLabel, { color: theme.mutedForeground }]}>
                       Back to safety
                     </Text>
