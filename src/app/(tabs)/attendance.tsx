@@ -157,9 +157,9 @@ function AttendanceCardSkeleton({ reduced }: { reduced: boolean }) {
   return (
     <View style={[styles.row, { backgroundColor: theme.muted, borderWidth: 0 }]}>
       <View style={styles.topRow}>
-        <View style={[styles.skeletonBar, { width: '62%', opacity, backgroundColor: theme.mutedForeground }]} />
-        <View style={[styles.skeletonBar, { width: '42%', opacity, backgroundColor: theme.mutedForeground }]} />
-        <View style={[styles.skeletonPill, { opacity, backgroundColor: theme.mutedForeground }]} />
+        <RNAnimated.View style={[styles.skeletonBar, { width: '62%', opacity, backgroundColor: theme.mutedForeground }]} />
+        <RNAnimated.View style={[styles.skeletonBar, { width: '42%', opacity, backgroundColor: theme.mutedForeground }]} />
+        <RNAnimated.View style={[styles.skeletonPill, { opacity, backgroundColor: theme.mutedForeground }]} />
       </View>
     </View>
   );

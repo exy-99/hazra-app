@@ -105,9 +105,9 @@ function WorksiteCardSkeleton({ reduced }: { reduced: boolean }) {
         styles.card,
         { backgroundColor: theme.muted, borderWidth: 0 },
       ]}>
-      <View style={[styles.skeletonNameBar, { opacity, backgroundColor: theme.mutedForeground }]} />
-      <View style={[styles.skeletonMetaBar, { opacity, backgroundColor: theme.mutedForeground }]} />
-      <View style={[styles.skeletonCountBar, { opacity, backgroundColor: theme.mutedForeground }]} />
+      <RNAnimated.View style={[styles.skeletonNameBar, { opacity, backgroundColor: theme.mutedForeground }]} />
+      <RNAnimated.View style={[styles.skeletonMetaBar, { opacity, backgroundColor: theme.mutedForeground }]} />
+      <RNAnimated.View style={[styles.skeletonCountBar, { opacity, backgroundColor: theme.mutedForeground }]} />
     </View>
   );
 }
