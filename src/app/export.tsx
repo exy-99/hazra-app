@@ -509,13 +509,22 @@ export default function ExportScreen() {
       }
       setSavedScope(selectedScope);
       setSavedFormat(selectedFormat);
-    } catch {
+    } catch (err) {
       if (tempUri !== null) {
         await deleteFile(tempUri);
       }
       if (destUri !== null) {
         await deleteFile(destUri);
       }
+      // A silent catch left three on-device PDF failures undiagnosable:
+      // the generic card hid whether print, create, read, or write threw.
+      // Log the platform, format, and underlying error (Metro / logcat).
+      console.warn(
+        '[export] failed',
+        Platform.OS,
+        selectedFormat,
+        err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      );
       setExportError("Couldn't export — try again");
     } finally {
       exportLock.current = false;

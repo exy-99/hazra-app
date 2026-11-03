@@ -2,7 +2,7 @@
 status: resolved
 trigger: "\"error while updating property 'opacity ' of a view managed by : RTCTView\" red-screen crash on Android launch; user asked why it happens"
 created: 2026-10-19T00:00:00Z
-updated: 2026-10-19T00:15:00Z
+updated: 2026-10-20T00:00:00Z
 ---
 
 ## Current Focus
@@ -59,7 +59,7 @@ reproduction: Launch the Android dev build; crash appears during/just after spla
 
 root_cause: The loading-skeleton pulse in `src/app/(tabs)/attendance.tsx`, `src/app/(tabs)/workers.tsx` and `src/app/worksites.tsx` assigns an `AnimatedInterpolation` object (`pulseValue.interpolate(...)`) to the `opacity` style of plain `<View>` components. React Native only resolves animated nodes for `Animated.View`; a plain View forwards the object to Android, where the `opacity` prop setter expects a number, fails to cast it to a float and throws "Error while updating property 'opacity' of a view managed by: RCTView". All tab screens mount eagerly at startup, so it crashes during/just after the splash.
 fix: Replaced the eight pulsing plain `<View>` elements with `RNAnimated.View` from `react-native` (`Animated as RNAnimated`), preserving the reduced-motion static `0.55` path and the existing `useNativeDriver: true` animation. Files/lines: src/app/(tabs)/attendance.tsx:160-162, src/app/(tabs)/workers.tsx:121-122, src/app/worksites.tsx:108-110.
-verification: `npx tsc --noEmit` exits 0 (TSC_EXIT=0). Static verification: no remaining non-numeric `opacity` is passed to a plain host component anywhere in src/. Runtime confirmation requires reloading/rebuilding the Android dev client (not possible from this session).
+verification: `npx tsc --noEmit` exits 0 (TSC_EXIT=0). Static verification: no remaining non-numeric `opacity` is passed to a plain host component anywhere in src/. Runtime confirmation: user reported "done" on 2026-10-20 after reload/rebuild — red screen gone.
 files_changed:
   - src/app/(tabs)/attendance.tsx
   - src/app/(tabs)/workers.tsx
