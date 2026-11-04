@@ -227,7 +227,7 @@
 
 **Plans:** 8 plans
 
-**Status:** Executed 2026-10-18 → 2026-11-04 (8/8 implemented; `tsc` 0, doctor 20/20, asset/contrast/tab gates green). 08-07's 360dp device proof + both-modes sweep and the Phase 8 SUMMARY backfill are outstanding; verification not yet run.
+**Status:** Executed 2026-10-18 → 2026-11-04 (8/8 implemented; `tsc` 0, doctor 20/20, asset/contrast/tab gates green). UAT 12/12 passed 2026-11-04, including the 360dp device proof and both-modes sweep. Security review (`08-SECURITY.md`) not yet run.
 
 **Plan progress:**
 - [x] 08-01 Inter runtime + 13px floor + Type fontFamily + reduced-motion hook (DS-07) — wave 1 — done 2026-10-18
