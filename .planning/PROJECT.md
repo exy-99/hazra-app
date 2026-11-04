@@ -10,8 +10,8 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 
 ## Context
 
-- **Platform:** Expo SDK 57, React Native 0.86, React 19, iOS + Android + web, TypeScript strict.
-- **Real repo state:** the stock Expo starter. `src/app/index.tsx` and `src/app/explore.tsx` are the only screens; tokens live in `src/constants/theme.ts`; navigation is Expo Router (native tabs via `expo-router/unstable-native-tabs`, web tabs via `expo-router/ui`).
+- **Platform:** Expo SDK 58, React Native 0.88, React 19.3, iOS + Android + web, TypeScript strict.
+- **Real repo state:** the attendance product is implemented. Working screens: Home, Attendance, Workers, Reports (`(tabs)/`), plus Worksites, Worksite form, Worker form, Worker profile, Export and Backup (root Stack). Tokens live in `src/constants/theme.ts`; navigation is Expo Router (native tabs via `expo-router/unstable-native-tabs`, web tabs via `expo-router/ui`). Phases 1–7 complete; Phase 8 executed with human checkpoints pending; Phase 9 (build & ship) not started.
 - **Product docs:** `PRD_Attendance_App.md` (product source of truth), `design.md` (visual contract), `build_plan.md` (planning reference), `AGENTS.md` (locked constraints).
 - **CRITICAL reconciliation:** `build_plan.md` and the PRD tech-stack table describe **React Navigation + JavaScript/JSDoc + `src/theme`**. That is **stale**. The real repo uses **Expo Router + TypeScript strict**. Plans must build on Expo Router, extend `src/constants/theme.ts` (not a parallel theme), and use `@/*` aliases. See `AGENTS.md`.
 - **Data:** all local, `expo-sqlite`. Adding it (native module) requires a development build, not Expo Go (per `AGENTS.md`).
@@ -37,6 +37,24 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 - Post-verification hardening: list-load error retry + form save re-entry guards (patterns to copy into Phase 3)
 - On-device roster/restart/remove proofs deferred to Phase 9
 
+### Validated in Phases 3–6 (2026-10-07 → 2026-10-11)
+
+- Attendance register: date strip + calendar, status pills (cycle + inline picker), per-entry notes, worksite filter, daily counts, in-place upsert writes (AT-01..AT-05)
+- Worker profile: SVG attendance ring, 7/30/90 presets, stats counts, read-only history list (PR-01/PR-02)
+- Home dashboard + reports: hero ring, tappable counts, per-worker rankings, bottom-3 frequent absentees, SVG trend chart (RP-01..RP-05)
+- Export: pure CSV/PDF serializers, SAF/Downloads file helpers, mobile + web PDF paths, stale-load guards, honest empty/success cards (EX-01..EX-03, NF-06)
+- Phase 3 UAT 13/13; Phase 5 UAT 8/8; export UAT items live in `06-HUMAN-UAT.md` (4 pending, Phase 9)
+
+### Validated in Phase 7: Backup & Restore (2026-10-17)
+
+- Full Backup & Restore screen, serialize/validate + transactional import/export, Downloads write + share, restore confirm gate (BK-01..BK-03)
+- 4 on-device proofs deferred to Phase 9 (`07-04-SUMMARY.md`)
+
+### Phase 8: Polish & Edge Cases (executed 2026-10-18, checkpoints open)
+
+- Inter font + 13px floor + reduced-motion hook, §7.5 copy lock + skeletons, component a11y/focus, 9-screen sweep, tab chrome, computational contrast gate (token bumps: light primary `#0B7A6F`, accent `#C24100`), backup screen sweep
+- 08-07: brand icon/splash wired 2026-11-04; 360dp device proof + both-modes sweep + SUMMARY backfill outstanding
+
 ### Out of Scope
 
 - Employee-facing app / self check-in — single manager only
@@ -61,4 +79,4 @@ A fully offline, single-manager staff attendance register for React Native + Exp
 This document evolves at phase transitions and milestone boundaries.
 
 ---
-*Last updated: 2026-10-08 after Phase 4 completion (summarize() + worker profile + history; PR-01/PR-02 validated, 2/2 UAT passed)*
+*Last updated: 2026-11-04 — SDK 58 / RN 0.88 / React 19.3, brand icon + splash wired, Phase 8 checkpoints open*

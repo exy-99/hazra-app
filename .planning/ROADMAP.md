@@ -227,15 +227,17 @@
 
 **Plans:** 8 plans
 
+**Status:** Executed 2026-10-18 → 2026-11-04 (8/8 implemented; `tsc` 0, doctor 20/20, asset/contrast/tab gates green). 08-07's 360dp device proof + both-modes sweep and the Phase 8 SUMMARY backfill are outstanding; verification not yet run.
+
 **Plan progress:**
-- [ ] 08-01 Inter runtime + 13px floor + Type fontFamily + reduced-motion hook (DS-07) — wave 1
-- [ ] 08-08 dead-starter cleanup + app-wide text gates (DS-04 trace) — wave 2
-- [ ] 08-02 §7.5 copy lock + skeleton sweep: attendance/worksites/workers (DS-06) — wave 2
-- [ ] 08-03 shared-component a11y + 44px targets + focus (DS-07, DS-05) — wave 2
-- [ ] 08-04 screen sweep: targets/feedback/one-orange/tabular/keyboard (DS-05, DS-08) — wave 3
-- [ ] 08-05 tab chrome DS-09 + Android resize mode + web focus ring (DS-09, DS-05) — wave 3
-- [ ] 08-06 computational contrast + token bumps (DS-07) — wave 4
-- [ ] 08-07 icon/splash wiring + 360dp low-end device checkpoint (autonomous: false; user assets pending D-31) — wave 5
+- [x] 08-01 Inter runtime + 13px floor + Type fontFamily + reduced-motion hook (DS-07) — wave 1 — done 2026-10-18
+- [x] 08-08 dead-starter cleanup + app-wide text gates (DS-04 trace) — wave 2 — done 2026-10-18
+- [x] 08-02 §7.5 copy lock + skeleton sweep: attendance/worksites/workers (DS-06) — wave 2 — done 2026-10-18
+- [x] 08-03 shared-component a11y + 44px targets + focus (DS-07, DS-05) — wave 2 — done 2026-10-18
+- [x] 08-04 screen sweep: targets/feedback/one-orange/tabular/keyboard (DS-05, DS-08) — wave 3 — done 2026-10-18
+- [x] 08-05 tab chrome DS-09 + Android resize mode + web focus ring (DS-09, DS-05) — wave 3 — done 2026-10-18
+- [x] 08-06 computational contrast + token bumps (DS-07) — wave 4 — done 2026-10-18
+- [x] 08-07 icon/splash wiring + 360dp low-end device checkpoint (autonomous: false; user assets pending D-31) — wave 5 — wiring done 2026-11-04; device + mode checkpoints pending
 
 ---
 
