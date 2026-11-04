@@ -24,8 +24,7 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      {/* NOTE: explore.png is a temporary placeholder icon.
-          Phase 8 (DS-05..09) replaces the full tab icon set. */}
+      {/* NOTE: explore.png is a temporary placeholder icon (Phase 9 debt). */}
       <NativeTabs.Trigger name="attendance">
         <NativeTabs.Trigger.Label>Attendance</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
@@ -34,8 +33,7 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      {/* NOTE: explore.png is a temporary placeholder icon.
-          Phase 8 (DS-05..09) replaces the full tab icon set. */}
+      {/* NOTE: explore.png is a temporary placeholder icon (Phase 9 debt). */}
       <NativeTabs.Trigger name="workers">
         <NativeTabs.Trigger.Label>Workers</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
@@ -44,8 +42,7 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      {/* NOTE: explore.png is a temporary placeholder icon.
-          Phase 8 (DS-05..09) replaces the full tab icon set. */}
+      {/* NOTE: explore.png is a temporary placeholder icon (Phase 9 debt). */}
       <NativeTabs.Trigger name="reports">
         <NativeTabs.Trigger.Label>Reports</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

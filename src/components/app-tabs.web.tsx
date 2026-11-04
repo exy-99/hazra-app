@@ -6,6 +6,7 @@ import {
   TabTriggerSlotProps,
   TabListProps,
 } from 'expo-router/ui';
+import type { ComponentProps } from 'react';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 
 import { useTheme } from '@/hooks/use-theme';
@@ -35,11 +36,12 @@ export default function AppTabs() {
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+export function TabButton({ children, isFocused, ref, ...props }: TabTriggerSlotProps) {
   const theme = useTheme();
   return (
     <Pressable
       {...props}
+      ref={ref as ComponentProps<typeof Pressable>['ref']}
       accessibilityRole="tab"
       accessibilityLabel={String(children)}
       accessibilityState={{ selected: isFocused }}
