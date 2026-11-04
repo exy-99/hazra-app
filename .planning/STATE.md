@@ -52,7 +52,7 @@
 - Manual backup/restore only in v1.
 - Dev loop now needs a development build (expo-dev-client installed; Expo Go can't load sqlite/file-system/sharing/print).
 - Plan grep gates run as node -e equivalents on Windows PowerShell (no grep binary); assertions identical.
-- `expo-router/unstable-native-tabs` SDK-57 color API confirmed from versioned docs + installed types: `labelStyle` and `iconColor` both accept `{ default, selected }` (plan 01-07); use those keys for active/inactive tab colors, never invented ones.
+- `expo-router/native-tabs` (renamed from `unstable-native-tabs` in SDK 58; old path is a deprecation-warning alias) SDK-57 color API confirmed from versioned docs + installed types: `labelStyle` and `iconColor` both accept `{ default, selected }` (plan 01-07); use those keys for active/inactive tab colors, never invented ones.
 - `SplashScreen.hideAsync()` in `_layout.tsx` carries `.catch(() => {})` because `AnimatedSplashOverlay` also hides the splash — a double-hide rejection must not surface (plan 01-08).
 - `EmptyState` action button renders only when both `actionLabel` and `onAction` are provided — no dead affordances (plan 01-08).
 - `worker/[id]` param stays a display string at the route boundary; later DAOs must bind it as a `?` parameter, never interpolate (plan 01-08, T-08-01).

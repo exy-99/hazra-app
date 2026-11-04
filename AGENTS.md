@@ -59,10 +59,10 @@ node scripts/verify-tab-shell.mjs    # 4-tab navigation contract
 
 Tabs and several components have separate native and web implementations selected by filename, not `Platform.OS`:
 
-- `app-tabs.tsx` uses `expo-router/unstable-native-tabs` (`NativeTabs`); `app-tabs.web.tsx` uses `expo-router/ui`.
+- `app-tabs.tsx` uses `expo-router/native-tabs` (`NativeTabs`); `app-tabs.web.tsx` uses `expo-router/ui`.
 - Same pattern in `use-color-scheme.ts` / `.web.ts` and `animated-icon.tsx` / `.web.tsx`.
 
-Follow the `.web.tsx` file split when adding platform behavior. Note the native tabs API is under an `unstable-` import path and may change. Native tab triggers reference route names directly (`<NativeTabs.Trigger name="index">`), so adding a screen means adding the route file **and** a trigger.
+Follow the `.web.tsx` file split when adding platform behavior. Native tabs use the stable `expo-router/native-tabs` path as of SDK 58 — the older `expo-router/unstable-native-tabs` path still works but logs a deprecation warning on import, so do not use it in new code. Native tab triggers reference route names directly (`<NativeTabs.Trigger name="index">`), so adding a screen means adding the route file **and** a trigger.
 
 ## Config & theme quirks
 

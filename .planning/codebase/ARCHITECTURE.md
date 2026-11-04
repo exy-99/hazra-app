@@ -45,7 +45,7 @@
 | Root layout | Wraps app in `ThemeProvider`, mounts splash overlay and tab navigator | `src/app/_layout.tsx` |
 | Home screen | Demo landing screen: hero icon, "Welcome to Expo", hint rows | `src/app/index.tsx` |
 | Explore screen | Demo scrollable content with `Collapsible` sections and web badge | `src/app/explore.tsx` |
-| App tabs (native) | `NativeTabs` from `expo-router/unstable-native-tabs`; triggers `index` and `explore` | `src/components/app-tabs.tsx` |
+| App tabs (native) | `NativeTabs` from `expo-router/native-tabs`; triggers `index` and `explore` | `src/components/app-tabs.tsx` |
 | App tabs (web) | `Tabs`/`TabList`/`TabTrigger` from `expo-router/ui` with custom tab list | `src/components/app-tabs.web.tsx` |
 | Animated splash / icon | Keyframe entrance animations and splash overlay lifecycle | `src/components/animated-icon.tsx` / `.web.tsx` |
 | Theme hook | Resolves `Colors[light|dark]`; normalizes `'unspecified'` → `'light'` | `src/hooks/use-theme.ts` |

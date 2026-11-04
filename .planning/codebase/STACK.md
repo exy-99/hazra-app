@@ -28,8 +28,8 @@
 ## Frameworks
 
 **Core:**
-- `expo-router` `~57.0.23` - File-based routing. Entry point is `expo-router/entry` (`package.json` `"main"`). Typed routes enabled via `app.json` `experiments.typedRoutes`.
-  - Native tabs: `expo-router/unstable-native-tabs` (`NativeTabs`) - `src/components/app-tabs.tsx`.
+- `expo-router` `~58.0.30` - File-based routing. Entry point is `expo-router/entry` (`package.json` `"main"`). Typed routes enabled via `app.json` `experiments.typedRoutes`.
+  - Native tabs: `expo-router/native-tabs` (`NativeTabs`) - `src/components/app-tabs.tsx`.
   - Web tabs: `expo-router/ui` (`Tabs`, `TabList`, `TabTrigger`, `TabSlot`) - `src/components/app-tabs.web.tsx`.
 - `react-native-reanimated` `4.5.1` - Declarative `Keyframe` / `FadeIn` animations (`src/components/animated-icon.tsx`, `src/components/ui/collapsible.tsx`).
 - `react-native-worklets` `0.10.1` - `scheduleOnRN` to call JS from a reanimated worklet (`src/components/animated-icon.tsx`).

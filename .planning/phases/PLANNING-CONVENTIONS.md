@@ -14,7 +14,7 @@ exist so nine phases planned independently stay mutually consistent.
 - **File aliases:** `@/*` → `src/*`; `@/assets/*` → `assets/*`. Never deep relative paths.
 - **Tokens:** extend `src/constants/theme.ts`. NEVER create `src/theme/`.
 - **Routing:** `src/app/` is routes ONLY. Components/hooks/utils/db live outside it.
-- **Tabs:** native = `src/components/app-tabs.tsx` (`expo-router/unstable-native-tabs`);
+- **Tabs:** native = `src/components/app-tabs.tsx` (`expo-router/native-tabs`);
   web = `src/components/app-tabs.web.tsx` (`expo-router/ui`). A new screen needs a route
   file AND a trigger in BOTH tab files.
 - **Package manager:** npm. Expo modules: `npx expo install <pkg>`. Never raw `npm install`
