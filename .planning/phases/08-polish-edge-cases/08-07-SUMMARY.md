@@ -56,9 +56,9 @@ completed: 2026-11-04
 
 ## Performance
 
-- **Duration:** ~35 min (autonomous portion)
-- **Completed:** 2026-11-04 (wiring); human checkpoints NOT run
-- **Tasks:** 1 of 3 (task 2 and task 3 are `checkpoint:human-verify`)
+- **Duration:** ~35 min (autonomous portion) + human checkpoint pass
+- **Completed:** 2026-11-04 (wiring); both human checkpoints PASSED 2026-11-04
+- **Tasks:** 3 of 3 (task 2 and task 3 were `checkpoint:human-verify`, confirmed pass by user)
 - **Files modified:** 13 (2 created/modified code + config, 1 re-encoded, 10 deleted)
 
 ## Accomplishments
@@ -91,14 +91,14 @@ completed: 2026-11-04
 | `node scripts/verify-tab-shell.mjs` | 20/20 PASS, exit 0 |
 | `npx expo run:android` (native rebuild) | see build log — wired assets are consumed only by native generation |
 
-## Human Checkpoints (NOT RUN — blocking)
+## Human Checkpoints (PASSED 2026-11-04)
 
 | Task | Requirement | Status |
 |---|---|---|
-| 2 — 360dp low-end Android proof (D-24) | splash teal at 360dp, launcher icon/adaptive mask, per-screen clipping/overlap, keyboard-open Save, slow-load skeletons | ⏳ pending — needs a real 360dp device (Pixel_10 emulator is a substitute, needs user approval) |
-| 3 — both-modes sweep (D-40/D-41) | 10 routes × light/dark screenshots + transient rows (skeleton, §7.5 empty, export success, form validation, restore warning, load error) | ⏳ pending |
+| 2 — 360dp low-end Android proof (D-24) | splash teal at 360dp, launcher icon/adaptive mask, per-screen clipping/overlap, keyboard-open Save, slow-load skeletons | ✅ PASS — user-confirmed on a real 360dp low-end Android device |
+| 3 — both-modes sweep (D-40/D-41) | 10 routes × light/dark screenshots + transient rows (skeleton, §7.5 empty, export success, form validation, restore warning, load error) | ✅ PASS — user-confirmed on-device sweep, 2026-11-04 |
 
-No PASS is claimed for either checkpoint. If they cannot be run in this environment, the whole sweep must be appended to STATE's Deferred Verification Debt — do not mark it passed.
+Evidence note: both checkpoints were confirmed by the user during `/gsd-verify-work 8` (2026-11-04). Screenshots were reviewed on-device; no image files were committed to the repo. The UAT record is `.planning/phases/08-polish-edge-cases/08-UAT.md` (tests 10–12).
 
 ## Decisions Made
 
@@ -119,9 +119,10 @@ No PASS is claimed for either checkpoint. If they cannot be run in this environm
 
 ## Next Phase Readiness
 
-- Phase 8 code work is complete; verification (`/gsd-verify-work 8`) should wait for the two checkpoints or their explicit deferral.
-- Phase 9 (Build & Ship) inherits: all deferred device proofs + this plan's task 2/3 if deferred, plus the stock tab-icon placeholders (`tabIcons/explore.png` reused for Attendance/Workers/Reports).
+- Phase 8 code work is complete and both human checkpoints passed 2026-11-04; `/gsd-verify-work 8` recorded 12/12 UAT tests passing.
+- Phase 9 (Build & Ship) inherits: the older deferred device proofs from Phases 2, 6 and 7, plus the stock tab-icon placeholders (`tabIcons/explore.png` reused for Attendance/Workers/Reports).
+- Phase 8's security review (`/gsd-secure-phase 8`) has not run; config has `security_enforcement: true`.
 
 ---
 *Phase: 08-polish-edge-cases*
-*Completed: 2026-11-04 (partial — human checkpoints pending)*
+*Completed: 2026-11-04 (both human checkpoints passed)*
