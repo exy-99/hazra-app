@@ -2,7 +2,7 @@
 status: resolved
 trigger: "i want to change the schme of the export csv and pdf . i what it to be - in row -> all the dates and in colomn -> all the workers "
 created: 2026-11-05T00:00:00Z
-updated: 2026-11-05T07:40:36.6871000Z
+updated: 2026-11-05T07:50:54.5754664Z
 ---
 
 ## Current Focus
@@ -10,7 +10,7 @@ updated: 2026-11-05T07:40:36.6871000Z
 hypothesis: RESOLVED — retaining complete worker rows plus the inclusive month range lets both worksite serializers produce the requested matrix from one shared transformation.
 test: Automated checks and the user's real-workflow verification both pass.
 expecting: Satisfied — CSV/PDF use the requested worker-row/date-column matrix.
-next_action: Archive this session, commit the four fix files, and record the resolved pattern in the debug knowledge base.
+next_action: None — session archived, fix committed, and the resolved pattern recorded in the debug knowledge base.
 
 ## Symptoms
 

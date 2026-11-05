@@ -19,3 +19,11 @@ Resolved debug sessions. Used by `gsd-debugger` to surface known-pattern hypothe
 - **Fix:** Split `status-pill.tsx` into `StatusPill` (pill button, wrapper `flexShrink: 0`, `onOpenPicker`) + `StatusPicker`; `AttendanceRow` renders `StatusPicker` as a full-width card child below `topRow` so the existing wrap takes effect. Name gets `flex: 1` + `numberOfLines={1}`; filter chips get `minWidth: 96`. Single caller (`attendance.tsx`), so the `StatusPillProps` API change (`onPick` -> `onOpenPicker`) is safe.
 - **Files changed:** src/components/status-pill.tsx, src/app/(tabs)/attendance.tsx
 ---
+
+## i-want-to-change-the-schme-of — Worksite exports used sparse records instead of a workers-by-dates matrix
+- **Date:** 2026-11-05
+- **Error patterns:** CSV export, PDF export, record-per-row schema, repeated date worker status, attendance matrix, employee name, date columns
+- **Root cause:** The worksite-month export passed only sparse attendance marks to record-oriented serializers, discarding the complete worker roster and inclusive month date range required to create all worker/date intersections.
+- **Fix:** Retained per-worker rows through the export screen, completed one inclusive matrix shared by CSV and PDF, added compact status cells and weekend-aware landscape PDF styling, and enabled zero-mark worker registers.
+- **Files changed:** src/utils/export.ts, src/app/export.tsx, src/utils/files.ts, scripts/verify-export.mjs
+---
