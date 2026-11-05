@@ -540,17 +540,23 @@ export default function ExportScreen() {
   }
 
   async function handleShare(): Promise<void> {
-    if (savedUri === null) {
+    if (savedUri === null || savedName === null) {
       return;
     }
+    setShareNotice(null);
     try {
-      const result = await shareFile(savedUri);
+      const result = await shareFile(savedUri, savedName);
       if (result === 'unavailable') {
         setShareNotice("Sharing isn't available here — your file is in Downloads.");
         return;
       }
-    } catch {
-      // Share-sheet dismiss changes nothing; stay on the success card.
+    } catch (err) {
+      console.warn(
+        '[share] failed',
+        Platform.OS,
+        err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      );
+      setShareNotice("Couldn't open sharing — try again or use the file in Downloads.");
     }
   }
 

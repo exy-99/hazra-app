@@ -128,15 +128,33 @@ export function openWebPrintHtml(html: string): 'opened' | 'blocked' {
 
 /**
  * Open the system share sheet for `uri` (EX-03 second-device transfer).
- * Returns `'unavailable'` where sharing is unsupported (D-15 web
- * best-effort gate) instead of throwing. Share-sheet dismiss changes
+ * Android Downloads files are SAF `content://` URIs, while expo-sharing
+ * accepts only app-readable `file://` URIs, so stage a cache copy first.
+ * Web cannot share local files by URI; return `'unavailable'` instead of
+ * attempting to share a private blob URL. Share-sheet dismiss changes
  * nothing — no state is touched here.
  */
-export async function shareFile(uri: string): Promise<'shared' | 'unavailable'> {
+export async function shareFile(
+  uri: string,
+  filename: string,
+): Promise<'shared' | 'unavailable'> {
+  if (Platform.OS === 'web') {
+    return 'unavailable';
+  }
   if (!(await Sharing.isAvailableAsync())) {
     return 'unavailable';
   }
-  await Sharing.shareAsync(uri);
+  let shareUri = uri;
+  if (Platform.OS === 'android' && uri.startsWith('content://')) {
+    const cacheDir = FileSystem.cacheDirectory;
+    if (cacheDir === null) {
+      throw new Error('share-cache-unavailable');
+    }
+    shareUri = `${cacheDir}hazra-share-${basenameOf(filename)}`;
+    await deleteFile(shareUri);
+    await FileSystem.copyAsync({ from: uri, to: shareUri });
+  }
+  await Sharing.shareAsync(shareUri);
   return 'shared';
 }
 

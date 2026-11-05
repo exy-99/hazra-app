@@ -72,6 +72,7 @@ export default function BackupScreen() {
   } | null>(null);
   const [savedName, setSavedName] = useState<string | null>(null);
   const [savedUri, setSavedUri] = useState<string | null>(null);
+  const [shareNotice, setShareNotice] = useState<string | null>(null);
   const [validatedPayload, setValidatedPayload] = useState<BackupPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,6 +97,7 @@ export default function BackupScreen() {
     backupLock.current = true;
     setMode('backing-up');
     setError(null);
+    setShareNotice(null);
     try {
       const data = await exportAllData();
       const contents = serializeBackup(data);
@@ -135,6 +137,7 @@ export default function BackupScreen() {
     setError(null);
     setSavedName(null);
     setSavedUri(null);
+    setShareNotice(null);
   }
 
   // ---- Restore ----
@@ -225,16 +228,21 @@ export default function BackupScreen() {
   }
 
   async function handleShare(): Promise<void> {
-    if (savedUri === null) {
+    if (savedUri === null || savedName === null) {
       return;
     }
+    setShareNotice(null);
     try {
-      const result = await shareFile(savedUri);
+      const result = await shareFile(savedUri, savedName);
       if (result === 'unavailable') {
-        setError("Sharing isn't available here — your file is in Downloads.");
+        setShareNotice("Sharing isn't available here — your file is in Downloads.");
       }
-    } catch {
-      // Share-sheet dismiss changes nothing.
+    } catch (err) {
+      console.warn(
+        '[share] failed',
+        err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      );
+      setShareNotice("Couldn't open sharing — try again or use the file in Downloads.");
     }
   }
 
@@ -384,6 +392,13 @@ export default function BackupScreen() {
                     <Share2 size={16} color={theme.primary} />
                     <Text style={[styles.shareLabel, { color: theme.primary }]}>Share file</Text>
                   </Pressable>
+                  {shareNotice !== null ? (
+                    <Text
+                      accessibilityLiveRegion="polite"
+                      style={[styles.caption, { color: theme.mutedForeground }]}>
+                      {shareNotice}
+                    </Text>
+                  ) : null}
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel="Back up again"
