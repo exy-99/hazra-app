@@ -256,6 +256,20 @@
 
 **UI hint:** no
 
+**Plans:** 8 plans
+
+**Status:** Planned — 2026-11-05 (execution starts with the blocking Phase 8 security prerequisite; EAS/build/device/handoff actions remain human-owned)
+
+**Plan progress:**
+- [ ] 09-01-PLAN.md — Close or explicitly waive the Phase 8 security prerequisite (H0)
+- [ ] 09-02-PLAN.md — Lock release identity, production APK profile, ignores, and static verifier
+- [ ] 09-03-PLAN.md — Create blank immutable-artifact evidence and sideload handoff templates
+- [ ] 09-04-PLAN.md — Human EAS account/project selection and linkage (H1)
+- [ ] 09-05-PLAN.md — Run post-link static release preflight and expose clean-tree blockers
+- [ ] 09-06-PLAN.md — Human signing custody, cloud build, and exact APK provenance (H2-H4)
+- [ ] 09-07-PLAN.md — Human production-device and second-device acceptance matrix (H5-H6)
+- [ ] 09-08-PLAN.md — Human immutable-artifact closure and manager checksum handoff (H7)
+
 ---
 
 ## Requirement Coverage
