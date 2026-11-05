@@ -27,3 +27,11 @@ Resolved debug sessions. Used by `gsd-debugger` to surface known-pattern hypothe
 - **Fix:** Retained per-worker rows through the export screen, completed one inclusive matrix shared by CSV and PDF, added compact status cells and weekend-aware landscape PDF styling, and enabled zero-mark worker registers.
 - **Files changed:** src/utils/export.ts, src/app/export.tsx, src/utils/files.ts, scripts/verify-export.mjs
 ---
+
+## after-exporting-the-file-the-s — Share file appeared to do nothing after export
+- **Date:** 2026-11-05
+- **Error patterns:** Share File, nothing visible happens, no visible error, share sheet, exported file, content URI, silent no-op
+- **Root cause:** Android exports were saved as SAF `content://` URIs, but `expo-sharing` 58.0.22 accepts only local `file://` URIs. Export and backup screens silently swallowed that rejection. Web also attempted to share private or revoked `blob:` URLs rather than actual files.
+- **Fix:** Stage Android SAF exports in the app cache before sharing, report URI sharing as unavailable on web, and surface/log failures in both export and backup flows.
+- **Files changed:** src/utils/files.ts, src/app/export.tsx, src/app/backup.tsx
+---
