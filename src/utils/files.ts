@@ -87,12 +87,17 @@ export async function writeTextFile(filename: string, contents: string): Promise
  * the artifact uri — callers persist it under the slug name with
  * `copyBinaryFile`. On web throws a catchable `pdf-unsupported` error the
  * screen converts to the "Couldn't export — try again" failure surface.
+ * `pageSize` uses expo-print's documented pixel width/height options (for
+ * example, 792x612 for a landscape US Letter register matrix).
  */
-export async function printHtmlToPdf(html: string): Promise<string> {
+export async function printHtmlToPdf(
+  html: string,
+  pageSize?: { width: number; height: number },
+): Promise<string> {
   if (Platform.OS === 'web') {
     throw new Error('pdf-unsupported');
   }
-  const { uri } = await Print.printToFileAsync({ html });
+  const { uri } = await Print.printToFileAsync({ html, ...pageSize });
   return uri;
 }
 

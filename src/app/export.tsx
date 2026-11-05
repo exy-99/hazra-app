@@ -40,7 +40,7 @@ import {
   registerFilename,
   workerFilename,
   type PdfTheme,
-  type RegisterCsvRow,
+  type RegisterWorkerRow,
   type WorkerCsvEntry,
 } from '@/utils/export';
 import {
@@ -108,6 +108,8 @@ const PickRow = memo(function PickRow({
     </Pressable>
   );
 });
+
+type RegisterPreviewRow = WorkerCsvEntry & { workerName: string };
 
 const PreviewRow = memo(function PreviewRow({
   date,
@@ -198,8 +200,7 @@ export default function ExportScreen() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [sites, setSites] = useState<Worksite[]>([]);
   const [entries, setEntries] = useState<WorkerCsvEntry[]>([]);
-  const [regRows, setRegRows] = useState<RegisterCsvRow[]>([]);
-  const [regWorkerCount, setRegWorkerCount] = useState(0);
+  const [regWorkers, setRegWorkers] = useState<RegisterWorkerRow[]>([]);
   const [workerName, setWorkerName] = useState('');
   const [siteName, setSiteName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -221,6 +222,16 @@ export default function ExportScreen() {
   // leave multiple load() promises in flight; a stale resolution landing
   // last must not overwrite newer state (e.g. notFound/data mismatch).
   const loadGen = useRef(0);
+  const regRows = regWorkers.flatMap((worker) =>
+    worker.entries.map((entry) => ({ ...entry, workerName: worker.workerName })),
+  );
+  regRows.sort((a, b) =>
+    a.date < b.date
+      ? -1
+      : a.date > b.date
+        ? 1
+        : a.workerName.localeCompare(b.workerName),
+  );
 
   async function loadSiteRegister(
     siteId: string,
@@ -243,23 +254,16 @@ export default function ExportScreen() {
     if (isStale()) {
       return;
     }
-    const rows: RegisterCsvRow[] = perWorker.flatMap((list, i) =>
-      list.map((e) => ({
-        date: e.date,
-        workerName: siteWorkers[i].name,
-        status: e.status,
-        note: e.note,
+    setRegWorkers(
+      siteWorkers.map((worker, i) => ({
+        workerName: worker.name,
+        entries: perWorker[i].map((entry) => ({
+          date: entry.date,
+          status: entry.status,
+          note: entry.note,
+        })),
       })),
     );
-    rows.sort((a, b) =>
-      a.date < b.date
-        ? -1
-        : a.date > b.date
-          ? 1
-          : a.workerName.localeCompare(b.workerName),
-    );
-    setRegRows(rows);
-    setRegWorkerCount(siteWorkers.length);
     setSiteName(name);
   }
 
@@ -324,8 +328,7 @@ export default function ExportScreen() {
         if (rawS === null) {
           const first = activeSites[0] ?? null;
           if (first === null) {
-            setRegRows([]);
-            setRegWorkerCount(0);
+            setRegWorkers([]);
             setSiteName('');
             setNotFound(false);
           } else {
@@ -343,8 +346,7 @@ export default function ExportScreen() {
           }
           if (site === null) {
             setNotFound(true);
-            setRegRows([]);
-            setRegWorkerCount(0);
+            setRegWorkers([]);
             setSiteName('');
           } else {
             setNotFound(false);
@@ -388,8 +390,9 @@ export default function ExportScreen() {
     let tempUri: string | null = null;
     let destUri: string | null = null;
     try {
-      const rows = selectedScope === 'worker' ? entries : regRows;
-      if (rows.length === 0) {
+      const hasExportRows =
+        selectedScope === 'worker' ? entries.length > 0 : regWorkers.length > 0;
+      if (!hasExportRows) {
         setExportError('No attendance to export yet');
         return;
       }
@@ -455,14 +458,18 @@ export default function ExportScreen() {
         setSavedUri(destUri);
       } else {
         const filename = registerFilename(siteName, selectedMonth, selectedFormat);
+        const range = monthRange(selectedMonth);
         const content =
-          selectedFormat === 'csv' ? buildRegisterCsv(regRows) : null;
+          selectedFormat === 'csv'
+            ? buildRegisterCsv({ ...range, workers: regWorkers })
+            : null;
         const html =
           selectedFormat === 'pdf'
             ? buildRegisterPdfHtml({
                 title: `${siteName} register`,
                 subtitle: `${siteName} · ${monthLabel(selectedMonth)}`,
-                rows: regRows,
+                ...range,
+                workers: regWorkers,
                 theme: pdfTheme,
               })
             : null;
@@ -499,7 +506,7 @@ export default function ExportScreen() {
         if (content !== null) {
           destUri = await writeTextFile(filename, content);
         } else if (html !== null) {
-          tempUri = await printHtmlToPdf(html);
+          tempUri = await printHtmlToPdf(html, { width: 792, height: 612 });
           destUri = await copyBinaryFile(tempUri, filename);
           await deleteFile(tempUri);
           tempUri = null;
@@ -558,11 +565,11 @@ export default function ExportScreen() {
 
   const siteNames = new Map(sites.map((s) => [s.id, s.name] as const));
   const summary = summarize(entries);
-  const scopeCount = selectedScope === 'worker' ? entries.length : regRows.length;
+  const scopeCount = selectedScope === 'worker' ? entries.length : regWorkers.length;
   const countLine =
     selectedScope === 'worker'
       ? `${entries.length} days · ${summary.present} present · ${summary.absent} absent · ${summary.half_day} half day · ${summary.off_day} off day`
-      : `${regWorkerCount} workers · ${regRows.length} marks · ${monthLabel(selectedMonth)}`;
+      : `${regWorkers.length} workers · ${regRows.length} marks · ${monthLabel(selectedMonth)}`;
   const workerSamples = [...entries].slice(-5).reverse();
   const registerSamples = regRows.slice(0, 5);
   const ctaLabel =
@@ -854,9 +861,9 @@ export default function ExportScreen() {
                     />
                   ) : (
                     <PreviewRow
-                      key={`${row.date}-${(row as RegisterCsvRow).workerName}-${idx}`}
+                      key={`${row.date}-${(row as RegisterPreviewRow).workerName}-${idx}`}
                       date={row.date}
-                      workerName={(row as RegisterCsvRow).workerName}
+                      workerName={(row as RegisterPreviewRow).workerName}
                       status={row.status}
                       note={row.note}
                     />

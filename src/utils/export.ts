@@ -4,6 +4,7 @@ import { CYCLE, STATUS } from '@/constants/status';
 import type { AttendanceStatus } from '@/db/types';
 import { summarize } from '@/utils/attendance';
 import { formatDisplay } from '@/utils/dates';
+import { listDatesInRange } from '@/utils/reports';
 
 /**
  * Pure CSV/PDF serializers for Phase 6 export (EX-01, EX-02, NF-06).
@@ -20,12 +21,16 @@ export interface WorkerCsvEntry {
   note: string | null;
 }
 
-/** One worksite-month register row for CSV export (EX-02). */
-export interface RegisterCsvRow {
-  date: string;
+/** One complete worker row for the worksite-month register matrix (EX-02). */
+export interface RegisterWorkerRow {
   workerName: string;
-  status: AttendanceStatus;
-  note: string | null;
+  entries: WorkerCsvEntry[];
+}
+
+export interface RegisterMatrixInput {
+  from: string;
+  to: string;
+  workers: RegisterWorkerRow[];
 }
 
 /**
@@ -60,7 +65,51 @@ function compareDateAsc(a: { date: string }, b: { date: string }): number {
   return 0;
 }
 
-/** Missing-note placeholder shared by both CSV builders (D-18). */
+const STATUS_CODE: Record<AttendanceStatus, string> = {
+  present: 'P',
+  absent: 'A',
+  half_day: 'H',
+  off_day: 'O',
+};
+
+interface RegisterMatrixRow {
+  workerName: string;
+  cells: (WorkerCsvEntry | null)[];
+}
+
+interface RegisterMatrix {
+  dates: string[];
+  rows: RegisterMatrixRow[];
+}
+
+function statusCode(status: AttendanceStatus): string {
+  return (STATUS_CODE as Record<string, string>)[status] ?? status;
+}
+
+/** Complete the sparse attendance entries into one cell per worker/date. */
+function registerMatrix(input: RegisterMatrixInput): RegisterMatrix {
+  const dates = listDatesInRange(input.from, input.to);
+  const rows = [...input.workers]
+    .sort((a, b) => a.workerName.localeCompare(b.workerName))
+    .map((worker) => {
+      const entriesByDate = new Map(worker.entries.map((entry) => [entry.date, entry]));
+      return {
+        workerName: worker.workerName,
+        cells: dates.map((date) => entriesByDate.get(date) ?? null),
+      };
+    });
+  return { dates, rows };
+}
+
+function registerCellText(entry: WorkerCsvEntry | null): string {
+  if (entry === null) {
+    return '-';
+  }
+  const code = statusCode(entry.status);
+  return entry.note === null || entry.note === '' ? code : `${code} (${entry.note})`;
+}
+
+/** Missing-note placeholder for the worker-history CSV (D-18). */
 function noteOrDash(note: string | null): string {
   return note === null || note === '' ? '-' : note;
 }
@@ -82,18 +131,18 @@ export function buildWorkerCsv(entries: WorkerCsvEntry[]): string {
 }
 
 /**
- * Worksite-month register CSV (EX-02): header `date,worker,status,note`,
- * rows sorted by date ASC then worker name. Same lowercase keys, same `-`
- * note rule, same escaping, CRLF join, and UTF-8 BOM as the worker CSV.
+ * Worksite-month register CSV (EX-02): workers are rows and every selected
+ * date is a column. Cells use compact P/A/H/O codes, `-` when unmarked, and
+ * append an optional note in parentheses. Worker names sort ascending.
  */
-export function buildRegisterCsv(rows: RegisterCsvRow[]): string {
-  const sorted = [...rows].sort(
-    (a, b) => compareDateAsc(a, b) || a.workerName.localeCompare(b.workerName),
-  );
-  const lines = ['date,worker,status,note'];
-  for (const row of sorted) {
+export function buildRegisterCsv(input: RegisterMatrixInput): string {
+  const matrix = registerMatrix(input);
+  const lines = [
+    ['EMPLOYEE NAME', ...matrix.dates].map(escapeCsvField).join(','),
+  ];
+  for (const row of matrix.rows) {
     lines.push(
-      [row.date, row.workerName, row.status, noteOrDash(row.note)].map(escapeCsvField).join(','),
+      [row.workerName, ...row.cells.map(registerCellText)].map(escapeCsvField).join(','),
     );
   }
   return '\uFEFF' + lines.join('\r\n');
@@ -254,40 +303,91 @@ export function buildWorkerPdfHtml(args: {
 }
 
 /**
- * Worksite-month register PDF table (EX-02): same contract as the worker
- * table plus a subtitle line and a Worker column. Sorted by date ASC then
- * worker name like the CSV.
+ * Worksite-month register PDF matrix (EX-02): worker rows, inclusive date
+ * columns, compact status cells, weekend distinction, and a landscape page.
  */
 export function buildRegisterPdfHtml(args: {
   title: string;
   subtitle: string;
-  rows: RegisterCsvRow[];
   theme: PdfTheme;
-}): string {
-  const sorted = [...args.rows].sort(
-    (a, b) => compareDateAsc(a, b) || a.workerName.localeCompare(b.workerName),
-  );
-  const bodyRows = sorted
-    .map((row) => {
-      // WR-05: same graceful fallback as the worker table.
-      const chip = STATUS[row.status] ?? { label: row.status, solid: '#808080' };
-      const note = row.note === null || row.note === '' ? '—' : escapeHtml(row.note);
+} & RegisterMatrixInput): string {
+  const matrix = registerMatrix(args);
+  const theme = args.theme;
+  const border = escapeHtml(theme.border);
+  const surface = escapeHtml(theme.surface);
+  const background = escapeHtml(theme.background);
+  const foreground = escapeHtml(theme.foreground);
+  const mutedForeground = escapeHtml(theme.mutedForeground);
+  const primary = escapeHtml(theme.primary);
+  const compactCell = `border:1px solid ${border};padding:3px 2px;text-align:center;font-size:8px;overflow-wrap:anywhere;`;
+  const weekend = (date: string): boolean => {
+    const day = dayjs(date).day();
+    return day === 0 || day === 6;
+  };
+  const dateHeaders = matrix.dates
+    .map((date) => {
+      const isWeekend = weekend(date);
       return (
-        `<tr>` +
-        `<td style="${pdfCellStyle(args.theme)}">${escapeHtml(formatDisplay(row.date))}</td>` +
-        `<td style="${pdfCellStyle(args.theme)}">${escapeHtml(row.workerName)}</td>` +
-        `<td style="${pdfCellStyle(args.theme)}"><span style="display:inline-block;width:8px;height:8px;border-radius:4px;background-color:${chip.solid};"></span> ${escapeHtml(chip.label)}</td>` +
-        `<td style="${pdfCellStyle(args.theme)}">${note}</td>` +
+        `<th data-date="${escapeHtml(date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${isWeekend ? background : surface};color:${foreground};">` +
+        `<span>${escapeHtml(formatDisplay(date, 'DD'))}</span><br />` +
+        `<span style="color:${mutedForeground};font-weight:400;">${escapeHtml(formatDisplay(date, 'ddd'))}</span>` +
+        `</th>`
+      );
+    })
+    .join('');
+  const bodyRows = matrix.rows
+    .map((row) => {
+      const cells = row.cells
+        .map((entry, index) => {
+          const date = matrix.dates[index];
+          const isWeekend = weekend(date);
+          if (entry === null) {
+            return `<td data-date="${escapeHtml(date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${isWeekend ? background : surface};color:${mutedForeground};">—</td>`;
+          }
+          // WR-05: degrade gracefully on a future/corrupt status key.
+          const chip = STATUS[entry.status] ?? {
+            label: entry.status,
+            solid: '#808080',
+            tint: theme.surface,
+            text: theme.foreground,
+          };
+          const note =
+            entry.note === null || entry.note === ''
+              ? ''
+              : `<br /><span style="font-size:6px;font-weight:400;white-space:pre-wrap;">${escapeHtml(entry.note)}</span>`;
+          return (
+            `<td data-date="${escapeHtml(date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${escapeHtml(chip.tint)};color:${escapeHtml(chip.text)};font-weight:700;">` +
+            `${escapeHtml(statusCode(entry.status))}${note}</td>`
+          );
+        })
+        .join('');
+      return (
+        `<tr style="break-inside:avoid;">` +
+        `<th scope="row" style="border:1px solid ${border};padding:4px;text-align:left;background-color:${surface};color:${foreground};font-size:8px;overflow-wrap:anywhere;">${escapeHtml(row.workerName)}</th>` +
+        cells +
         `</tr>`
       );
     })
     .join('');
-  return pdfShell({
-    title: args.title,
-    subtitle: args.subtitle,
-    headerCells: ['Date', 'Worker', 'Status', 'Note'],
-    bodyRows,
-    summary: footerSummary(sorted),
-    theme: args.theme,
-  });
+  const legend = STATUS_KEYS.map((key) => {
+    const chip = STATUS[key];
+    return `<span style="white-space:nowrap;color:${escapeHtml(chip.text)};">${escapeHtml(`${statusCode(key)} = ${chip.label}`)}</span>`;
+  }).join(' &nbsp;·&nbsp; ');
+  const visibleEntries = matrix.rows.flatMap((row) =>
+    row.cells.filter((entry): entry is WorkerCsvEntry => entry !== null),
+  );
+  const columns = matrix.dates.length + 1;
+  return (
+    `<!DOCTYPE html><html><head><meta charset="utf-8" />` +
+    `<meta name="viewport" content="width=device-width,initial-scale=1" />` +
+    `<style>@page{size:landscape;margin:8mm;}thead{display:table-header-group;}*{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;}</style>` +
+    `</head><body style="margin:0;background-color:${background};color:${foreground};font-family:sans-serif;">` +
+    `<h1 style="margin:0 0 4px;border-bottom:2px solid ${primary};padding-bottom:4px;font-size:16px;">${escapeHtml(args.title)}</h1>` +
+    `<p style="margin:0 0 8px;color:${mutedForeground};font-size:9px;">${escapeHtml(args.subtitle)}</p>` +
+    `<table style="width:100%;border-collapse:collapse;table-layout:fixed;background-color:${surface};">` +
+    `<thead><tr><th style="border:1px solid ${border};width:110px;padding:4px;text-align:left;background-color:${surface};color:${foreground};font-size:8px;">EMPLOYEE NAME</th>${dateHeaders}</tr></thead>` +
+    `<tbody>${bodyRows}<tr><td colspan="${columns}" style="border:1px solid ${border};padding:5px;font-size:8px;">${legend}</td></tr></tbody>` +
+    `</table><p style="margin:6px 0 0;color:${mutedForeground};font-size:8px;">${escapeHtml(footerSummary(visibleEntries))}</p>` +
+    `</body></html>`
+  );
 }

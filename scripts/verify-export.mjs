@@ -12,13 +12,13 @@
  * still printed EXPORT_VERIFY_OK).
  *
  * Asserts: (a) all 12 export.ts exports present; (b) zero runtime `@/db/`
- * imports; (c) both CSV headers present; (d) `-` dash placeholder + `—`
+ * imports; (c) worker-history + register-matrix CSV headers present; (d) `-` dash placeholder + `—`
  * PDF cell present; (e) CSV builders write raw lowercase keys (no
  * `.label` in buildWorkerCsv body); (f) RFC-4180 PROBE (D-17, roadmap
  * success criterion #1) against the REAL escapeCsvField + round-trip
  * through a minimal RFC-4180 field parser; (g) slug probe against the
  * REAL slugify; (h) real-module probes: T-06-01 formula guard (incl. the
- * length-1 `-` exemption), UTF-8 BOM (WR-03), register column counts,
+ * length-1 `-` exemption), UTF-8 BOM (WR-03), complete register matrix,
  * monthRange end-of-month math (incl. leap Feb), escapeHtml, footerSummary
  * parity with summarize(), PDF escaping, and PDF graceful degradation on
  * unknown status keys (WR-05).
@@ -59,9 +59,9 @@ for (const name of expectedExports) {
 const withoutTypeImports = src.replace(/import type[^;]+;/g, '');
 assert.ok(!/from ['"]@\/db\//.test(withoutTypeImports), 'runtime @/db import found');
 
-// (c) Both CSV headers present.
+// (c) Worker-history + worksite matrix CSV headers present.
 assert.ok(src.includes('date,status,note'), 'worker header date,status,note missing');
-assert.ok(src.includes('date,worker,status,note'), 'register header date,worker,status,note missing');
+assert.ok(src.includes('EMPLOYEE NAME'), 'register EMPLOYEE NAME header missing');
 
 // (d) `-` dash placeholder (D-18) + `—` PDF cell both present.
 assert.ok(src.includes("'-'") || src.includes('"-"'), 'dash placeholder missing');
@@ -95,6 +95,7 @@ try {
   stage('src/constants/status.ts', 'status.ts');
   stage('src/utils/attendance.ts', 'attendance.ts');
   stage('src/utils/dates.ts', 'dates.ts');
+  stage('src/utils/reports.ts', 'reports.ts');
   stage('src/utils/export.ts', 'export.ts');
 
   const exp = await import(pathToFileURL(path.join(tmp, 'export.ts')).href);
@@ -146,19 +147,41 @@ try {
     fcsv.indexOf('2026-10-05') < fcsv.indexOf('2026-10-06'),
     'worker CSV not sorted date ASC',
   );
-  const rcsv = exp.buildRegisterCsv([
-    { date: '2026-10-05', workerName: 'Asha', status: 'absent', note: 'x,y' },
-  ]);
+  const registerWorkers = [
+    { workerName: 'Zed', entries: [] },
+    {
+      workerName: 'Asha',
+      entries: [
+        { date: '2026-10-05', status: 'absent', note: 'x,y' },
+        { date: '2026-10-07', status: 'half_day', note: null },
+      ],
+    },
+  ];
+  const rcsv = exp.buildRegisterCsv({
+    from: '2026-10-05',
+    to: '2026-10-07',
+    workers: registerWorkers,
+  });
   assert.equal(rcsv.charCodeAt(0), 0xfeff, 'register CSV missing UTF-8 BOM');
   const rlines = rcsv.slice(1).split('\r\n');
-  assert.equal(rlines[0], 'date,worker,status,note', 'register header wrong');
-  assert.ok(rlines[1].includes('"x,y"'), 'register comma note not RFC-4180 quoted');
-  // Column-count criterion (Excel/Sheets): every register row has 4 fields.
-  assert.equal(rlines[1], '2026-10-05,Asha,absent,"x,y"', 'register row shape wrong');
+  assert.equal(
+    rlines[0],
+    'EMPLOYEE NAME,2026-10-05,2026-10-06,2026-10-07',
+    'register must include every selected date as a column',
+  );
+  assert.equal(rlines[1], 'Asha,"A (x,y)",-,H', 'marked/unmarked register cells wrong');
+  assert.equal(rlines[2], 'Zed,-,-,-', 'worker with no marks must remain in register');
 
   // monthRange end-of-month math on the REAL function (incl. leap Feb).
   assert.deepEqual(exp.monthRange('2026-10'), { from: '2026-10-01', to: '2026-10-31' });
   assert.deepEqual(exp.monthRange('2024-02'), { from: '2024-02-01', to: '2024-02-29' });
+  const fullMonthCsv = exp.buildRegisterCsv({
+    ...exp.monthRange('2026-10'),
+    workers: [{ workerName: 'Asha', entries: [] }],
+  });
+  const fullMonthLines = fullMonthCsv.slice(1).split('\r\n');
+  assert.equal(fullMonthLines[0].split(',').length, 32, '31-day register header column count wrong');
+  assert.equal(fullMonthLines[1].split(',').length, 32, '31-day zero-mark worker column count wrong');
 
   // escapeHtml on the REAL function.
   assert.equal(
@@ -203,10 +226,50 @@ try {
     exp.buildRegisterPdfHtml({
       title: 'T',
       subtitle: 'S',
-      rows: [{ date: '2026-10-05', workerName: 'Asha', status: 'bogus', note: null }],
+      from: '2026-10-05',
+      to: '2026-10-05',
+      workers: [
+        {
+          workerName: 'Asha',
+          entries: [{ date: '2026-10-05', status: 'bogus', note: null }],
+        },
+      ],
       theme,
     });
   }, 'register PDF threw on unknown status');
+
+  // Register PDF uses the same complete matrix, compact status legend,
+  // escaped cell notes, landscape print CSS, and weekend distinction.
+  const registerHtml = exp.buildRegisterPdfHtml({
+    title: 'T',
+    subtitle: 'S',
+    from: '2026-10-09',
+    to: '2026-10-11',
+    workers: [
+      {
+        workerName: 'Asha',
+        entries: [{ date: '2026-10-10', status: 'present', note: '<b>hi</b>' }],
+      },
+      { workerName: 'Zed', entries: [] },
+    ],
+    theme,
+  });
+  for (const value of ['EMPLOYEE NAME', '2026-10-09', '2026-10-10', '2026-10-11', 'Asha', 'Zed']) {
+    assert.ok(registerHtml.includes(value), `register PDF matrix missing ${value}`);
+  }
+  assert.ok(registerHtml.includes('size:landscape'), 'register PDF is not landscape');
+  assert.ok(
+    registerHtml.includes('data-date="2026-10-10" data-weekend="true"') &&
+      registerHtml.includes('data-date="2026-10-11" data-weekend="true"'),
+    'register PDF weekend columns are not distinguished',
+  );
+  assert.ok(
+    !registerHtml.includes('<b>hi</b>') && registerHtml.includes('&lt;b&gt;hi&lt;/b&gt;'),
+    'register PDF note not escaped',
+  );
+  for (const code of ['P = Present', 'A = Absent', 'H = Half day', 'O = Off day']) {
+    assert.ok(registerHtml.includes(code), `register PDF legend missing ${code}`);
+  }
 
   // PDF escaping on the REAL builder.
   const pdfEsc = exp.buildWorkerPdfHtml({
