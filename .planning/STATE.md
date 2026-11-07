@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 8 — Polish & Edge Cases
 status: verifying
-last_updated: "2026-11-04T18:23:27.111Z"
+last_updated: "2026-11-07T11:36:07Z"
 progress:
   total_phases: 9
   completed_phases: 8
@@ -18,7 +18,8 @@ progress:
 **Milestone:** v1.0 — Offline Staff Attendance Register (MVP)
 **Current phase:** 8 — Polish & Edge Cases
 **Status:** Phase 8 EXECUTED 2026-10-18 (all 8 plans implemented; commits `e13428f`…`bedcc39` + `4199c77`). 08-07 brand assets landed 2026-11-04: icon/adaptive/splash wired, stock Expo art deleted, `scripts/verify-app-assets.mjs` green, `npx tsc --noEmit` exit 0, `npx expo-doctor` 20/20. UAT COMPLETE 2026-11-04 (12/12 passed, 0 issues) — includes 08-07's 360dp device proof and both-modes 10-route sweep; all 8 SUMMARYs written. OPEN: Phase 8 security review (`08-SECURITY.md` missing) before advancing. Phase 7 complete 2026-10-17 (4/4 plans; 4 on-device proofs deferred to Phase 9 — no development build in this environment). Phase 6 complete 2026-10-09 (3/3 plans, 12/12 must-haves; 4 on-device proofs deferred to Phase 9; review 0 critical/7 warnings, all fixed + re-verified). Phase 4 complete 2026-10-08 (3/3 plans, 4/4 must-haves; 2/2 UAT passed on-device). Phase 3 UAT (13/13) + security (17/17) done 2026-10-08; 03-VERIFICATION.md still pending.
-**Last updated:** 2026-11-04 (Phase 9 context gathered; resume: .planning/phases/09-build-ship/09-CONTEXT.md; Phase 8 security gate remains open)
+**Last updated:** 2026-11-07 (quick task 261107-nhw completed; Phase 9 context remains at .planning/phases/09-build-ship/09-CONTEXT.md; Phase 8 security gate remains open)
+Last activity: 2026-11-07 - Completed quick task 261107-nhw: i want to add the bottom nav icons , only the home icon appears
 
 ## Position
 
@@ -125,7 +126,7 @@ progress:
 - Web favicon scope: the favicon **file** was regenerated at 48×48 from the brand mark (commit `8e45ae4`) — accepted as a deliberate D-35 scope extension; the `web.favicon` key is untouched and the gate only asserts the key (2026-11-04). Record this in 08-07-SUMMARY.md.
 - Stock Expo art is gone: `expo-logo.png`, `logo-glow.png`, `partial-react-logo.png`, `react-logo*.png`, `expo-badge*.png`, `tutorial-web.png`, `android-icon-*`, `assets/expo.icon/` all deleted. `AnimatedSplashOverlay` now renders `splash-icon.png` (180×180) on `Colors.light.background`; the unused `AnimatedIcon` export + CSS module were removed.
 - RN 0.88 typing: `useColorScheme()` is `'light' | 'dark' | null` (no `'unspecified'`); normalize with `scheme === 'dark' ? 'dark' : 'light'`. On web, `TabTriggerSlotProps.ref` is `Ref<View>` — `TabButton` destructures `ref` and forwards it as `ComponentProps<typeof Pressable>['ref']` (the `asChild` slot still needs it at runtime).
-- Stack baseline moved to Expo SDK 58 / RN 0.88.1 / React 19.3.0 / TypeScript 6.0.3 (commit `cd0e6a3`, doctor-cleaned 2026-11-04). Tab icons are still the stock `tabIcons/*.png` placeholders (explore.png reused for Attendance/Workers/Reports) — cosmetic debt, not a plan violation.
+- Stack baseline moved to Expo SDK 58 / RN 0.88.1 / React 19.3.0 / TypeScript 6.0.3 (commit `cd0e6a3`, doctor-cleaned 2026-11-04). Quick task 261107-nhw replaced the stock tab PNG placeholders with distinct SDK 58 SF/Material system icons and added matching Lucide web icons (commit `b1cd996`).
 
 ## Deferred Verification Debt
 
@@ -138,6 +139,12 @@ progress:
 ## Blockers
 
 None. (Prior 01-08 dev-build blocker resolved by deferral — see Deferred Verification Debt above.)
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261107-nhw | i want to add the bottom nav icons , only the home icon appears | 2026-11-07 | b1cd996 | [261107-nhw-i-want-to-add-the-bottom-nav-icons-only-](./quick/261107-nhw-i-want-to-add-the-bottom-nav-icons-only-/) |
 
 ## Next
 
