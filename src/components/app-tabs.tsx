@@ -19,35 +19,32 @@ export default function AppTabs() {
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/home.png')}
-          renderingMode="template"
+          sf={{ default: 'house', selected: 'house.fill' }}
+          md="home"
         />
       </NativeTabs.Trigger>
 
-      {/* NOTE: explore.png is a temporary placeholder icon (Phase 9 debt). */}
       <NativeTabs.Trigger name="attendance">
         <NativeTabs.Trigger.Label>Attendance</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'calendar', selected: 'calendar.badge.checkmark' }}
+          md="event_available"
         />
       </NativeTabs.Trigger>
 
-      {/* NOTE: explore.png is a temporary placeholder icon (Phase 9 debt). */}
       <NativeTabs.Trigger name="workers">
         <NativeTabs.Trigger.Label>Workers</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'person.2', selected: 'person.2.fill' }}
+          md="groups"
         />
       </NativeTabs.Trigger>
 
-      {/* NOTE: explore.png is a temporary placeholder icon (Phase 9 debt). */}
       <NativeTabs.Trigger name="reports">
         <NativeTabs.Trigger.Label>Reports</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          src={require('@/assets/images/tabIcons/explore.png')}
-          renderingMode="template"
+          sf={{ default: 'chart.bar', selected: 'chart.bar.fill' }}
+          md="bar_chart"
         />
       </NativeTabs.Trigger>
     </NativeTabs>

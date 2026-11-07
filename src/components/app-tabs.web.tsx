@@ -6,6 +6,7 @@ import {
   TabTriggerSlotProps,
   TabListProps,
 } from 'expo-router/ui';
+import { CalendarCheck, ChartBar, House, Users, type LucideIcon } from 'lucide-react-native';
 import type { ComponentProps } from 'react';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 
@@ -19,16 +20,16 @@ export default function AppTabs() {
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
+            <TabButton icon={House}>Home</TabButton>
           </TabTrigger>
           <TabTrigger name="attendance" href="/attendance" asChild>
-            <TabButton>Attendance</TabButton>
+            <TabButton icon={CalendarCheck}>Attendance</TabButton>
           </TabTrigger>
           <TabTrigger name="workers" href="/workers" asChild>
-            <TabButton>Workers</TabButton>
+            <TabButton icon={Users}>Workers</TabButton>
           </TabTrigger>
           <TabTrigger name="reports" href="/reports" asChild>
-            <TabButton>Reports</TabButton>
+            <TabButton icon={ChartBar}>Reports</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -36,8 +37,15 @@ export default function AppTabs() {
   );
 }
 
-export function TabButton({ children, isFocused, ref, ...props }: TabTriggerSlotProps) {
+export function TabButton({
+  children,
+  icon: Icon,
+  isFocused,
+  ref,
+  ...props
+}: TabTriggerSlotProps & { icon: LucideIcon }) {
   const theme = useTheme();
+  const color = isFocused ? theme.primary : theme.mutedForeground;
   return (
     <Pressable
       {...props}
@@ -55,10 +63,17 @@ export function TabButton({ children, isFocused, ref, ...props }: TabTriggerSlot
               : theme.backgroundElement,
           },
         ]}>
+        <Icon
+          accessible={false}
+          color={color}
+          focusable={false}
+          size={20}
+          strokeWidth={2}
+        />
         <Text
           style={[
             Type.caption,
-            { color: isFocused ? theme.primary : theme.mutedForeground },
+            { color },
           ]}>
           {children}
         </Text>
@@ -111,6 +126,9 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   tabButtonView: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: Spacing.two,
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
     borderRadius: Spacing.three,
