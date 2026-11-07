@@ -82,6 +82,31 @@ export async function writeTextFile(filename: string, contents: string): Promise
   }
 }
 
+/** Save Base64-encoded binary content (for example XLSX) without UTF-8 corruption. */
+export async function writeBase64File(
+  filename: string,
+  contents: string,
+  mimeType: string,
+): Promise<string> {
+  const base = basenameOf(filename);
+  let fileUri: string | null = null;
+  try {
+    fileUri = await createDownloadsFile(base, mimeType);
+    const options = { encoding: FileSystem.EncodingType.Base64 };
+    if (Platform.OS === 'android') {
+      await FileSystem.StorageAccessFramework.writeAsStringAsync(fileUri, contents, options);
+    } else {
+      await FileSystem.writeAsStringAsync(fileUri, contents, options);
+    }
+    return fileUri;
+  } catch (err) {
+    if (fileUri !== null) {
+      await deleteFile(fileUri);
+    }
+    throw err;
+  }
+}
+
 /**
  * Render HTML to a PDF file via `expo-print` (native-only path). Returns
  * the artifact uri — callers persist it under the slug name with

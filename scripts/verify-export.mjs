@@ -11,7 +11,7 @@
  * used to test inline re-implementations, so an implementation regression
  * still printed EXPORT_VERIFY_OK).
  *
- * Asserts: (a) all 12 export.ts exports present; (b) zero runtime `@/db/`
+ * Asserts: (a) all export.ts exports present; (b) zero runtime `@/db/`
  * imports; (c) worker-history + register-matrix CSV headers present; (d) `-` dash placeholder + `—`
  * PDF cell present; (e) CSV builders write raw lowercase keys (no
  * `.label` in buildWorkerCsv body); (f) RFC-4180 PROBE (D-17, roadmap
@@ -30,17 +30,22 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { read as readXlsx, utils as xlsxUtils } from 'xlsx';
 
 const exportPath = new URL('../src/utils/export.ts', import.meta.url);
 const filesPath = new URL('../src/utils/files.ts', import.meta.url);
+const screenPath = new URL('../src/app/export.tsx', import.meta.url);
 const src = fs.readFileSync(exportPath, 'utf8');
 const filesSrc = fs.readFileSync(filesPath, 'utf8');
+const screenSrc = fs.readFileSync(screenPath, 'utf8');
 
-// (a) All 12 serializer exports present.
+// (a) All serializer exports present.
 const expectedExports = [
   'escapeCsvField',
   'buildWorkerCsv',
   'buildRegisterCsv',
+  'buildWorkerXlsx',
+  'buildRegisterXlsx',
   'slugify',
   'workerFilename',
   'registerFilename',
@@ -61,7 +66,16 @@ assert.ok(!/from ['"]@\/db\//.test(withoutTypeImports), 'runtime @/db import fou
 
 // (c) Worker-history + worksite matrix CSV headers present.
 assert.ok(src.includes('date,status,note'), 'worker header date,status,note missing');
-assert.ok(src.includes('EMPLOYEE NAME'), 'register EMPLOYEE NAME header missing');
+assert.ok(src.includes("['DATE', ...matrix.workerNames]"), 'register DATE/employee header missing');
+assert.ok(screenSrc.includes("{ key: 'xlsx', label: 'XLSX' }"), 'XLSX format chip missing');
+assert.match(
+  screenSrc,
+  /useState<ExportExtension>\('xlsx'\)/,
+  'XLSX must be the default so one-tap exports keep YYYY/MM/DD dates',
+);
+for (const name of ['buildWorkerXlsx', 'buildRegisterXlsx', 'writeBase64File']) {
+  assert.ok(screenSrc.includes(name), `export screen missing XLSX integration: ${name}`);
+}
 
 // (d) `-` dash placeholder (D-18) + `—` PDF cell both present.
 assert.ok(src.includes("'-'") || src.includes('"-"'), 'dash placeholder missing');
@@ -136,7 +150,19 @@ try {
   assert.equal(wcsv.charCodeAt(0), 0xfeff, 'worker CSV missing UTF-8 BOM');
   const wlines = wcsv.slice(1).split('\r\n');
   assert.equal(wlines[0], 'date,status,note', 'worker header wrong');
-  assert.equal(wlines[1], '2026-10-05,present,-', 'worker row wrong (dash placeholder?)');
+  assert.equal(wlines[1], '20261005,present,-', 'worker date must use compact ISO');
+  const wxlsx = exp.buildWorkerXlsx([
+    { date: '2026-10-05', status: 'present', note: '=SUM(1+1)' },
+    { date: '2026-10-28', status: 'absent', note: 'Sick' },
+  ]);
+  assert.equal(Buffer.from(wxlsx, 'base64').subarray(0, 2).toString(), 'PK', 'worker XLSX is not a ZIP workbook');
+  const wbook = readXlsx(wxlsx, { type: 'base64', cellStyles: true });
+  const wsheet = wbook.Sheets[wbook.SheetNames[0]];
+  const wrows = xlsxUtils.sheet_to_json(wsheet, { header: 1, raw: true });
+  assert.deepEqual(wrows[1], ['2026/10/05', 'present', '=SUM(1+1)'], 'worker XLSX row wrong');
+  assert.deepEqual(wrows[2], ['2026/10/28', 'absent', 'Sick'], 'worker XLSX slash date wrong');
+  assert.ok(wsheet['!cols']?.[0]?.wch >= 12, 'worker XLSX date column too narrow');
+  assert.equal(wsheet.C2.f, undefined, 'worker XLSX note became an executable formula');
   // Formula guard + sorting flow through the real builder.
   const fcsv = exp.buildWorkerCsv([
     { date: '2026-10-06', status: 'present', note: 'ok' },
@@ -144,7 +170,7 @@ try {
   ]);
   assert.ok(fcsv.includes("'=SUM(A1:A9)"), 'formula guard missing in worker CSV output');
   assert.ok(
-    fcsv.indexOf('2026-10-05') < fcsv.indexOf('2026-10-06'),
+    fcsv.indexOf('20261005') < fcsv.indexOf('20261006'),
     'worker CSV not sorted date ASC',
   );
   const registerWorkers = [
@@ -166,11 +192,36 @@ try {
   const rlines = rcsv.slice(1).split('\r\n');
   assert.equal(
     rlines[0],
-    'EMPLOYEE NAME,2026-10-05,2026-10-06,2026-10-07',
-    'register must include every selected date as a column',
+    'DATE,Asha,Zed',
+    'register must include every worker as a column',
   );
-  assert.equal(rlines[1], 'Asha,"A (x,y)",-,H', 'marked/unmarked register cells wrong');
-  assert.equal(rlines[2], 'Zed,-,-,-', 'worker with no marks must remain in register');
+  assert.equal(rlines[1], '20261005,"A (x,y)",-', 'marked/unmarked register cells wrong');
+  assert.equal(rlines[2], '20261006,-,-', 'unmarked date row must remain in register');
+  assert.equal(rlines[3], '20261007,H,-', 'worker with no marks must remain as a column');
+  const rxlsx = exp.buildRegisterXlsx({
+    from: '2026-10-05',
+    to: '2026-10-07',
+    workers: registerWorkers,
+  });
+  assert.equal(Buffer.from(rxlsx, 'base64').subarray(0, 2).toString(), 'PK', 'register XLSX is not a ZIP workbook');
+  const rbook = readXlsx(rxlsx, { type: 'base64', cellStyles: true });
+  const rsheet = rbook.Sheets[rbook.SheetNames[0]];
+  const rrows = xlsxUtils.sheet_to_json(rsheet, { header: 1, raw: true });
+  assert.deepEqual(rrows[0], ['DATE', 'Asha', 'Zed'], 'register XLSX header wrong');
+  assert.deepEqual(rrows[1], ['2026/10/05', 'A (x,y)', '-'], 'register XLSX first row wrong');
+  assert.deepEqual(rrows[2], ['2026/10/06', '-', '-'], 'register XLSX blank row wrong');
+  assert.deepEqual(rrows[3], ['2026/10/07', 'H', '-'], 'register XLSX final row wrong');
+  assert.ok(rsheet['!cols']?.[0]?.wch >= 12, 'register XLSX date column too narrow');
+  assert.equal(
+    exp.workerFilename('Asha', '2026-10-05', 'xlsx'),
+    'hazra-worker-asha-20261005.xlsx',
+    'worker XLSX filename wrong',
+  );
+  assert.equal(
+    exp.registerFilename('Site One', '2026-10', 'xlsx'),
+    'hazra-register-site-one-202610.xlsx',
+    'register XLSX filename wrong',
+  );
 
   // monthRange end-of-month math on the REAL function (incl. leap Feb).
   assert.deepEqual(exp.monthRange('2026-10'), { from: '2026-10-01', to: '2026-10-31' });
@@ -180,8 +231,13 @@ try {
     workers: [{ workerName: 'Asha', entries: [] }],
   });
   const fullMonthLines = fullMonthCsv.slice(1).split('\r\n');
-  assert.equal(fullMonthLines[0].split(',').length, 32, '31-day register header column count wrong');
-  assert.equal(fullMonthLines[1].split(',').length, 32, '31-day zero-mark worker column count wrong');
+  assert.equal(fullMonthLines.length, 32, '31-day register row count wrong');
+  assert.ok(
+    fullMonthLines.every((line) => line.split(',').length === 2),
+    'date rows must contain DATE plus every worker column',
+  );
+  assert.equal(fullMonthLines[1].split(',')[0], '20261001', 'first register date not compact ISO');
+  assert.equal(fullMonthLines[31].split(',')[0], '20261031', 'last register date not compact ISO');
 
   // escapeHtml on the REAL function.
   assert.equal(
@@ -239,7 +295,7 @@ try {
   }, 'register PDF threw on unknown status');
 
   // Register PDF uses the same complete matrix, compact status legend,
-  // escaped cell notes, landscape print CSS, and weekend distinction.
+  // escaped cell notes, landscape print CSS, and weekend-row distinction.
   const registerHtml = exp.buildRegisterPdfHtml({
     title: 'T',
     subtitle: 'S',
@@ -254,14 +310,14 @@ try {
     ],
     theme,
   });
-  for (const value of ['EMPLOYEE NAME', '2026-10-09', '2026-10-10', '2026-10-11', 'Asha', 'Zed']) {
+  for (const value of ['DATE', '2026-10-09', '2026-10-10', '2026-10-11', 'Asha', 'Zed']) {
     assert.ok(registerHtml.includes(value), `register PDF matrix missing ${value}`);
   }
   assert.ok(registerHtml.includes('size:landscape'), 'register PDF is not landscape');
   assert.ok(
     registerHtml.includes('data-date="2026-10-10" data-weekend="true"') &&
       registerHtml.includes('data-date="2026-10-11" data-weekend="true"'),
-    'register PDF weekend columns are not distinguished',
+    'register PDF weekend rows are not distinguished',
   );
   assert.ok(
     !registerHtml.includes('<b>hi</b>') && registerHtml.includes('&lt;b&gt;hi&lt;/b&gt;'),
@@ -285,9 +341,10 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 
-// File-helper companion contract: the 5 helpers exist for Phase 7 reuse.
-for (const name of ['writeTextFile', 'printHtmlToPdf', 'shareFile', 'deleteFile', 'copyBinaryFile']) {
+// File-helper companion contract: helpers exist for Phase 7 reuse.
+for (const name of ['writeTextFile', 'writeBase64File', 'printHtmlToPdf', 'shareFile', 'deleteFile', 'copyBinaryFile']) {
   assert.ok(filesSrc.includes(`export async function ${name}`), `missing files helper: ${name}`);
 }
+assert.ok(filesSrc.includes('FileSystem.EncodingType.Base64'), 'binary writer is not Base64-safe');
 
 console.log('EXPORT_VERIFY_OK');

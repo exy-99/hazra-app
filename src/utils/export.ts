@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { utils as xlsxUtils, write as writeXlsx } from 'xlsx';
 
 import { CYCLE, STATUS } from '@/constants/status';
 import type { AttendanceStatus } from '@/db/types';
@@ -7,7 +8,7 @@ import { formatDisplay } from '@/utils/dates';
 import { listDatesInRange } from '@/utils/reports';
 
 /**
- * Pure CSV/PDF serializers for Phase 6 export (EX-01, EX-02, NF-06).
+ * Pure CSV/XLSX/PDF serializers for export (EX-01, EX-02, NF-06).
  *
  * Same purity contract as summarize(): zero runtime `@/db` imports —
  * callers pass entries in, serializers return strings. All filesystem,
@@ -65,6 +66,28 @@ function compareDateAsc(a: { date: string }, b: { date: string }): number {
   return 0;
 }
 
+/** Basic ISO stays readable in a spreadsheet's fixed default CSV column width. */
+function csvDate(date: string): string {
+  return date.replace(/-/g, '');
+}
+
+function xlsxDate(date: string): string {
+  return date.replace(/-/g, '/');
+}
+
+function workbookBase64(rows: string[][], columnWidths: number[], sheetName: string): string {
+  const worksheet = xlsxUtils.aoa_to_sheet(rows);
+  worksheet['!cols'] = columnWidths.map((wch) => ({ wch }));
+  const workbook = xlsxUtils.book_new();
+  xlsxUtils.book_append_sheet(workbook, worksheet, sheetName);
+  return writeXlsx(workbook, {
+    bookType: 'xlsx',
+    type: 'base64',
+    cellStyles: true,
+    compression: true,
+  });
+}
+
 const STATUS_CODE: Record<AttendanceStatus, string> = {
   present: 'P',
   absent: 'A',
@@ -73,12 +96,12 @@ const STATUS_CODE: Record<AttendanceStatus, string> = {
 };
 
 interface RegisterMatrixRow {
-  workerName: string;
+  date: string;
   cells: (WorkerCsvEntry | null)[];
 }
 
 interface RegisterMatrix {
-  dates: string[];
+  workerNames: string[];
   rows: RegisterMatrixRow[];
 }
 
@@ -88,17 +111,19 @@ function statusCode(status: AttendanceStatus): string {
 
 /** Complete the sparse attendance entries into one cell per worker/date. */
 function registerMatrix(input: RegisterMatrixInput): RegisterMatrix {
-  const dates = listDatesInRange(input.from, input.to);
-  const rows = [...input.workers]
+  const workers = [...input.workers]
     .sort((a, b) => a.workerName.localeCompare(b.workerName))
-    .map((worker) => {
-      const entriesByDate = new Map(worker.entries.map((entry) => [entry.date, entry]));
-      return {
-        workerName: worker.workerName,
-        cells: dates.map((date) => entriesByDate.get(date) ?? null),
-      };
-    });
-  return { dates, rows };
+    .map((worker) => ({
+      workerName: worker.workerName,
+      entriesByDate: new Map(worker.entries.map((entry) => [entry.date, entry])),
+    }));
+  return {
+    workerNames: workers.map((worker) => worker.workerName),
+    rows: listDatesInRange(input.from, input.to).map((date) => ({
+      date,
+      cells: workers.map((worker) => worker.entriesByDate.get(date) ?? null),
+    })),
+  };
 }
 
 function registerCellText(entry: WorkerCsvEntry | null): string {
@@ -116,36 +141,60 @@ function noteOrDash(note: string | null): string {
 
 /**
  * Worker-history CSV (EX-01): header `date,status,note`, rows sorted by
- * date ASC. Status is the raw lowercase machine key (D-08); missing notes
- * write exactly `-` (D-18). No summary rows (D-06). CRLF joins (RFC-4180),
- * no trailing newline. A UTF-8 BOM opens the file so desktop Excel renders
- * non-ASCII names/notes correctly (Sheets sniffs UTF-8 either way).
+ * date ASC. Dates use basic ISO `YYYYMMDD`, which remains readable in
+ * spreadsheet apps without overflowing their fixed default CSV column width.
+ * Status is the raw lowercase machine key (D-08); missing notes write exactly
+ * `-` (D-18). No summary rows (D-06). CRLF joins (RFC-4180), no trailing
+ * newline. A UTF-8 BOM opens the file so desktop Excel renders non-ASCII
+ * names/notes correctly (Sheets sniffs UTF-8 either way).
  */
 export function buildWorkerCsv(entries: WorkerCsvEntry[]): string {
   const sorted = [...entries].sort(compareDateAsc);
   const lines = ['date,status,note'];
   for (const entry of sorted) {
-    lines.push([entry.date, entry.status, noteOrDash(entry.note)].map(escapeCsvField).join(','));
+    lines.push([csvDate(entry.date), entry.status, noteOrDash(entry.note)].map(escapeCsvField).join(','));
   }
   return '\uFEFF' + lines.join('\r\n');
 }
 
 /**
- * Worksite-month register CSV (EX-02): workers are rows and every selected
- * date is a column. Cells use compact P/A/H/O codes, `-` when unmarked, and
- * append an optional note in parentheses. Worker names sort ascending.
+ * Worksite-month register CSV (EX-02): dates are rows and workers are
+ * columns. Cells use compact P/A/H/O codes, `-` when unmarked, and append an
+ * optional note in parentheses. Dates and worker names sort ascending.
  */
 export function buildRegisterCsv(input: RegisterMatrixInput): string {
   const matrix = registerMatrix(input);
   const lines = [
-    ['EMPLOYEE NAME', ...matrix.dates].map(escapeCsvField).join(','),
+    ['DATE', ...matrix.workerNames].map(escapeCsvField).join(','),
   ];
   for (const row of matrix.rows) {
     lines.push(
-      [row.workerName, ...row.cells.map(registerCellText)].map(escapeCsvField).join(','),
+      [csvDate(row.date), ...row.cells.map(registerCellText)].map(escapeCsvField).join(','),
     );
   }
   return '\uFEFF' + lines.join('\r\n');
+}
+
+/** Worker-history XLSX with exact slash dates and a width that shows them in full. */
+export function buildWorkerXlsx(entries: WorkerCsvEntry[]): string {
+  const rows = [
+    ['date', 'status', 'note'],
+    ...[...entries]
+      .sort(compareDateAsc)
+      .map((entry) => [xlsxDate(entry.date), entry.status, noteOrDash(entry.note)]),
+  ];
+  return workbookBase64(rows, [12, 12, 32], 'Attendance');
+}
+
+/** Worksite-month XLSX using the same completed matrix as CSV/PDF. */
+export function buildRegisterXlsx(input: RegisterMatrixInput): string {
+  const matrix = registerMatrix(input);
+  const rows = [
+    ['DATE', ...matrix.workerNames],
+    ...matrix.rows.map((row) => [xlsxDate(row.date), ...row.cells.map(registerCellText)]),
+  ];
+  const workerWidths = matrix.workerNames.map((name) => Math.max(10, Math.min(32, name.length + 2)));
+  return workbookBase64(rows, [12, ...workerWidths], 'Register');
 }
 
 /**
@@ -157,13 +206,15 @@ export function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'unknown';
 }
 
-/** `hazra-worker-{slug}-{yyyymmdd}.csv|pdf` (D-14). `ymd` is a local YYYY-MM-DD key. */
-export function workerFilename(workerName: string, ymd: string, ext: 'csv' | 'pdf'): string {
+export type ExportExtension = 'csv' | 'xlsx' | 'pdf';
+
+/** `hazra-worker-{slug}-{yyyymmdd}.csv|xlsx|pdf` (D-14). `ymd` is a local YYYY-MM-DD key. */
+export function workerFilename(workerName: string, ymd: string, ext: ExportExtension): string {
   return `hazra-worker-${slugify(workerName)}-${ymd.replace(/-/g, '')}.${ext}`;
 }
 
-/** `hazra-register-{siteslug}-{yyyymm}.csv|pdf` (D-14). `month` is a local YYYY-MM key. */
-export function registerFilename(siteName: string, month: string, ext: 'csv' | 'pdf'): string {
+/** `hazra-register-{siteslug}-{yyyymm}.csv|xlsx|pdf` (D-14). `month` is a local YYYY-MM key. */
+export function registerFilename(siteName: string, month: string, ext: ExportExtension): string {
   return `hazra-register-${slugify(siteName)}-${month.replace('-', '')}.${ext}`;
 }
 
@@ -303,7 +354,7 @@ export function buildWorkerPdfHtml(args: {
 }
 
 /**
- * Worksite-month register PDF matrix (EX-02): worker rows, inclusive date
+ * Worksite-month register PDF matrix (EX-02): inclusive date rows, worker
  * columns, compact status cells, weekend distinction, and a landscape page.
  */
 export function buildRegisterPdfHtml(args: {
@@ -324,25 +375,19 @@ export function buildRegisterPdfHtml(args: {
     const day = dayjs(date).day();
     return day === 0 || day === 6;
   };
-  const dateHeaders = matrix.dates
-    .map((date) => {
-      const isWeekend = weekend(date);
-      return (
-        `<th data-date="${escapeHtml(date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${isWeekend ? background : surface};color:${foreground};">` +
-        `<span>${escapeHtml(formatDisplay(date, 'DD'))}</span><br />` +
-        `<span style="color:${mutedForeground};font-weight:400;">${escapeHtml(formatDisplay(date, 'ddd'))}</span>` +
-        `</th>`
-      );
-    })
+  const workerHeaders = matrix.workerNames
+    .map(
+      (workerName) =>
+        `<th scope="col" style="${compactCell}background-color:${surface};color:${foreground};overflow-wrap:anywhere;">${escapeHtml(workerName)}</th>`,
+    )
     .join('');
   const bodyRows = matrix.rows
     .map((row) => {
+      const isWeekend = weekend(row.date);
       const cells = row.cells
-        .map((entry, index) => {
-          const date = matrix.dates[index];
-          const isWeekend = weekend(date);
+        .map((entry) => {
           if (entry === null) {
-            return `<td data-date="${escapeHtml(date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${isWeekend ? background : surface};color:${mutedForeground};">—</td>`;
+            return `<td data-date="${escapeHtml(row.date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${isWeekend ? background : surface};color:${mutedForeground};">—</td>`;
           }
           // WR-05: degrade gracefully on a future/corrupt status key.
           const chip = STATUS[entry.status] ?? {
@@ -356,14 +401,16 @@ export function buildRegisterPdfHtml(args: {
               ? ''
               : `<br /><span style="font-size:6px;font-weight:400;white-space:pre-wrap;">${escapeHtml(entry.note)}</span>`;
           return (
-            `<td data-date="${escapeHtml(date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${escapeHtml(chip.tint)};color:${escapeHtml(chip.text)};font-weight:700;">` +
+            `<td data-date="${escapeHtml(row.date)}" data-weekend="${isWeekend}" style="${compactCell}background-color:${escapeHtml(chip.tint)};color:${escapeHtml(chip.text)};font-weight:700;">` +
             `${escapeHtml(statusCode(entry.status))}${note}</td>`
           );
         })
         .join('');
       return (
-        `<tr style="break-inside:avoid;">` +
-        `<th scope="row" style="border:1px solid ${border};padding:4px;text-align:left;background-color:${surface};color:${foreground};font-size:8px;overflow-wrap:anywhere;">${escapeHtml(row.workerName)}</th>` +
+        `<tr data-date="${escapeHtml(row.date)}" data-weekend="${isWeekend}" style="break-inside:avoid;">` +
+        `<th scope="row" style="border:1px solid ${border};width:64px;padding:4px;text-align:left;background-color:${isWeekend ? background : surface};color:${foreground};font-size:8px;">` +
+        `<span>${escapeHtml(formatDisplay(row.date, 'DD'))}</span><br />` +
+        `<span style="color:${mutedForeground};font-weight:400;">${escapeHtml(formatDisplay(row.date, 'ddd'))}</span></th>` +
         cells +
         `</tr>`
       );
@@ -376,7 +423,7 @@ export function buildRegisterPdfHtml(args: {
   const visibleEntries = matrix.rows.flatMap((row) =>
     row.cells.filter((entry): entry is WorkerCsvEntry => entry !== null),
   );
-  const columns = matrix.dates.length + 1;
+  const columns = matrix.workerNames.length + 1;
   return (
     `<!DOCTYPE html><html><head><meta charset="utf-8" />` +
     `<meta name="viewport" content="width=device-width,initial-scale=1" />` +
@@ -385,7 +432,7 @@ export function buildRegisterPdfHtml(args: {
     `<h1 style="margin:0 0 4px;border-bottom:2px solid ${primary};padding-bottom:4px;font-size:16px;">${escapeHtml(args.title)}</h1>` +
     `<p style="margin:0 0 8px;color:${mutedForeground};font-size:9px;">${escapeHtml(args.subtitle)}</p>` +
     `<table style="width:100%;border-collapse:collapse;table-layout:fixed;background-color:${surface};">` +
-    `<thead><tr><th style="border:1px solid ${border};width:110px;padding:4px;text-align:left;background-color:${surface};color:${foreground};font-size:8px;">EMPLOYEE NAME</th>${dateHeaders}</tr></thead>` +
+    `<thead><tr><th style="border:1px solid ${border};width:64px;padding:4px;text-align:left;background-color:${surface};color:${foreground};font-size:8px;">DATE</th>${workerHeaders}</tr></thead>` +
     `<tbody>${bodyRows}<tr><td colspan="${columns}" style="border:1px solid ${border};padding:5px;font-size:8px;">${legend}</td></tr></tbody>` +
     `</table><p style="margin:6px 0 0;color:${mutedForeground};font-size:8px;">${escapeHtml(footerSummary(visibleEntries))}</p>` +
     `</body></html>`

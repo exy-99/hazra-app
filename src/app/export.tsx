@@ -32,13 +32,16 @@ import { formatDisplay, todayKey } from '@/utils/dates';
 import {
   buildRegisterCsv,
   buildRegisterPdfHtml,
+  buildRegisterXlsx,
   buildWorkerCsv,
   buildWorkerPdfHtml,
+  buildWorkerXlsx,
   footerSummary,
   monthLabel,
   monthRange,
   registerFilename,
   workerFilename,
+  type ExportExtension,
   type PdfTheme,
   type RegisterWorkerRow,
   type WorkerCsvEntry,
@@ -49,8 +52,20 @@ import {
   openWebPrintHtml,
   printHtmlToPdf,
   shareFile,
+  writeBase64File,
   writeTextFile,
 } from '@/utils/files';
+
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+function xlsxBlob(base64: string): Blob {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new Blob([bytes], { type: XLSX_MIME });
+}
 
 /**
  * Normalize a raw `?month=` display string to a local YYYY-MM key clamped
@@ -196,7 +211,7 @@ export default function ExportScreen() {
   const [selectedMonth, setSelectedMonth] = useState<string>(
     normalizeMonth(paramMonth, currentMonth),
   );
-  const [selectedFormat, setSelectedFormat] = useState<'csv' | 'pdf'>('csv');
+  const [selectedFormat, setSelectedFormat] = useState<ExportExtension>('xlsx');
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [sites, setSites] = useState<Worksite[]>([]);
   const [entries, setEntries] = useState<WorkerCsvEntry[]>([]);
@@ -211,7 +226,7 @@ export default function ExportScreen() {
   const [savedName, setSavedName] = useState<string | null>(null);
   const [savedUri, setSavedUri] = useState<string | null>(null);
   const [savedScope, setSavedScope] = useState<'worker' | 'worksite' | null>(null);
-  const [savedFormat, setSavedFormat] = useState<'csv' | 'pdf' | null>(null);
+  const [savedFormat, setSavedFormat] = useState<ExportExtension | null>(null);
   const [monthOpen, setMonthOpen] = useState(false);
   const [shareNotice, setShareNotice] = useState<string | null>(null);
   // WR-01: synchronous re-entry lock. `exporting` state updates
@@ -408,6 +423,8 @@ export default function ExportScreen() {
         const filename = workerFilename(workerName, todayKey(), selectedFormat);
         const content =
           selectedFormat === 'csv' ? buildWorkerCsv(entries) : null;
+        const workbook =
+          selectedFormat === 'xlsx' ? buildWorkerXlsx(entries) : null;
         const html =
           selectedFormat === 'pdf'
             ? buildWorkerPdfHtml({
@@ -419,6 +436,21 @@ export default function ExportScreen() {
         if (Platform.OS === 'web' && selectedFormat === 'csv' && content !== null) {
           const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
           const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setSavedName(filename);
+          setSavedUri(url);
+          setSavedScope(selectedScope);
+          setSavedFormat(selectedFormat);
+          return;
+        }
+        if (Platform.OS === 'web' && selectedFormat === 'xlsx' && workbook !== null) {
+          const url = URL.createObjectURL(xlsxBlob(workbook));
           const a = document.createElement('a');
           a.href = url;
           a.download = filename;
@@ -448,6 +480,8 @@ export default function ExportScreen() {
         }
         if (content !== null) {
           destUri = await writeTextFile(filename, content);
+        } else if (workbook !== null) {
+          destUri = await writeBase64File(filename, workbook, XLSX_MIME);
         } else if (html !== null) {
           tempUri = await printHtmlToPdf(html);
           destUri = await copyBinaryFile(tempUri, filename);
@@ -462,6 +496,10 @@ export default function ExportScreen() {
         const content =
           selectedFormat === 'csv'
             ? buildRegisterCsv({ ...range, workers: regWorkers })
+            : null;
+        const workbook =
+          selectedFormat === 'xlsx'
+            ? buildRegisterXlsx({ ...range, workers: regWorkers })
             : null;
         const html =
           selectedFormat === 'pdf'
@@ -489,6 +527,21 @@ export default function ExportScreen() {
           setSavedFormat(selectedFormat);
           return;
         }
+        if (Platform.OS === 'web' && selectedFormat === 'xlsx' && workbook !== null) {
+          const url = URL.createObjectURL(xlsxBlob(workbook));
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          setSavedName(filename);
+          setSavedUri(url);
+          setSavedScope(selectedScope);
+          setSavedFormat(selectedFormat);
+          return;
+        }
         if (Platform.OS === 'web' && selectedFormat === 'pdf' && html !== null) {
           const result = openWebPrintHtml(html);
           if (result === 'blocked') {
@@ -505,6 +558,8 @@ export default function ExportScreen() {
         }
         if (content !== null) {
           destUri = await writeTextFile(filename, content);
+        } else if (workbook !== null) {
+          destUri = await writeBase64File(filename, workbook, XLSX_MIME);
         } else if (html !== null) {
           tempUri = await printHtmlToPdf(html, { width: 792, height: 612 });
           destUri = await copyBinaryFile(tempUri, filename);
@@ -719,6 +774,7 @@ export default function ExportScreen() {
             {(
               [
                 { key: 'csv', label: 'CSV' },
+                { key: 'xlsx', label: 'XLSX' },
                 { key: 'pdf', label: 'PDF' },
               ] as const
             ).map((chip) => {
@@ -755,6 +811,8 @@ export default function ExportScreen() {
           <Text style={[styles.caption, { color: theme.mutedForeground }]}>
             {selectedFormat === 'csv'
               ? 'Opens in Excel or Sheets.'
+              : selectedFormat === 'xlsx'
+                ? 'Keeps YYYY/MM/DD dates and column widths.'
               : 'Printable register table.'}
           </Text>
           {loading ? (
