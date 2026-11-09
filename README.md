@@ -36,7 +36,6 @@ Dark mode, 1080 px wide, real seed data. Every screen is described in text below
 | **Worker profile** | Attendance-rate ring, 7/30/90-day periods, tap-to-call, full marked-day history |
 | **Reports** | Site and period filters, per-worker ranking, a frequently-absent bottom three, and a daily trend chart |
 | **Export** | Worker history or worksite-month register as CSV, XLSX or PDF |
-| **Backup** | One JSON file containing worksites, workers and attendance; restore by picking the file back |
 
 ## Requirements
 
@@ -85,7 +84,7 @@ Attendance maths is deliberately pure: `summarize()` and the export serializers 
 - Schema: `worksites`, `workers`, `attendance`, with foreign keys on, a `CHECK` constraint on status values and `UNIQUE(worker_id, date)`.
 - Removing a worker or worksite deactivates the row (`is_active = 0`) instead of deleting it, so history survives.
 - CSV output is RFC-4180 escaped, and cells starting with `=`, `+`, `-` or `@` are prefixed so spreadsheets treat them as text rather than formulas.
-- Backups include inactive rows on purpose: `{ version, exported_at, worksites, workers, attendance }`.
+
 
 ## Checks
 
